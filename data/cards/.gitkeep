@@ -1,0 +1,2 @@
+# This directory contains generated bingo card PDFs
+# Run: python backend/generate_cards.py to create cards
