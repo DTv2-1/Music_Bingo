@@ -149,11 +149,48 @@ def generate_pool() -> List[Dict]:
     # Sort by artist then title for easier browsing
     all_songs.sort(key=lambda s: (s["artist"].lower(), s["title"].lower()))
     
+    # Detect duplicate artists and mark songs
+    all_songs = mark_duplicate_artists(all_songs)
+    
     print(f"\n✓ Pool generation complete!")
     print(f"Total songs: {len(all_songs)}")
     print(f"Unique artists: {len(set(s['artist'] for s in all_songs))}")
+    duplicate_count = sum(1 for s in all_songs if s.get('has_duplicate_artist'))
+    print(f"Songs with duplicate artists: {duplicate_count}")
     
     return all_songs
+
+
+def mark_duplicate_artists(songs: List[Dict]) -> List[Dict]:
+    """
+    Detect artists that appear more than once and mark their songs
+    
+    Args:
+        songs: List of song dictionaries
+        
+    Returns:
+        Updated songs list with has_duplicate_artist flag
+    """
+    from collections import Counter
+    
+    # Count occurrences of each artist
+    artist_counts = Counter(song['artist'] for song in songs)
+    
+    # Mark songs where artist appears more than once
+    for song in songs:
+        song['has_duplicate_artist'] = artist_counts[song['artist']] > 1
+    
+    # Show stats
+    duplicate_artists = [artist for artist, count in artist_counts.items() if count > 1]
+    if duplicate_artists:
+        print(f"\n📊 Artists with multiple songs ({len(duplicate_artists)}):")
+        for artist in sorted(duplicate_artists)[:10]:  # Show first 10
+            count = artist_counts[artist]
+            print(f"  - {artist}: {count} songs")
+        if len(duplicate_artists) > 10:
+            print(f"  ... and {len(duplicate_artists) - 10} more")
+    
+    return songs
 
 
 def save_pool(songs: List[Dict], output_path: Path):

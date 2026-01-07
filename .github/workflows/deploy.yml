@@ -1,0 +1,38 @@
+name: Deploy to Digital Ocean
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /var/www/music-bingo
+          
+          # Pull latest changes
+          git pull origin main || git pull origin master
+          
+          # Install/update Python dependencies
+          pip3 install -r backend/requirements.txt
+          
+          # Restart the Flask app via supervisor
+          sudo supervisorctl restart music-bingo
+          
+          # Restart nginx if needed
+          sudo systemctl reload nginx
+          
+          echo "✅ Deployment completed successfully!"

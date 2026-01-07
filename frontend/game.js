@@ -1,8 +1,7 @@
-/**
  * game.js - Music Bingo Game Logic
  * 
  * Features:
- * - iTunes preview playback (5 seconds default)
+ * - iTunes preview playback (8 seconds default)
  * - ElevenLabs TTS announcements
  * - Track remaining songs
  * - Display called songs list
@@ -22,7 +21,7 @@ const CONFIG = {
     API_URL: window.location.origin,  // Same origin as frontend
     
     // Game settings
-    PREVIEW_DURATION_MS: 5000,  // 5 seconds of song
+    PREVIEW_DURATION_MS: 8000,  // 8 seconds of song preview
     AUTO_NEXT_DELAY_MS: 15000,  // 15 seconds between songs (optional auto-mode)
     
     // Audio settings
@@ -47,7 +46,10 @@ let gameState = {
     called: [],             // Songs already called (in order)
     currentTrack: null,     // Currently playing track
     isPlaying: false,       // Is audio currently playing
-    announcementsData: null // Loaded announcements
+    announcementsData: null, // Loaded announcements
+    venueName: localStorage.getItem('venueName') || 'this venue', // Venue name from localStorage
+    welcomeAnnounced: false, // Track if welcome was announced
+    halfwayAnnounced: false  // Track if halfway announcement was made
 };
 
 // Howler instances
@@ -59,13 +61,15 @@ let backgroundMusic = null;  // Background music player
 // INITIALIZATION
 // ============================================================================
 
-/**
  * Load song pool and announcements on page load
  */
 window.addEventListener('DOMContentLoaded', async () => {
     console.log('🎮 Initializing Music Bingo...');
     
     try {
+        // Load venue name from localStorage
+        loadVenueNameFromStorage();
+        
         // Load song pool
         await loadSongPool();
         
@@ -86,7 +90,67 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-/**
+ * Load venue name from localStorage and update UI
+ */
+function loadVenueNameFromStorage() {
+    const savedName = localStorage.getItem('venueName');
+    if (savedName) {
+        gameState.venueName = savedName;
+        document.getElementById('venueName').value = savedName;
+        console.log(`✓ Loaded venue: ${savedName}`);
+    }
+}
+
+ * Save venue name to localStorage
+ */
+function saveVenueName() {
+    const input = document.getElementById('venueName');
+    const venueName = input.value.trim();
+    
+    if (!venueName) {
+        alert('Please enter a venue name');
+        return;
+    }
+    
+    gameState.venueName = venueName;
+    localStorage.setItem('venueName', venueName);
+    
+    // Reset welcome announcement flag so it uses new name
+    gameState.welcomeAnnounced = false;
+    
+    // Show confirmation
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = '✅ Saved!';
+    button.style.background = 'linear-gradient(135deg, #38ef7d 0%, #11998e 100%)';
+    
+    setTimeout(() => {
+        button.textContent = originalText;
+        button.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+    }, 2000);
+    
+    console.log(`✓ Venue name saved: ${venueName}`);
+}
+
+ * Load venue configuration from backend (deprecated - now using localStorage)
+ */
+async function loadVenueConfig() {
+    try {
+        const response = await fetch(`${CONFIG.API_URL}/api/config`);
+        if (response.ok) {
+            const config = await response.json();
+            // Only use backend config if localStorage is empty
+            if (!localStorage.getItem('venueName')) {
+                gameState.venueName = config.venue_name;
+                document.getElementById('venueName').value = config.venue_name;
+            }
+            console.log(`✓ Backend venue config available`);
+        }
+    } catch (error) {
+        console.log('ℹ Backend config not available, using localStorage');
+    }
+}
+
  * Load song pool from backend API
  */
 async function loadSongPool() {
@@ -105,7 +169,6 @@ async function loadSongPool() {
     console.log(`✓ Loaded ${gameState.pool.length} songs`);
 }
 
-/**
  * Load custom announcements from backend API
  */
 async function loadAnnouncements() {
@@ -130,7 +193,6 @@ async function loadAnnouncements() {
     }
 }
 
-/**
  * Utility: Shuffle array in place (Fisher-Yates)
  */
 function shuffleArray(array) {
@@ -140,7 +202,6 @@ function shuffleArray(array) {
     }
 }
 
-/**
  * Start background music loop
  */
 function startBackgroundMusic() {
@@ -170,7 +231,6 @@ function startBackgroundMusic() {
 // CORE GAME LOGIC
 // ============================================================================
 
-/**
  * Play next track in sequence
  */
 async function playNextTrack() {
@@ -202,11 +262,33 @@ async function playNextTrack() {
     gameState.isPlaying = true;
     
     try {
-        // Step 1: Play TTS announcement
+        // Step 1: Play welcome announcement on first song
+        if (!gameState.welcomeAnnounced) {
+            updateStatus('🎙️ Welcome announcement...', true);
+            await announceWelcome();
+            gameState.welcomeAnnounced = true;
+            // Short pause after welcome
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        // Step 2: Check for halfway announcement
+        const totalSongs = gameState.pool.length;
+        const songsPlayed = gameState.called.length;
+        const halfwayPoint = Math.floor(totalSongs / 2);
+        
+        if (!gameState.halfwayAnnounced && songsPlayed === halfwayPoint) {
+            updateStatus('🎊 Halfway announcement...', true);
+            await announceHalfway();
+            gameState.halfwayAnnounced = true;
+            // Short pause after halfway
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        // Step 3: Play TTS announcement
         updateStatus('🎙️ Announcing...', true);
         await announceTrack(track);
         
-        // Step 2: Play song preview
+        // Step 4: Play song preview
         updateStatus('🎵 Playing song preview...', true);
         await playSongPreview(track);
         
@@ -223,12 +305,224 @@ async function playNextTrack() {
     }
 }
 
+ * Generate welcome announcement text
+ */
+function generateWelcomeText() {
+    const welcomeScripts = [
+        `Ladies and gentlemen, welcome to Music Bingo at ${gameState.venueName}! Tonight, we're dropping beats instead of balls. Grab your cards, your markers, and get ready to mark off those songs as we play short clips. No titles or artists will be announced—just listen closely, sing along if you know it, and shout 'Bingo!' when you get a line or full house. We've got great prizes up for grabs, so let's kick things off with some classic tunes!`,
+        
+        `Hello everyone and welcome to the ultimate Music Bingo night at ${gameState.venueName}! Get those dabbers ready because we're about to play hits from across the decades. I'll spin the tracks, you identify them on your card—without any hints on the name or who sings it. First to a full line wins! Are you ready to test your music knowledge? Let's get this party started!`,
+        
+        `Good evening, music lovers! It's time for Music Bingo extravaganza at ${gameState.venueName}. Rules are simple: We play a snippet, you spot the song on your card and mark it off. No song titles or artists given—just pure ear power. Prizes for the quickest bingos, so stay sharp. Here comes the first track—good luck!`
+    ];
+    
+    return welcomeScripts[Math.floor(Math.random() * welcomeScripts.length)];
+}
+
+ * Generate halfway announcement text
+ */
+function generateHalfwayText() {
+    const halfwayScripts = [
+        `Alright, everyone—we're halfway through this round! How's everyone doing? A few close calls out there? Keep those ears open because the hits are just getting better. Remember, no peeking at your phones for lyrics! Next track coming up—let's see who gets closer to that bingo!`,
+        
+        `We're at the halfway mark, folks! Time for a quick breather. Anyone got a line yet? Shout out if you're one away! We've got some absolute bangers left, so don't give up now. Grab a drink, stretch those vocal cords for singing along, and let's dive back in!`,
+        
+        `Halfway there, music bingo fans! You're all doing amazing—I've heard some epic sing-alongs already. Prizes are waiting for those full cards, so stay focused. If you're stuck on a song, maybe the next one will jog your memory. Here we go with more tunes!`
+    ];
+    
+    return halfwayScripts[Math.floor(Math.random() * halfwayScripts.length)];
+}
+
+ * Announce welcome message using ElevenLabs TTS
+ */
+async function announceWelcome() {
+    const text = generateWelcomeText();
+    console.log(`🎙️ Welcome: "${text.substring(0, 100)}..."`);
+    
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Duck background music (lower volume during announcement)
+            if (backgroundMusic) {
+                backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME, CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, 500);
+            }
+            
+            // Generate TTS audio using ElevenLabs
+            const audioUrl = await generateElevenLabsTTS(text);
+            
+            // Play using Howler
+            ttsPlayer = new Howl({
+                src: [audioUrl],
+                format: ['mp3'],
+                html5: true,
+                volume: CONFIG.TTS_VOLUME,
+                onend: () => {
+                    console.log('✓ Welcome announcement complete');
+                    // Restore background music volume
+                    if (backgroundMusic) {
+                        backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, CONFIG.BACKGROUND_MUSIC_VOLUME, 500);
+                    }
+                    resolve();
+                },
+                onloaderror: (id, error) => {
+                    console.error('TTS load error:', error);
+                    reject(new Error('Failed to load TTS audio'));
+                },
+                onplayerror: (id, error) => {
+                    console.error('TTS play error:', error);
+                    reject(new Error('Failed to play TTS audio'));
+                }
+            });
+            
+            ttsPlayer.play();
+            
+        } catch (error) {
+            console.error('Welcome TTS generation error:', error);
+            // Don't fail the whole game if welcome fails
+            resolve();
+        }
+    });
+}
+
 /**
+ * Announce halfway message using ElevenLabs TTS
+ */
+async function announceHalfway() {
+    const text = generateHalfwayText();
+    console.log(`🎊 Halfway: "${text.substring(0, 100)}..."`);
+    
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Duck background music (lower volume during announcement)
+            if (backgroundMusic) {
+                backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME, CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, 500);
+            }
+            
+            // Generate TTS audio using ElevenLabs
+            const audioUrl = await generateElevenLabsTTS(text);
+            
+            // Play using Howler
+            ttsPlayer = new Howl({
+                src: [audioUrl],
+                format: ["mp3"],
+                html5: true,
+                volume: CONFIG.TTS_VOLUME,
+                onend: () => {
+                    console.log("✓ Halfway announcement complete");
+                    // Restore background music volume
+                    if (backgroundMusic) {
+                        backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, CONFIG.BACKGROUND_MUSIC_VOLUME, 500);
+                    }
+                    resolve();
+                },
+                onloaderror: (id, error) => {
+                    console.error("TTS load error:", error);
+                    reject(new Error("Failed to load TTS audio"));
+                },
+                onplayerror: (id, error) => {
+                    console.error("TTS play error:", error);
+                    reject(new Error("Failed to play TTS audio"));
+                }
+            });
+            
+            ttsPlayer.play();
+            
+        } catch (error) {
+            console.error("Halfway TTS generation error:", error);
+            // Don"t fail the whole game if halfway announcement fails
+            resolve();
+        }
+    });
+}
+
+/**
+ * Generate announcement text based on 3 rotating types
+ * Type A: Era/Decade context (33%)
+ * Type B: Fun facts/trivia (33%)
+ * Type C: Generic simple (33%)
+ */
+function generateAnnouncementText(track) {
+    const randomType = Math.random();
+    
+    // Type A: Era/Decade Context (33%)
+    if (randomType < 0.33) {
+        const year = parseInt(track.release_year);
+        let decade = '';
+        let description = '';
+        
+        if (year >= 2020) {
+            decade = '2020s';
+            description = 'Get ready for this fresh hit from the 2020s';
+        } else if (year >= 2010) {
+            decade = '2010s';
+            description = 'Get ready for this modern classic from the 2010s';
+        } else if (year >= 2000) {
+            decade = '2000s';
+            description = 'Here\'s a chart-topper from the early 2000s';
+        } else if (year >= 1990) {
+            decade = '1990s';
+            description = 'Listen up for this gem from the grunge and pop explosion of the 1990s';
+        } else if (year >= 1980) {
+            decade = '1980s';
+            const options = [
+                'Let\'s go straight to the 1980s for this one',
+                'Here\'s an iconic banger from the hair metal 1980s',
+                'Coming up: A massive hit from the 1980s'
+            ];
+            description = options[Math.floor(Math.random() * options.length)];
+        } else if (year >= 1970) {
+            decade = '1970s';
+            description = 'Next track: Straight out of the disco-fueled 1970s';
+        } else if (year >= 1960) {
+            decade = '1960s';
+            description = 'Coming up: A massive hit from the swinging 1960s';
+        } else {
+            description = 'Here\'s a classic for you';
+        }
+        
+        return description;
+    }
+    
+    // Type B: Fun Facts/Trivia (33%)
+    else if (randomType < 0.66) {
+        const funFacts = [
+            'This one topped the charts for weeks',
+            'This artist has won multiple awards',
+            'This track became an instant classic',
+            'This song was a massive hit worldwide',
+            'You\'ll definitely recognize this one',
+            'This artist is a true legend',
+            'This track dominated the airwaves',
+            'This one\'s a crowd favorite',
+            'This song defined a generation',
+            'This artist needs no introduction'
+        ];
+        return funFacts[Math.floor(Math.random() * funFacts.length)];
+    }
+    
+    // Type C: Generic Simple (33%)
+    else {
+        const simpleAnnouncements = [
+            'Next song',
+            'Here we go',
+            'Coming up',
+            'Let\'s keep it going',
+            'Another one coming your way',
+            'Ready for this one',
+            'Listen closely',
+            'Mark your cards',
+            'Here\'s another',
+            'Let\'s continue'
+        ];
+        return simpleAnnouncements[Math.floor(Math.random() * simpleAnnouncements.length)];
+    }
+}
+
  * Announce track using ElevenLabs TTS
  */
 async function announceTrack(track) {
-    const text = `Mark ${track.title} by ${track.artist}`;
-    console.log(`🎙️ Announcing: "${text}"`);
+    // Generate varied announcement - NO track name or artist (per Philip's feedback)
+    const text = generateAnnouncementText(track);
+    console.log(`🎙️ Announcing: "${text}" (Track: ${track.title} by ${track.artist} [${track.release_year}])`);
     
     return new Promise(async (resolve, reject) => {
         try {
@@ -273,7 +567,6 @@ async function announceTrack(track) {
     });
 }
 
-/**
  * Generate TTS audio using backend proxy endpoint
  * This keeps the API key secure on the server
  * 
@@ -300,7 +593,6 @@ async function generateElevenLabsTTS(text) {
     return blobUrl;
 }
 
-/**
  * Play 5-second preview of song
  */
 async function playSongPreview(track) {
@@ -350,7 +642,6 @@ async function playSongPreview(track) {
     });
 }
 
-/**
  * Play custom announcement from announcements.json
  */
 async function playCustomAnnouncement() {
@@ -407,7 +698,6 @@ async function playCustomAnnouncement() {
     }
 }
 
-/**
  * Reset game to start over
  */
 function resetGame() {
@@ -431,6 +721,8 @@ function resetGame() {
     gameState.called = [];
     gameState.currentTrack = null;
     gameState.isPlaying = false;
+    gameState.welcomeAnnounced = false;
+    gameState.halfwayAnnounced = false;
     
     // Reset UI
     document.getElementById('currentTrack').style.display = 'none';
@@ -450,7 +742,6 @@ function resetGame() {
 // UI UPDATE FUNCTIONS
 // ============================================================================
 
-/**
  * Update status message
  */
 function updateStatus(message, isPlaying) {
@@ -464,7 +755,6 @@ function updateStatus(message, isPlaying) {
     }
 }
 
-/**
  * Update current track display
  */
 function updateCurrentTrackDisplay(track) {
@@ -480,7 +770,6 @@ function updateCurrentTrackDisplay(track) {
     artist.textContent = track.artist;
 }
 
-/**
  * Update called songs list
  */
 function updateCalledList() {
@@ -515,7 +804,6 @@ function updateCalledList() {
     listEl.innerHTML = html;
 }
 
-/**
  * Update statistics
  */
 function updateStats() {
@@ -523,7 +811,6 @@ function updateStats() {
     document.getElementById('remainingCount').textContent = gameState.remaining.length;
 }
 
-/**
  * Enable/disable button
  */
 function setButtonState(buttonId, enabled) {
@@ -565,7 +852,6 @@ document.addEventListener('keydown', (e) => {
 // UTILITY FUNCTIONS
 // ============================================================================
 
-/**
  * Toggle background music on/off
  */
 function toggleBackgroundMusic() {
@@ -587,7 +873,6 @@ function toggleBackgroundMusic() {
     }
 }
 
-/**
  * Format duration in ms to MM:SS
  */
 function formatDuration(ms) {
@@ -597,7 +882,6 @@ function formatDuration(ms) {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-/**
  * Handle audio unlock for mobile browsers
  * (iOS Safari requires user interaction before playing audio)
  */
@@ -616,3 +900,107 @@ document.addEventListener('click', unlockAudio, { once: true });
 
 console.log('✓ Music Bingo game script loaded');
 console.log('💡 Keyboard shortcuts: Space/Enter = Next Track, A = Announcement, Ctrl+R = Reset');
+
+// Calculate optimal songs based on number of players
+function calculateOptimalSongs(numPlayers, targetDurationMinutes = 45) {
+    const SONGS_PER_CARD = 24;
+    
+    let baseSongs;
+    if (numPlayers <= 10) {
+        baseSongs = Math.floor(SONGS_PER_CARD * 2.5); // ~60 songs
+    } else if (numPlayers <= 25) {
+        baseSongs = Math.floor(SONGS_PER_CARD * 2.0); // ~48 songs
+    } else if (numPlayers <= 40) {
+        baseSongs = Math.floor(SONGS_PER_CARD * 1.5); // ~36 songs
+    } else {
+        baseSongs = Math.floor(SONGS_PER_CARD * 1.3); // ~31 songs
+    }
+    
+    // Adjust based on duration (30 seconds per song average)
+    const songsPerMinute = 2;
+    const maxSongsForDuration = targetDurationMinutes * songsPerMinute;
+    
+    let optimalSongs = Math.min(baseSongs, maxSongsForDuration);
+    optimalSongs = Math.max(optimalSongs, 20); // Minimum 20 songs
+    
+    return optimalSongs;
+}
+
+// Estimate game duration
+function estimateGameDuration(numSongs, secondsPerSong = 30) {
+    return Math.floor((numSongs * secondsPerSong) / 60);
+}
+
+// Update estimation display when player count changes
+function updateSongEstimation() {
+    const numPlayers = parseInt(document.getElementById('numPlayers').value) || 25;
+    const optimalSongs = calculateOptimalSongs(numPlayers);
+    const estimatedMinutes = estimateGameDuration(optimalSongs);
+    
+    document.getElementById('estimatedSongs').textContent = 
+        `~${optimalSongs} songs, ${estimatedMinutes} min`;
+}
+
+// Add event listener for player count changes
+document.addEventListener('DOMContentLoaded', function() {
+    const numPlayersInput = document.getElementById('numPlayers');
+    if (numPlayersInput) {
+        numPlayersInput.addEventListener('input', updateSongEstimation);
+        updateSongEstimation(); // Initial calculation
+    }
+});
+
+// Generate Cards function
+async function generateCards() {
+    const venueName = document.getElementById('venueName').value.trim();
+    const numPlayers = parseInt(document.getElementById('numPlayers').value) || 25;
+    
+    if (!venueName) {
+        alert('Please enter a venue name first!');
+        return;
+    }
+    
+    // Calculate optimal songs
+    const optimalSongs = calculateOptimalSongs(numPlayers);
+    const estimatedMinutes = estimateGameDuration(optimalSongs);
+    
+    // Show loading state
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.textContent = '⏳ Generating...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(`${CONFIG.API_URL}/api/generate-cards`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                venue_name: venueName,
+                num_players: numPlayers,
+                optimal_songs: optimalSongs
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to generate cards');
+        }
+        
+        const result = await response.json();
+        
+        // Show success message with game info
+        alert(`✅ Cards generated successfully!\n\nVenue: ${venueName}\nPlayers: ${numPlayers}\nOptimal songs: ${optimalSongs}\nEstimated duration: ${estimatedMinutes} minutes\n\nCards: ${result.num_cards}\nPages: ${result.num_pages}\n\nDownloading now...`);
+        
+        // Download the PDF
+        window.open(`${CONFIG.API_URL}/data/cards/music_bingo_cards.pdf`, '_blank');
+        
+    } catch (error) {
+        console.error('Error generating cards:', error);
+        alert('❌ Error generating cards. Please try again.');
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
+

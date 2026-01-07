@@ -21,9 +21,15 @@ Card winning patterns supported:
 
 import json
 import random
+import os
+import sys
 from pathlib import Path
 from typing import List, Dict, Set
 from fpdf import FPDF
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Configuration
 INPUT_POOL = Path("data/pool.json")
@@ -31,7 +37,79 @@ OUTPUT_DIR = Path("data/cards")
 OUTPUT_FILE = OUTPUT_DIR / "music_bingo_cards.pdf"
 NUM_CARDS = 50
 GRID_SIZE = 5  # 5x5 bingo
-LOGO_PATH = Path("frontend/assets/logo.png")  # Optional
+SONGS_PER_CARD = 24  # 25 cells - 1 FREE
+
+# Perfect DJ Branding
+LOGO_PATH = Path("frontend/assets/perfectdj_logo.png")  # Logo file (place here when available)
+WEBSITE_URL = "www.perfectdj.co.uk"  # Perfect DJ website (update when confirmed)
+DEFAULT_VENUE_NAME = os.getenv('VENUE_NAME', 'Music Bingo')  # Venue name from .env
+
+
+def calculate_optimal_songs(num_players: int, target_duration_minutes: int = 45) -> int:
+    """
+    Calculate optimal number of songs based on number of players
+    
+    Logic:
+    - Each card has 24 unique numbers (25 - 1 FREE)
+    - For a line win: need ~40-50% of songs called
+    - For full house: need ~70-80% of songs called
+    - More players = need more songs to balance probability
+    
+    Args:
+        num_players: Number of players/cards in game
+        target_duration_minutes: Target game duration (default 45 min)
+        
+    Returns:
+        Optimal number of songs to play
+    """
+    # Base calculation: songs needed for reasonable probability
+    # With more players, probability of someone having a line increases
+    # So we need fewer songs per player
+    
+    if num_players <= 10:
+        # Few players: need more songs to ensure someone wins
+        # Target: ~60% of pool for line, ~85% for full house
+        base_songs = int(SONGS_PER_CARD * 2.5)  # ~60 songs
+    elif num_players <= 25:
+        # Medium group: balanced gameplay
+        # Target: ~50% of pool for line, ~75% for full house
+        base_songs = int(SONGS_PER_CARD * 2.0)  # ~48 songs
+    elif num_players <= 40:
+        # Large group: fewer songs needed
+        # Target: ~40% of pool for line, ~65% for full house
+        base_songs = int(SONGS_PER_CARD * 1.5)  # ~36 songs
+    else:
+        # Very large group: minimum songs
+        # Target: ~35% of pool for line, ~60% for full house
+        base_songs = int(SONGS_PER_CARD * 1.3)  # ~31 songs
+    
+    # Adjust based on target duration
+    # Assuming ~30 seconds per song (8s clip + 22s for announcements/gap)
+    songs_per_minute = 2  # Conservative estimate
+    max_songs_for_duration = target_duration_minutes * songs_per_minute
+    
+    # Take the minimum to respect time constraint
+    optimal_songs = min(base_songs, max_songs_for_duration)
+    
+    # Ensure minimum viable game (at least 20 songs)
+    optimal_songs = max(optimal_songs, 20)
+    
+    return optimal_songs
+
+
+def estimate_game_duration(num_songs: int, seconds_per_song: int = 30) -> int:
+    """
+    Estimate game duration in minutes
+    
+    Args:
+        num_songs: Number of songs to play
+        seconds_per_song: Average time per song (clip + announcement)
+        
+    Returns:
+        Estimated duration in minutes
+    """
+    total_seconds = num_songs * seconds_per_song
+    return int(total_seconds / 60)
 
 # A4 dimensions in mm
 PAGE_WIDTH = 210
@@ -77,10 +155,12 @@ def load_song_pool(pool_path: Path) -> List[Dict]:
 
 def format_song_for_card(song: Dict, max_length: int = 35) -> str:
     """
-    Format song as "Artist - Title" or just "Title" if too long
+    Format song with conditional logic based on artist duplication:
+    - If artist appears multiple times: ALWAYS show "Artist - Title"
+    - If artist is unique: show only Artist OR only Title (randomly)
     
     Args:
-        song: Song dict with title and artist
+        song: Song dict with title, artist, and has_duplicate_artist flag
         max_length: Max characters before truncating
         
     Returns:
@@ -88,6 +168,7 @@ def format_song_for_card(song: Dict, max_length: int = 35) -> str:
     """
     artist = song["artist"]
     title = song["title"]
+    has_duplicate = song.get("has_duplicate_artist", False)
     
     # Replace smart quotes and special characters with ASCII equivalents
     replacements = {
@@ -104,28 +185,42 @@ def format_song_for_card(song: Dict, max_length: int = 35) -> str:
         artist = artist.replace(old, new)
         title = title.replace(old, new)
     
-    # Try full format first
-    full_format = f"{artist} - {title}"
+    # If artist has duplicates, ALWAYS show "Artist - Title"
+    if has_duplicate:
+        full_format = f"{artist} - {title}"
+        
+        if len(full_format) <= max_length:
+            return full_format
+        
+        # Try abbreviated artist if too long
+        artist_parts = artist.split()
+        short_artist = artist_parts[0] if artist_parts else artist
+        short_format = f"{short_artist} - {title}"
+        
+        if len(short_format) <= max_length:
+            return short_format
+        
+        # Last resort: truncate title
+        available_for_title = max_length - len(short_artist) - 3
+        truncated_title = title[:available_for_title] + "..."
+        return f"{short_artist} - {truncated_title}"
     
-    if len(full_format) <= max_length:
-        return full_format
+    # Artist is unique - randomly show artist OR title (50/50)
+    import random
+    show_artist = random.choice([True, False])
     
-    # Try title only
-    if len(title) <= max_length:
-        return title
-    
-    # Try abbreviated artist
-    artist_parts = artist.split()
-    short_artist = artist_parts[0] if artist_parts else artist
-    short_format = f"{short_artist} - {title}"
-    
-    if len(short_format) <= max_length:
-        return short_format
-    
-    # Last resort: truncate title
-    available_for_title = max_length - len(short_artist) - 3
-    truncated_title = title[:available_for_title] + "..."
-    return f"{short_artist} - {truncated_title}"
+    if show_artist:
+        # Show only artist
+        if len(artist) <= max_length:
+            return artist
+        else:
+            return artist[:max_length - 3] + "..."
+    else:
+        # Show only title
+        if len(title) <= max_length:
+            return title
+        else:
+            return title[:max_length - 3] + "..."
 
 
 def generate_card_songs(all_songs: List[Dict], used_combinations: Set[frozenset]) -> List[str]:
@@ -168,7 +263,7 @@ def generate_card_songs(all_songs: List[Dict], used_combinations: Set[frozenset]
     return formatted
 
 
-def create_bingo_card(pdf: BingoCardPDF, songs: List[str], card_number: int, y_offset: float):
+def create_bingo_card(pdf: BingoCardPDF, songs: List[str], card_number: int, y_offset: float, venue_name: str = None):
     """
     Draw one bingo card on current page
     
@@ -177,6 +272,7 @@ def create_bingo_card(pdf: BingoCardPDF, songs: List[str], card_number: int, y_o
         songs: List of 24 formatted song strings
         card_number: Card number (1-50)
         y_offset: Vertical offset for this card (top or bottom of page)
+        venue_name: Name of the venue (optional)
     """
     # Insert FREE in center (position 12 in 0-indexed 24-item list)
     grid_songs = songs[:12] + ["FREE"] + songs[12:]
@@ -193,7 +289,16 @@ def create_bingo_card(pdf: BingoCardPDF, songs: List[str], card_number: int, y_o
     pdf.set_font('Helvetica', 'B', 16)
     pdf.set_text_color(255, 255, 255)  # White text
     pdf.set_xy(start_x, start_y + 3)
-    pdf.cell(CARD_WIDTH, 8, 'MUSIC BINGO', align='C')
+    
+    # Display venue-specific title if provided
+    if venue_name:
+        title = f'MUSIC BINGO at {venue_name}'
+        # Adjust font size if title is too long
+        if len(title) > 30:
+            pdf.set_font('Helvetica', 'B', 12)
+        pdf.cell(CARD_WIDTH, 8, title, align='C')
+    else:
+        pdf.cell(CARD_WIDTH, 8, 'MUSIC BINGO', align='C')
     
     pdf.set_font('Helvetica', '', 7)
     pdf.set_xy(start_x, start_y + 10)
@@ -237,10 +342,28 @@ def create_bingo_card(pdf: BingoCardPDF, songs: List[str], card_number: int, y_o
                 pdf.set_draw_color(102, 126, 234)  # Purple border
                 pdf.rect(x, y, CELL_WIDTH, CELL_HEIGHT)
                 
-                pdf.set_font('Helvetica', 'B', 20)
+                # Perfect DJ logo at top (if available)
+                if LOGO_PATH.exists():
+                    try:
+                        logo_width = 20  # mm
+                        logo_height = 8  # mm (adjust based on actual logo aspect ratio)
+                        logo_x = x + (CELL_WIDTH - logo_width) / 2
+                        logo_y = y + 2
+                        pdf.image(str(LOGO_PATH), logo_x, logo_y, logo_width, logo_height)
+                    except Exception as e:
+                        print(f"⚠️  Warning: Could not add logo to card {card_number}: {e}")
+                
+                # "FREE" text centered
+                pdf.set_font('Helvetica', 'B', 14)
                 pdf.set_text_color(139, 0, 139)  # Dark magenta
-                pdf.set_xy(x, y + (CELL_HEIGHT / 2) - 3)
-                pdf.cell(CELL_WIDTH, 6, song_text, align='C')
+                pdf.set_xy(x, y + (CELL_HEIGHT / 2) - 2)
+                pdf.cell(CELL_WIDTH, 4, 'FREE', align='C')
+                
+                # Website URL at bottom
+                pdf.set_font('Helvetica', '', 5)
+                pdf.set_text_color(102, 126, 234)  # Purple
+                pdf.set_xy(x, y + CELL_HEIGHT - 3.5)
+                pdf.cell(CELL_WIDTH, 3, WEBSITE_URL, align='C')
             else:
                 # Dynamic font sizing based on text length
                 if len(song_text) > 30:
@@ -303,7 +426,7 @@ def create_bingo_card(pdf: BingoCardPDF, songs: List[str], card_number: int, y_o
     pdf.cell(CARD_WIDTH, 4, f'Card #{card_number}', align='C')
 
 
-def generate_cards(songs: List[Dict], num_cards: int, output_path: Path):
+def generate_cards(songs: List[Dict], num_cards: int, output_path: Path, venue_name: str = None):
     """
     Generate PDF with all bingo cards (2 per page)
     
@@ -311,6 +434,7 @@ def generate_cards(songs: List[Dict], num_cards: int, output_path: Path):
         songs: Pool of songs
         num_cards: Number of cards to generate
         output_path: Where to save PDF
+        venue_name: Name of the venue (optional)
     """
     print(f"\n🎴 Generating {num_cards} bingo cards (2 per page)...")
     
@@ -334,7 +458,7 @@ def generate_cards(songs: List[Dict], num_cards: int, output_path: Path):
             y_offset = CARD_MARGIN_TOP + CARD_HEIGHT + CARD_SPACING
         
         # Draw the card
-        create_bingo_card(pdf, card_songs, i, y_offset)
+        create_bingo_card(pdf, card_songs, i, y_offset, venue_name)
         
         if i % 10 == 0:
             print(f"  Generated {i}/{num_cards} cards...")
@@ -361,11 +485,20 @@ if __name__ == "__main__":
     print("=" * 60)
     print()
     
+    # Get venue name from command line or environment
+    venue_name = DEFAULT_VENUE_NAME
+    if len(sys.argv) > 1:
+        venue_name = ' '.join(sys.argv[1:])
+    
+    if venue_name != 'Music Bingo':
+        print(f"🏠 Venue: {venue_name}")
+    print()
+    
     # Load song pool
     songs = load_song_pool(INPUT_POOL)
     
     # Generate cards
-    generate_cards(songs, NUM_CARDS, OUTPUT_FILE)
+    generate_cards(songs, NUM_CARDS, OUTPUT_FILE, venue_name)
     
     print("\n" + "=" * 60)
     print("NEXT STEP: Open frontend/game.html to play")

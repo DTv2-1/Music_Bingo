@@ -33,6 +33,100 @@ h1 {
     opacity: 0.9;
 }
 
+/* Venue Configuration */
+.venue-config {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.venue-config label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.venue-config input {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    font-weight: 500;
+}
+
+.venue-config input[type="number"] {
+    min-width: 100px;
+    flex: 0;
+}
+
+.venue-config input:focus {
+    outline: none;
+    border-color: #f5576c;
+    box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.2);
+}
+
+.save-venue-btn {
+    padding: 12px 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.save-venue-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+.save-venue-btn:active {
+    transform: translateY(0);
+}
+
+.generate-cards-btn {
+    padding: 12px 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.generate-cards-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.generate-cards-btn:active {
+    transform: translateY(0);
+}
+
+.generate-cards-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .control-panel {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);

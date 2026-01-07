@@ -20,6 +20,19 @@
             <p class="subtitle">Perfect DJ - Professional Entertainment</p>
         </header>
         
+        <!-- Venue Name Configuration -->
+        <div class="venue-config">
+            <label for="venueName">🏠 Venue Name:</label>
+            <input type="text" id="venueName" placeholder="Enter pub/bar name..." value="The Red Lion Pub">
+            <button onclick="saveVenueName()" class="save-venue-btn">💾 Save</button>
+            
+            <label for="numPlayers" style="margin-left: 20px;">👥 Players:</label>
+            <input type="number" id="numPlayers" placeholder="Number of players..." value="25" min="5" max="100" style="width: 100px;">
+            <span id="estimatedSongs" style="margin-left: 10px; opacity: 0.8; font-size: 0.9em;">~48 songs, 24 min</span>
+            
+            <button onclick="generateCards()" class="generate-cards-btn">🎴 Generate Cards</button>
+        </div>
+        
         <div class="control-panel">
             <div class="button-group">
                 <button id="nextTrack" onclick="playNextTrack()">

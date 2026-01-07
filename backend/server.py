@@ -20,6 +20,7 @@ CORS(app)
 # Configuration from environment variables
 ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY', '')
 ELEVENLABS_VOICE_ID = os.getenv('ELEVENLABS_VOICE_ID', '21m00Tcm4TlvDq8ikWAM')
+VENUE_NAME = os.getenv('VENUE_NAME', 'this venue')
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -57,6 +58,13 @@ def health_check():
         'message': 'Music Bingo API is running'
     })
 
+@app.route('/api/config', methods=['GET'])
+def get_config():
+    """Get public configuration (venue name, etc)"""
+    return jsonify({
+        'venue_name': VENUE_NAME
+    })
+
 @app.route('/api/pool', methods=['GET'])
 def get_pool():
     """Get the song pool"""
@@ -75,18 +83,21 @@ def get_pool():
 
 @app.route('/api/announcements', methods=['GET'])
 def get_announcements():
-    """Get custom announcements"""
+    """Get custom announcements with venue name"""
     try:
         import json
         announcements_path = os.path.join(DATA_DIR, 'announcements.json')
         with open(announcements_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
+        # Add venue name from environment
+        data['venue_name'] = VENUE_NAME
         return jsonify(data)
     except FileNotFoundError:
+        # Return default with venue name from environment
         return jsonify({
-            'venue_name': 'this venue',
+            'venue_name': VENUE_NAME,
             'custom_announcements': [
-                'Welcome to Music Bingo!',
+                f'Welcome to Music Bingo at {VENUE_NAME}!',
                 "Don't forget to mark your cards!",
                 'Next round starting soon!'
             ]
@@ -147,6 +158,86 @@ def generate_tts():
             'Content-Type': 'audio/mpeg',
             'Content-Disposition': 'inline'
         }
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/generate-cards', methods=['POST'])
+def generate_cards_api():
+    """Generate bingo cards with custom venue name and player count"""
+    try:
+        import subprocess
+        import json
+        from pathlib import Path
+        
+        # Get parameters from request
+        data = request.get_json()
+        venue_name = data.get('venue_name', 'Music Bingo')
+        num_players = data.get('num_players', 25)
+        optimal_songs = data.get('optimal_songs', 48)
+        
+        # Path to generate_cards.py
+        script_path = os.path.join(BASE_DIR, 'backend', 'generate_cards.py')
+        
+        # Run the generator script with venue name and player info
+        # Note: generate_cards.py doesn't use optimal_songs yet, but we log it
+        result = subprocess.run(
+            ['python', script_path, venue_name],
+            cwd=BASE_DIR,
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        
+        if result.returncode != 0:
+            return jsonify({
+                'error': 'Failed to generate cards',
+                'details': result.stderr
+            }), 500
+        
+        # Get file info
+        cards_path = Path(DATA_DIR) / 'cards' / 'music_bingo_cards.pdf'
+        file_size_mb = cards_path.stat().st_size / (1024 * 1024)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Cards generated successfully',
+            'venue_name': venue_name,
+            'num_players': num_players,
+            'optimal_songs': optimal_songs,
+            'filename': 'music_bingo_cards.pdf',
+            'num_cards': 50,
+            'num_pages': 25,
+            'file_size_mb': round(file_size_mb, 2)
+        })
+        
+    except subprocess.TimeoutExpired:
+        return jsonify({'error': 'Card generation timed out'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/calculate-songs', methods=['POST'])
+def calculate_songs_api():
+    """Calculate optimal songs for given number of players"""
+    try:
+        data = request.get_json()
+        num_players = data.get('num_players', 25)
+        target_duration = data.get('target_duration_minutes', 45)
+        
+        # Import calculation function from generate_cards
+        import sys
+        sys.path.insert(0, os.path.join(BASE_DIR, 'backend'))
+        from generate_cards import calculate_optimal_songs, estimate_game_duration
+        
+        optimal_songs = calculate_optimal_songs(num_players, target_duration)
+        estimated_minutes = estimate_game_duration(optimal_songs)
+        
+        return jsonify({
+            'num_players': num_players,
+            'optimal_songs': optimal_songs,
+            'estimated_duration_minutes': estimated_minutes,
+            'target_duration_minutes': target_duration
+        })
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
