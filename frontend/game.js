@@ -1,3 +1,4 @@
+/*
  * game.js - Music Bingo Game Logic
  * 
  * Features:
