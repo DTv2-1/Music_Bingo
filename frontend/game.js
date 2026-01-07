@@ -62,6 +62,7 @@ let backgroundMusic = null;  // Background music player
 // INITIALIZATION
 // ============================================================================
 
+/**
  * Load song pool and announcements on page load
  */
 window.addEventListener('DOMContentLoaded', async () => {
@@ -91,6 +92,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+/**
  * Load venue name from localStorage and update UI
  */
 function loadVenueNameFromStorage() {
@@ -102,6 +104,7 @@ function loadVenueNameFromStorage() {
     }
 }
 
+/**
  * Save venue name to localStorage
  */
 function saveVenueName() {
@@ -133,6 +136,7 @@ function saveVenueName() {
     console.log(`✓ Venue name saved: ${venueName}`);
 }
 
+/**
  * Load venue configuration from backend (deprecated - now using localStorage)
  */
 async function loadVenueConfig() {
@@ -152,6 +156,7 @@ async function loadVenueConfig() {
     }
 }
 
+/**
  * Load song pool from backend API
  */
 async function loadSongPool() {
@@ -170,6 +175,7 @@ async function loadSongPool() {
     console.log(`✓ Loaded ${gameState.pool.length} songs`);
 }
 
+/**
  * Load custom announcements from backend API
  */
 async function loadAnnouncements() {
@@ -194,6 +200,7 @@ async function loadAnnouncements() {
     }
 }
 
+/**
  * Utility: Shuffle array in place (Fisher-Yates)
  */
 function shuffleArray(array) {
@@ -203,6 +210,7 @@ function shuffleArray(array) {
     }
 }
 
+/**
  * Start background music loop
  */
 function startBackgroundMusic() {
@@ -232,6 +240,7 @@ function startBackgroundMusic() {
 // CORE GAME LOGIC
 // ============================================================================
 
+/**
  * Play next track in sequence
  */
 async function playNextTrack() {
@@ -306,6 +315,7 @@ async function playNextTrack() {
     }
 }
 
+/**
  * Generate welcome announcement text
  */
 function generateWelcomeText() {
@@ -320,6 +330,7 @@ function generateWelcomeText() {
     return welcomeScripts[Math.floor(Math.random() * welcomeScripts.length)];
 }
 
+/**
  * Generate halfway announcement text
  */
 function generateHalfwayText() {
@@ -334,6 +345,7 @@ function generateHalfwayText() {
     return halfwayScripts[Math.floor(Math.random() * halfwayScripts.length)];
 }
 
+/**
  * Announce welcome message using ElevenLabs TTS
  */
 async function announceWelcome() {
@@ -518,6 +530,7 @@ function generateAnnouncementText(track) {
     }
 }
 
+/**
  * Announce track using ElevenLabs TTS
  */
 async function announceTrack(track) {
@@ -568,6 +581,7 @@ async function announceTrack(track) {
     });
 }
 
+/**
  * Generate TTS audio using backend proxy endpoint
  * This keeps the API key secure on the server
  * 
@@ -594,6 +608,7 @@ async function generateElevenLabsTTS(text) {
     return blobUrl;
 }
 
+/**
  * Play 5-second preview of song
  */
 async function playSongPreview(track) {
@@ -643,6 +658,7 @@ async function playSongPreview(track) {
     });
 }
 
+/**
  * Play custom announcement from announcements.json
  */
 async function playCustomAnnouncement() {
@@ -699,6 +715,7 @@ async function playCustomAnnouncement() {
     }
 }
 
+/**
  * Reset game to start over
  */
 function resetGame() {
@@ -743,6 +760,7 @@ function resetGame() {
 // UI UPDATE FUNCTIONS
 // ============================================================================
 
+/**
  * Update status message
  */
 function updateStatus(message, isPlaying) {
@@ -756,6 +774,7 @@ function updateStatus(message, isPlaying) {
     }
 }
 
+/**
  * Update current track display
  */
 function updateCurrentTrackDisplay(track) {
@@ -771,6 +790,7 @@ function updateCurrentTrackDisplay(track) {
     artist.textContent = track.artist;
 }
 
+/**
  * Update called songs list
  */
 function updateCalledList() {
@@ -805,6 +825,7 @@ function updateCalledList() {
     listEl.innerHTML = html;
 }
 
+/**
  * Update statistics
  */
 function updateStats() {
@@ -812,6 +833,7 @@ function updateStats() {
     document.getElementById('remainingCount').textContent = gameState.remaining.length;
 }
 
+/**
  * Enable/disable button
  */
 function setButtonState(buttonId, enabled) {
@@ -853,6 +875,7 @@ document.addEventListener('keydown', (e) => {
 // UTILITY FUNCTIONS
 // ============================================================================
 
+/**
  * Toggle background music on/off
  */
 function toggleBackgroundMusic() {
@@ -874,6 +897,7 @@ function toggleBackgroundMusic() {
     }
 }
 
+/**
  * Format duration in ms to MM:SS
  */
 function formatDuration(ms) {
@@ -883,6 +907,7 @@ function formatDuration(ms) {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
+/**
  * Handle audio unlock for mobile browsers
  * (iOS Safari requires user interaction before playing audio)
  */
