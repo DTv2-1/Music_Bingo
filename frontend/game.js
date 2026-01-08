@@ -187,13 +187,22 @@ async function loadAnnouncements() {
         const response = await fetch(`${CONFIG.API_URL}/api/announcements`);
         if (response.ok) {
             gameState.announcementsData = await response.json();
-            console.log(`✓ Loaded announcements for: ${gameState.announcementsData.venue_name}`);
+            
+            // Replace [VENUE_NAME] placeholder with actual venue name
+            const venueName = gameState.venueName || 'this venue';
+            
+            gameState.announcementsData.custom_announcements = 
+                gameState.announcementsData.custom_announcements.map(ann => 
+                    ann.replace(/\[VENUE_NAME\]/g, venueName)
+                );
+            
+            console.log(`✓ Loaded announcements for: ${venueName}`);
         } else {
             console.log('ℹ No announcements found, using defaults');
             gameState.announcementsData = {
-                venue_name: "this venue",
+                venue_name: gameState.venueName || "this venue",
                 custom_announcements: [
-                    "Welcome to Music Bingo!",
+                    `Welcome to Music Bingo at ${gameState.venueName || 'this venue'}!`,
                     "Don't forget to mark your cards!",
                     "Next round starting soon!"
                 ]

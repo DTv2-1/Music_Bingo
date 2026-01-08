@@ -1,13 +1,13 @@
 {
-  "venue_name": "The Royal Oak",
+  "venue_name": "[VENUE_NAME]",
   "custom_announcements": [
-    "Welcome to Music Bingo at The Royal Oak!",
+    "Welcome to Music Bingo at [VENUE_NAME]!",
     "Don't forget to mark your cards when you hear the song!",
     "We have a full house! Please bring your card to the bar to verify.",
     "Next round starts in 5 minutes. Grab your daubers and fresh drinks!",
     "Happy hour is now on! All drinks half price until 7 PM.",
     "Tonight's winner receives a £50 bar tab! Good luck everyone!",
     "Remember, you can win with a full line, four corners, or full house!",
-    "Thank you for playing Music Bingo at The Royal Oak. Same time next week!"
+    "Thank you for playing Music Bingo at [VENUE_NAME]. Same time next week!"
   ]
 }
