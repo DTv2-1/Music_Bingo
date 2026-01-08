@@ -720,6 +720,7 @@ async function playSongPreview(track) {
 
 /**
  * Play custom announcement from announcements.json
+ * Now redirects to Quick Announcements list below
  */
 async function playCustomAnnouncement() {
     if (!gameState.announcementsData || gameState.announcementsData.custom_announcements.length === 0) {
@@ -727,51 +728,18 @@ async function playCustomAnnouncement() {
         return;
     }
     
-    // Show selection dialog
-    const announcements = gameState.announcementsData.custom_announcements;
-    let message = 'Select announcement:\n\n';
-    announcements.forEach((ann, i) => {
-        message += `${i + 1}. ${ann}\n`;
-    });
-    
-    const choice = prompt(message + '\nEnter number (1-' + announcements.length + ') or custom text:');
-    
-    if (!choice) return;
-    
-    // Determine text to announce
-    let text;
-    const choiceNum = parseInt(choice);
-    if (!isNaN(choiceNum) && choiceNum >= 1 && choiceNum <= announcements.length) {
-        text = announcements[choiceNum - 1];
-    } else {
-        text = choice;
-    }
-    
-    // Play announcement
-    updateStatus('📢 Playing announcement...', true);
-    setButtonState('playAnnouncement', false);
-    
-    try {
-        const audioUrl = await generateElevenLabsTTS(text);
+    // Scroll to announcements list
+    const announcementsList = document.getElementById('announcementsList');
+    if (announcementsList) {
+        announcementsList.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
-        await new Promise((resolve, reject) => {
-            const announcementPlayer = new Howl({
-                src: [audioUrl],
-                format: ['mp3'],
-                html5: true,
-                onend: resolve,
-                onerror: reject
-            });
-            
-            announcementPlayer.play();
-        });
+        // Highlight the section briefly
+        announcementsList.style.boxShadow = '0 0 20px rgba(102,126,234,0.6)';
+        setTimeout(() => {
+            announcementsList.style.boxShadow = 'none';
+        }, 2000);
         
-        updateStatus('✅ Announcement complete', false);
-    } catch (error) {
-        console.error('Announcement error:', error);
-        updateStatus(`❌ Error: ${error.message}`, false);
-    } finally {
-        setButtonState('playAnnouncement', true);
+        updateStatus('👇 Use the Quick Announcements buttons below', false);
     }
 }
 
