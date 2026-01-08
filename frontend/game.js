@@ -111,7 +111,7 @@ function loadVenueNameFromStorage() {
 /**
  * Save venue name to localStorage
  */
-function saveVenueName() {
+async function saveVenueName() {
     const input = document.getElementById('venueName');
     const venueName = input.value.trim();
     
@@ -125,6 +125,9 @@ function saveVenueName() {
     
     // Reset welcome announcement flag so it uses new name
     gameState.welcomeAnnounced = false;
+    
+    // Reload announcements with new venue name
+    await loadAnnouncements();
     
     // Show confirmation
     const button = event.target;
@@ -171,10 +174,19 @@ async function loadSongPool() {
     
     const data = await response.json();
     gameState.pool = data.songs;
-    gameState.remaining = [...data.songs]; // Copy for shuffling
     
-    // Shuffle remaining songs
-    shuffleArray(gameState.remaining);
+    // Limit songs based on player count
+    const numPlayers = parseInt(document.getElementById('numPlayers')?.value) || 25;
+    const optimalSongs = calculateOptimalSongs(numPlayers);
+    
+    // Shuffle all songs first
+    const shuffled = [...data.songs];
+    shuffleArray(shuffled);
+    
+    // Take only the optimal number of songs for this game
+    gameState.remaining = shuffled.slice(0, optimalSongs);
+    
+    console.log(`✓ Game will use ${gameState.remaining.length} songs for ${numPlayers} players`);
     
     console.log(`✓ Loaded ${gameState.pool.length} songs`);
 }
@@ -1011,7 +1023,23 @@ function updateSongEstimation() {
 document.addEventListener('DOMContentLoaded', function() {
     const numPlayersInput = document.getElementById('numPlayers');
     if (numPlayersInput) {
-        numPlayersInput.addEventListener('input', updateSongEstimation);
+        numPlayersInput.addEventListener('input', async function() {
+            updateSongEstimation();
+            
+            // Reload song pool with new player count (only if game hasn't started)
+            if (gameState.called.length === 0 && gameState.pool.length > 0) {
+                const numPlayers = parseInt(numPlayersInput.value) || 25;
+                const optimalSongs = calculateOptimalSongs(numPlayers);
+                
+                // Re-shuffle and limit songs
+                const shuffled = [...gameState.pool];
+                shuffleArray(shuffled);
+                gameState.remaining = shuffled.slice(0, optimalSongs);
+                
+                updateStats();
+                console.log(`✓ Updated to ${optimalSongs} songs for ${numPlayers} players`);
+            }
+        });
         updateSongEstimation(); // Initial calculation
     }
 });
