@@ -162,6 +162,18 @@ def generate_tts():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/announcements-ai')
+def get_ai_announcements():
+    """Serve AI-generated announcements if available"""
+    ai_announcements_path = os.path.join(DATA_DIR, 'announcements_ai.json')
+    
+    if os.path.exists(ai_announcements_path):
+        with open(ai_announcements_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return jsonify(data)
+    else:
+        return jsonify({'error': 'AI announcements not generated yet'}), 404
+
 @app.route('/api/generate-cards', methods=['POST'])
 def generate_cards_api():
     """Generate bingo cards with custom venue name and player count"""
@@ -179,10 +191,9 @@ def generate_cards_api():
         # Path to generate_cards.py
         script_path = os.path.join(BASE_DIR, 'backend', 'generate_cards.py')
         
-        # Run the generator script with venue name and player info
-        # Note: generate_cards.py doesn't use optimal_songs yet, but we log it
+        # Run the generator script with venue name and num_players
         result = subprocess.run(
-            ['python3', script_path, venue_name],
+            ['python3', script_path, venue_name, str(num_players)],
             cwd=BASE_DIR,
             capture_output=True,
             text=True,
@@ -199,6 +210,11 @@ def generate_cards_api():
         cards_path = Path(DATA_DIR) / 'cards' / 'music_bingo_cards.pdf'
         file_size_mb = cards_path.stat().st_size / (1024 * 1024)
         
+        # Calculate actual number of cards generated (20% margin)
+        num_cards_generated = int(num_players * 1.2)
+        num_cards_generated = max(10, min(100, num_cards_generated))
+        num_pages = (num_cards_generated + 1) // 2  # 2 cards per page
+        
         return jsonify({
             'success': True,
             'message': 'Cards generated successfully',
@@ -206,8 +222,8 @@ def generate_cards_api():
             'num_players': num_players,
             'optimal_songs': optimal_songs,
             'filename': 'music_bingo_cards.pdf',
-            'num_cards': 50,
-            'num_pages': 25,
+            'num_cards': num_cards_generated,
+            'num_pages': num_pages,
             'file_size_mb': round(file_size_mb, 2)
         })
         

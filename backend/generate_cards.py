@@ -485,20 +485,37 @@ if __name__ == "__main__":
     print("=" * 60)
     print()
     
-    # Get venue name from command line or environment
+    # Get venue name and num_players from command line or defaults
     venue_name = DEFAULT_VENUE_NAME
+    num_players = NUM_CARDS  # Default to 50 if not specified
+    
     if len(sys.argv) > 1:
-        venue_name = ' '.join(sys.argv[1:])
+        venue_name = sys.argv[1]
+    
+    if len(sys.argv) > 2:
+        try:
+            num_players = int(sys.argv[2])
+            # Add 20% margin for extra cards
+            num_cards = int(num_players * 1.2)
+            # Minimum 10 cards, maximum 100 cards
+            num_cards = max(10, min(100, num_cards))
+        except ValueError:
+            print(f"⚠️  Invalid num_players '{sys.argv[2]}', using default {NUM_CARDS}")
+            num_cards = NUM_CARDS
+    else:
+        num_cards = NUM_CARDS
     
     if venue_name != 'Music Bingo':
         print(f"🏠 Venue: {venue_name}")
+    print(f"👥 Players: {num_players}")
+    print(f"🎴 Cards to generate: {num_cards} ({num_players} + 20% margin)")
     print()
     
     # Load song pool
     songs = load_song_pool(INPUT_POOL)
     
     # Generate cards
-    generate_cards(songs, NUM_CARDS, OUTPUT_FILE, venue_name)
+    generate_cards(songs, num_cards, OUTPUT_FILE, venue_name)
     
     print("\n" + "=" * 60)
     print("NEXT STEP: Open frontend/game.html to play")

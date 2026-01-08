@@ -48,6 +48,7 @@ let gameState = {
     currentTrack: null,     // Currently playing track
     isPlaying: false,       // Is audio currently playing
     announcementsData: null, // Loaded announcements
+    announcementsAI: null,   // AI-generated announcements (optional)
     venueName: localStorage.getItem('venueName') || 'this venue', // Venue name from localStorage
     welcomeAnnounced: false, // Track if welcome was announced
     halfwayAnnounced: false  // Track if halfway announcement was made
@@ -77,6 +78,9 @@ window.addEventListener('DOMContentLoaded', async () => {
         
         // Load announcements
         await loadAnnouncements();
+        
+        // Load AI announcements (optional)
+        await loadAIAnnouncements();
         
         // Start background music
         startBackgroundMusic();
@@ -197,6 +201,23 @@ async function loadAnnouncements() {
         }
     } catch (error) {
         console.warn('Could not load announcements:', error);
+    }
+}
+
+/**
+ * Load AI-generated announcements (optional)
+ */
+async function loadAIAnnouncements() {
+    try {
+        const response = await fetch(`${CONFIG.API_URL}/api/announcements-ai`);
+        if (response.ok) {
+            gameState.announcementsAI = await response.json();
+            console.log(`✓ Loaded ${Object.keys(gameState.announcementsAI).length} AI announcements`);
+        } else {
+            console.log('ℹ No AI announcements found, using fallback system');
+        }
+    } catch (error) {
+        console.log('ℹ AI announcements not available, using fallback');
     }
 }
 
@@ -449,11 +470,21 @@ async function announceHalfway() {
 
 /**
  * Generate announcement text based on 3 rotating types
- * Type A: Era/Decade context (33%)
- * Type B: Fun facts/trivia (33%)
- * Type C: Generic simple (33%)
+ * Prioritizes AI-generated announcements if available, falls back to template system
  */
 function generateAnnouncementText(track) {
+    // Try AI announcements first
+    if (gameState.announcementsAI && gameState.announcementsAI[track.id]) {
+        const aiAnnouncements = gameState.announcementsAI[track.id];
+        
+        // Randomly choose one of the 3 AI-generated types
+        const types = ['decade', 'trivia', 'simple'];
+        const randomType = types[Math.floor(Math.random() * types.length)];
+        
+        return aiAnnouncements[randomType];
+    }
+    
+    // Fallback to template system if AI not available
     const randomType = Math.random();
     
     // Type A: Era/Decade Context (33%)
