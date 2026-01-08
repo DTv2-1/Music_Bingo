@@ -4,6 +4,7 @@ Flask API for serving game data and proxying ElevenLabs TTS requests
 """
 
 import os
+import json
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import requests
