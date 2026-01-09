@@ -49,11 +49,10 @@ def calculate_optimal_songs(num_players: int, target_duration_minutes: int = 45)
     """
     Calculate optimal number of songs based on number of players
     
-    Logic:
+    FIXED LOGIC: Use ~3x players formula
+    - More players = MORE songs needed (not less!)
+    - Ensures enough variety so players don't get duplicate songs
     - Each card has 24 unique numbers (25 - 1 FREE)
-    - For a line win: need ~40-50% of songs called
-    - For full house: need ~70-80% of songs called
-    - More players = need more songs to balance probability
     
     Args:
         num_players: Number of players/cards in game
@@ -62,26 +61,14 @@ def calculate_optimal_songs(num_players: int, target_duration_minutes: int = 45)
     Returns:
         Optimal number of songs to play
     """
-    # Base calculation: songs needed for reasonable probability
-    # With more players, probability of someone having a line increases
-    # So we need fewer songs per player
+    # FIXED: Use ~3x players formula (more players = more songs needed)
+    # This ensures enough variety so players don't get the same songs
+    MULTIPLIER = 3
+    base_songs = int(num_players * MULTIPLIER)
     
-    if num_players <= 10:
-        # Few players: need more songs to ensure someone wins
-        # Target: ~60% of pool for line, ~85% for full house
-        base_songs = int(SONGS_PER_CARD * 2.5)  # ~60 songs
-    elif num_players <= 25:
-        # Medium group: balanced gameplay
-        # Target: ~50% of pool for line, ~75% for full house
-        base_songs = int(SONGS_PER_CARD * 2.0)  # ~48 songs
-    elif num_players <= 40:
-        # Large group: fewer songs needed
-        # Target: ~40% of pool for line, ~65% for full house
-        base_songs = int(SONGS_PER_CARD * 1.5)  # ~36 songs
-    else:
-        # Very large group: minimum songs
-        # Target: ~35% of pool for line, ~60% for full house
-        base_songs = int(SONGS_PER_CARD * 1.3)  # ~31 songs
+    # Ensure reasonable minimum and maximum
+    base_songs = max(base_songs, 30)   # Minimum 30 songs
+    base_songs = min(base_songs, 150)  # Maximum 150 songs
     
     # Adjust based on target duration
     # Assuming ~30 seconds per song (8s clip + 22s for announcements/gap)
@@ -90,9 +77,6 @@ def calculate_optimal_songs(num_players: int, target_duration_minutes: int = 45)
     
     # Take the minimum to respect time constraint
     optimal_songs = min(base_songs, max_songs_for_duration)
-    
-    # Ensure minimum viable game (at least 20 songs)
-    optimal_songs = max(optimal_songs, 20)
     
     return optimal_songs
 

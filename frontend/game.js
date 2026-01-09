@@ -1190,25 +1190,21 @@ console.log('💡 Keyboard shortcuts: Space/Enter = Next Track, A = Announcement
 
 // Calculate optimal songs based on number of players
 function calculateOptimalSongs(numPlayers, targetDurationMinutes = 45) {
-    const SONGS_PER_CARD = 24;
+    // FIXED: Use ~3x players formula (more players = more songs needed)
+    // This ensures enough variety so players don't get the same songs
+    const MULTIPLIER = 3;
+    let baseSongs = Math.floor(numPlayers * MULTIPLIER);
     
-    let baseSongs;
-    if (numPlayers <= 10) {
-        baseSongs = Math.floor(SONGS_PER_CARD * 2.5); // ~60 songs
-    } else if (numPlayers <= 25) {
-        baseSongs = Math.floor(SONGS_PER_CARD * 2.0); // ~48 songs
-    } else if (numPlayers <= 40) {
-        baseSongs = Math.floor(SONGS_PER_CARD * 1.5); // ~36 songs
-    } else {
-        baseSongs = Math.floor(SONGS_PER_CARD * 1.3); // ~31 songs
-    }
+    // Ensure reasonable minimum and maximum
+    baseSongs = Math.max(baseSongs, 30);  // Minimum 30 songs
+    baseSongs = Math.min(baseSongs, 150); // Maximum 150 songs (reasonable for 50 players)
     
-    // Adjust based on duration (30 seconds per song average)
+    // Adjust based on duration (30 seconds per song average including announcements)
     const songsPerMinute = 2;
     const maxSongsForDuration = targetDurationMinutes * songsPerMinute;
     
+    // Use the smaller of the two (don't exceed time limit)
     let optimalSongs = Math.min(baseSongs, maxSongsForDuration);
-    optimalSongs = Math.max(optimalSongs, 20); // Minimum 20 songs
     
     return optimalSongs;
 }
