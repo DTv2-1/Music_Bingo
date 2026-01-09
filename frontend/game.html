@@ -19,6 +19,40 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Setup Modal (blocks game until configuration is complete) -->
+    <div id="setupModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img src="assets/perfect-dj-logo.png" alt="Perfect DJ" class="modal-logo">
+                <h2>🎵 Music Bingo Setup</h2>
+                <p>Configure your game before starting</p>
+            </div>
+            
+            <div class="modal-body">
+                <div class="setup-field">
+                    <label for="setupVenueName">🏠 Venue Name *</label>
+                    <input type="text" id="setupVenueName" placeholder="e.g., The Admiral Rodney Southwell" required>
+                    <small>Enter the pub or venue name (required)</small>
+                </div>
+                
+                <div class="setup-field">
+                    <label for="setupNumPlayers">👥 Number of Players *</label>
+                    <input type="number" id="setupNumPlayers" value="25" min="5" max="100" required>
+                    <small>How many people will play? (affects song selection)</small>
+                </div>
+                
+                <div class="setup-estimation" id="setupEstimation">
+                    📊 Estimated: ~75 songs, 38 minutes
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="startGameBtn" class="btn-primary" onclick="completeSetup()">🎮 Start Music Bingo</button>
+                <p class="modal-note">You can change these settings later</p>
+            </div>
+        </div>
+    </div>
+    
     <div class="container">
         <header>
             <img src="assets/perfect-dj-logo.png" alt="Perfect DJ" class="logo">

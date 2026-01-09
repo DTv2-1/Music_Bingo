@@ -66,7 +66,129 @@ let backgroundMusic = null;  // Background music player
 /**
  * Load song pool and announcements on page load
  */
+// Global flag to prevent game initialization
+let gameInitialized = false;
+
 window.addEventListener('DOMContentLoaded', async () => {
+    console.log('🎮 Music Bingo - Waiting for setup...');
+    
+    // Check if setup was already completed
+    const setupCompleted = localStorage.getItem('setupCompleted');
+    const savedVenueName = localStorage.getItem('venueName');
+    
+    if (setupCompleted && savedVenueName) {
+        // Skip setup modal if already configured
+        console.log('✓ Setup already completed, loading game...');
+        document.getElementById('setupModal').classList.add('hidden');
+        await initializeGame();
+    } else {
+        // Show setup modal
+        console.log('⚙️ First time setup required');
+        initializeSetupModal();
+    }
+});
+
+/**
+ * Initialize the setup modal with event listeners
+ */
+function initializeSetupModal() {
+    const setupVenueName = document.getElementById('setupVenueName');
+    const setupNumPlayers = document.getElementById('setupNumPlayers');
+    const setupEstimation = document.getElementById('setupEstimation');
+    
+    // Load saved values if any
+    const savedVenue = localStorage.getItem('venueName');
+    const savedPlayers = localStorage.getItem('numPlayers');
+    
+    if (savedVenue) setupVenueName.value = savedVenue;
+    if (savedPlayers) setupNumPlayers.value = savedPlayers;
+    
+    // Update estimation on player count change
+    function updateSetupEstimation() {
+        const numPlayers = parseInt(setupNumPlayers.value) || 25;
+        const optimalSongs = calculateOptimalSongs(numPlayers);
+        const estimatedMinutes = estimateGameDuration(optimalSongs);
+        setupEstimation.textContent = `📊 Estimated: ~${optimalSongs} songs, ${estimatedMinutes} minutes`;
+    }
+    
+    setupNumPlayers.addEventListener('input', updateSetupEstimation);
+    updateSetupEstimation();
+    
+    // Allow Enter key to submit
+    setupVenueName.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') completeSetup();
+    });
+    setupNumPlayers.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') completeSetup();
+    });
+}
+
+/**
+ * Complete setup and initialize the game
+ */
+async function completeSetup() {
+    const setupVenueName = document.getElementById('setupVenueName');
+    const setupNumPlayers = document.getElementById('setupNumPlayers');
+    const startBtn = document.getElementById('startGameBtn');
+    
+    const venueName = setupVenueName.value.trim();
+    const numPlayers = parseInt(setupNumPlayers.value) || 25;
+    
+    // Validate venue name
+    if (!venueName) {
+        setupVenueName.style.borderColor = '#e74c3c';
+        setupVenueName.focus();
+        alert('⚠️ Please enter a venue name');
+        return;
+    }
+    
+    // Validate number of players
+    if (numPlayers < 5 || numPlayers > 100) {
+        setupNumPlayers.style.borderColor = '#e74c3c';
+        setupNumPlayers.focus();
+        alert('⚠️ Number of players must be between 5 and 100');
+        return;
+    }
+    
+    // Disable button and show loading
+    startBtn.disabled = true;
+    startBtn.textContent = '⏳ Loading...';
+    
+    try {
+        // Save settings
+        gameState.venueName = venueName;
+        localStorage.setItem('venueName', venueName);
+        localStorage.setItem('numPlayers', numPlayers.toString());
+        localStorage.setItem('setupCompleted', 'true');
+        
+        // Update main UI inputs
+        document.getElementById('venueName').value = venueName;
+        document.getElementById('numPlayers').value = numPlayers;
+        
+        // Hide modal
+        document.getElementById('setupModal').classList.add('hidden');
+        
+        // Initialize game
+        await initializeGame();
+        
+        console.log(`✓ Setup complete: ${venueName}, ${numPlayers} players`);
+    } catch (error) {
+        console.error('✗ Setup failed:', error);
+        alert(`❌ Setup failed: ${error.message}`);
+        startBtn.disabled = false;
+        startBtn.textContent = '🎮 Start Music Bingo';
+    }
+}
+
+/**
+ * Initialize the game (called after setup is complete)
+ */
+async function initializeGame() {
+    if (gameInitialized) {
+        console.log('⚠️ Game already initialized');
+        return;
+    }
+    
     console.log('🎮 Initializing Music Bingo...');
     
     try {
@@ -89,12 +211,13 @@ window.addEventListener('DOMContentLoaded', async () => {
         updateStats();
         updateStatus('✅ Ready to start! Press "NEXT SONG"', false);
         
+        gameInitialized = true;
         console.log('✓ Initialization complete');
     } catch (error) {
         console.error('✗ Initialization failed:', error);
         updateStatus(`❌ Error: ${error.message}`, false);
     }
-});
+}
 
 /**
  * Load venue name from localStorage and update UI
