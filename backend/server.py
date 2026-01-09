@@ -118,15 +118,16 @@ def generate_tts():
         }), 500
     
     try:
-        # Get text from request
+        # Get text and voice_id from request
         data = request.get_json()
         text = data.get('text', '')
+        voice_id = data.get('voice_id', ELEVENLABS_VOICE_ID)  # Allow frontend to override
         
         if not text:
             return jsonify({'error': 'No text provided'}), 400
         
         # Call ElevenLabs API
-        url = f'https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}'
+        url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
         
         response = requests.post(
             url,

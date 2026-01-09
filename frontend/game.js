@@ -99,9 +99,11 @@ function initializeSetupModal() {
     // Load saved values if any
     const savedVenue = localStorage.getItem('venueName');
     const savedPlayers = localStorage.getItem('numPlayers');
+    const savedVoice = localStorage.getItem('voiceId');
     
     if (savedVenue) setupVenueName.value = savedVenue;
     if (savedPlayers) setupNumPlayers.value = savedPlayers;
+    if (savedVoice) document.getElementById('setupVoice').value = savedVoice;
     
     // Update estimation on player count change
     function updateSetupEstimation() {
@@ -155,10 +157,15 @@ async function completeSetup() {
     startBtn.textContent = '⏳ Loading...';
     
     try {
+        // Get selected voice
+        const setupVoice = document.getElementById('setupVoice');
+        const selectedVoice = setupVoice.value;
+        
         // Save settings
         gameState.venueName = venueName;
         localStorage.setItem('venueName', venueName);
         localStorage.setItem('numPlayers', numPlayers.toString());
+        localStorage.setItem('voiceId', selectedVoice);
         localStorage.setItem('setupCompleted', 'true');
         
         // Update main UI inputs
@@ -804,12 +811,18 @@ async function announceTrack(track) {
  * @returns {Promise<string>} Blob URL of audio
  */
 async function generateElevenLabsTTS(text) {
+    // Get selected voice from localStorage (British voice)
+    const voiceId = localStorage.getItem('voiceId') || 'JBFqnCBsd6RMkjVDRZzb'; // Default: George (Male British)
+    
     const response = await fetch(`${CONFIG.API_URL}/api/tts`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ 
+            text,
+            voice_id: voiceId
+        })
     });
     
     if (!response.ok) {
