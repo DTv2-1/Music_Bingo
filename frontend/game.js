@@ -100,10 +100,24 @@ function initializeSetupModal() {
     const savedVenue = localStorage.getItem('venueName');
     const savedPlayers = localStorage.getItem('numPlayers');
     const savedVoice = localStorage.getItem('voiceId');
+    const savedDecades = localStorage.getItem('selectedDecades');
     
     if (savedVenue) setupVenueName.value = savedVenue;
     if (savedPlayers) setupNumPlayers.value = savedPlayers;
     if (savedVoice) document.getElementById('setupVoice').value = savedVoice;
+    
+    // Restore decade selections
+    if (savedDecades) {
+        try {
+            const decades = JSON.parse(savedDecades);
+            const setupDecades = document.getElementById('setupDecades');
+            Array.from(setupDecades.options).forEach(option => {
+                option.selected = decades.includes(option.value);
+            });
+        } catch (e) {
+            console.warn('Could not restore decade selection:', e);
+        }
+    }
     
     // Update estimation on player count change
     function updateSetupEstimation() {
@@ -274,11 +288,23 @@ async function completeSetup() {
         const setupVoice = document.getElementById('setupVoice');
         const selectedVoice = setupVoice.value;
         
+        // Get selected decades
+        const setupDecades = document.getElementById('setupDecades');
+        const selectedDecades = Array.from(setupDecades.selectedOptions).map(opt => opt.value);
+        
+        if (selectedDecades.length === 0) {
+            setupDecades.style.borderColor = '#e74c3c';
+            alert('⚠️ Please select at least one music era/decade');
+            return;
+        }
+        
         // Save settings
         gameState.venueName = venueName;
+        gameState.selectedDecades = selectedDecades;
         localStorage.setItem('venueName', venueName);
         localStorage.setItem('numPlayers', numPlayers.toString());
         localStorage.setItem('voiceId', selectedVoice);
+        localStorage.setItem('selectedDecades', JSON.stringify(selectedDecades));
         localStorage.setItem('setupCompleted', 'true');
         
         // Update main UI inputs
@@ -447,12 +473,39 @@ async function loadSongPool() {
     const data = await response.json();
     gameState.pool = data.songs;
     
+    // Get selected decades from localStorage or gameState
+    let selectedDecades = gameState.selectedDecades;
+    if (!selectedDecades) {
+        const savedDecades = localStorage.getItem('selectedDecades');
+        selectedDecades = savedDecades ? JSON.parse(savedDecades) : ['1960s', '1970s', '1980s', '1990s'];
+        gameState.selectedDecades = selectedDecades;
+    }
+    
+    // Filter songs by selected decades
+    const filteredSongs = data.songs.filter(song => {
+        const year = parseInt(song.release_year);
+        return selectedDecades.some(decade => {
+            const startYear = parseInt(decade.substring(0, 4));
+            const endYear = startYear + 9;
+            return year >= startYear && year <= endYear;
+        });
+    });
+    
+    console.log(`✓ Filtered ${filteredSongs.length}/${data.songs.length} songs for decades: ${selectedDecades.join(', ')}`);
+    
+    if (filteredSongs.length === 0) {
+        console.warn('⚠️ No songs found for selected decades, using all songs');
+        gameState.pool = data.songs;
+    } else {
+        gameState.pool = filteredSongs;
+    }
+    
     // Limit songs based on player count
     const numPlayers = parseInt(document.getElementById('numPlayers')?.value) || 25;
     const optimalSongs = calculateOptimalSongs(numPlayers);
     
     // Shuffle all songs first
-    const shuffled = [...data.songs];
+    const shuffled = [...gameState.pool];
     shuffleArray(shuffled);
     
     // Take only the optimal number of songs for this game

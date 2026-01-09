@@ -423,7 +423,38 @@ button:disabled {
     box-sizing: border-box;
 }
 
-.setup-field input:focus {
+.setup-field select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    background: white;
+    cursor: pointer;
+}
+
+.setup-field select[multiple] {
+    min-height: 180px;
+    padding: 8px;
+}
+
+.setup-field select option {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin: 2px 0;
+    cursor: pointer;
+}
+
+.setup-field select option:checked {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.setup-field input:focus,
+.setup-field select:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
