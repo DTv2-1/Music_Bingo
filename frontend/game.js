@@ -22,7 +22,7 @@ const CONFIG = {
     API_URL: window.location.origin,  // Same origin as frontend
     
     // Game settings
-    PREVIEW_DURATION_MS: 8000,  // 8 seconds of song preview
+    PREVIEW_DURATION_MS: 18000,  // 18 seconds of song preview (Philip's feedback: extended from 8s)
     AUTO_NEXT_DELAY_MS: 15000,  // 15 seconds between songs (optional auto-mode)
     
     // Audio settings
@@ -1003,40 +1003,87 @@ async function generateElevenLabsTTS(text) {
 }
 
 /**
- * Play 5-second preview of song
+ * Play song preview with fade in/out and background music control
+ * Philip's feedback #7, #9: Silence background completely, add fades
  */
 async function playSongPreview(track) {
     return new Promise((resolve, reject) => {
+        // PHILIP'S FEEDBACK #7: Silence background music completely during track
+        if (backgroundMusic) {
+            backgroundMusic.fade(backgroundMusic.volume(), 0, 1000);  // Fade to 0 over 1 second
+            console.log('🔇 Background music silenced for track preview');
+        }
+        
         // Create Howler instance for this preview
         musicPlayer = new Howl({
             src: [track.preview_url],
             format: ['mp3'],
             html5: false,
+            volume: 0,  // Start at 0 for fade in (Philip's feedback #9)
             onload: () => {
                 console.log('✓ Preview loaded');
             },
             onplay: () => {
-                console.log('▶ Preview playing');
+                console.log('▶ Preview playing with fade in/out');
                 
-                // Stop after 5 seconds
+                // PHILIP'S FEEDBACK #9: Fade in at start
+                musicPlayer.fade(0, 0.9, 1500);  // Fade from 0 to 90% over 1.5 seconds
+                
+                // Calculate when to start fade out (3 seconds before end)
+                const fadeOutTime = CONFIG.PREVIEW_DURATION_MS - 3000;
+                
+                // Start fade out before stopping
+                setTimeout(() => {
+                    if (musicPlayer) {
+                        // PHILIP'S FEEDBACK #9: Fade out at end
+                        musicPlayer.fade(0.9, 0, 3000);  // Fade from 90% to 0 over 3 seconds
+                    }
+                }, fadeOutTime);
+                
+                // Stop after full duration
                 setTimeout(() => {
                     if (musicPlayer) {
                         musicPlayer.stop();
-                        console.log('⏹ Preview stopped (5 seconds)');
+                        console.log(`⏹ Preview stopped (${CONFIG.PREVIEW_DURATION_MS/1000} seconds)`);
+                        
+                        // Restore background music
+                        if (backgroundMusic) {
+                            backgroundMusic.fade(0, CONFIG.BACKGROUND_MUSIC_VOLUME, 1500);
+                            console.log('🔊 Background music restored');
+                        }
+                        
                         resolve();
                     }
                 }, CONFIG.PREVIEW_DURATION_MS);
             },
             onend: () => {
                 console.log('✓ Preview ended naturally');
+                
+                // Restore background music
+                if (backgroundMusic) {
+                    backgroundMusic.fade(0, CONFIG.BACKGROUND_MUSIC_VOLUME, 1500);
+                    console.log('🔊 Background music restored');
+                }
+                
                 resolve();
             },
             onloaderror: (id, error) => {
                 console.error('Preview load error:', error);
+                
+                // Restore background music on error
+                if (backgroundMusic) {
+                    backgroundMusic.fade(0, CONFIG.BACKGROUND_MUSIC_VOLUME, 1000);
+                }
+                
                 reject(new Error('Failed to load song preview'));
             },
             onplayerror: (id, error) => {
                 console.error('Preview play error:', error);
+                
+                // Restore background music on error
+                if (backgroundMusic) {
+                    backgroundMusic.fade(0, CONFIG.BACKGROUND_MUSIC_VOLUME, 1000);
+                }
                 
                 // Attempt to unlock audio (browser autoplay policy)
                 musicPlayer.once('unlock', () => {
