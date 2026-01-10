@@ -172,9 +172,18 @@
                 </div>
                 
                 <div class="setup-field" id="socialMediaField" style="display: none; margin-top: 15px; padding-left: 35px;">
-                    <label for="setupSocialMedia">📱 Social Media Link *</label>
-                    <input type="url" id="setupSocialMedia" placeholder="https://instagram.com/yourpub or https://facebook.com/yourpub">
-                    <small>Enter the full link to your Instagram, Facebook, TikTok, or website</small>
+                    <label for="setupSocialMedia">📱 Social Media</label>
+                    <div class="social-input-group">
+                        <select id="socialPlatform" class="platform-selector" onchange="updateSocialPreview()">
+                            <option value="instagram">Instagram</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="twitter">Twitter/X</option>
+                            <option value="custom">Custom URL</option>
+                        </select>
+                        <input type="text" id="setupSocialMedia" placeholder="yourpubname" oninput="updateSocialPreview()">
+                    </div>
+                    <small id="socialPreview" class="social-preview">QR will link to: https://instagram.com/yourpubname</small>
                 </div>
                 
                 <div class="setup-estimation" id="setupEstimation">

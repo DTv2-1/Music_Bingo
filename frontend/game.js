@@ -312,8 +312,10 @@ async function completeSetup() {
         
         // Get marketing/branding fields (optional)
         const pubLogo = document.getElementById('setupPubLogo').value.trim();
-        const socialMedia = document.getElementById('setupSocialMedia').value.trim();
         const includeQR = document.getElementById('setupIncludeQR').checked;
+        
+        // Get complete social media URL (platform + username)
+        const socialMediaURL = includeQR ? getSocialMediaURL() : '';
         
         // Save settings
         gameState.venueName = venueName;
@@ -323,7 +325,7 @@ async function completeSetup() {
         localStorage.setItem('voiceId', selectedVoice);
         localStorage.setItem('selectedDecades', JSON.stringify(selectedDecades));
         localStorage.setItem('pubLogo', pubLogo);
-        localStorage.setItem('socialMedia', socialMedia);
+        localStorage.setItem('socialMedia', socialMediaURL);
         localStorage.setItem('includeQR', includeQR.toString());
         localStorage.setItem('setupCompleted', 'true');
         
@@ -1837,7 +1839,78 @@ function toggleSocialMediaField() {
     
     if (checkbox.checked) {
         field.style.display = 'block';
+        updateSocialPreview(); // Update preview when field appears
     } else {
         field.style.display = 'none';
+    }
+}
+
+/**
+ * Update social media URL preview based on platform and username
+ */
+function updateSocialPreview() {
+    const platform = document.getElementById('socialPlatform').value;
+    const username = document.getElementById('setupSocialMedia').value.trim();
+    const preview = document.getElementById('socialPreview');
+    
+    if (!username) {
+        preview.textContent = 'QR will link to: (enter username above)';
+        preview.style.opacity = '0.6';
+        return;
+    }
+    
+    preview.style.opacity = '1';
+    
+    // Build URL based on platform
+    let url = '';
+    let cleanUsername = username.replace(/^@/, ''); // Remove @ if present
+    
+    switch(platform) {
+        case 'instagram':
+            url = `https://instagram.com/${cleanUsername}`;
+            break;
+        case 'facebook':
+            url = `https://facebook.com/${cleanUsername}`;
+            break;
+        case 'tiktok':
+            url = `https://tiktok.com/@${cleanUsername}`;
+            break;
+        case 'twitter':
+            url = `https://twitter.com/${cleanUsername}`;
+            break;
+        case 'custom':
+            // For custom, expect full URL
+            url = username.startsWith('http') ? username : `https://${username}`;
+            preview.textContent = `QR will link to: ${url}`;
+            return;
+    }
+    
+    preview.textContent = `QR will link to: ${url}`;
+}
+
+/**
+ * Get the complete social media URL
+ */
+function getSocialMediaURL() {
+    const platform = document.getElementById('socialPlatform').value;
+    const username = document.getElementById('setupSocialMedia').value.trim();
+    
+    if (!username) return '';
+    
+    let cleanUsername = username.replace(/^@/, '');
+    
+    switch(platform) {
+        case 'instagram':
+            return `https://instagram.com/${cleanUsername}`;
+        case 'facebook':
+            return `https://facebook.com/${cleanUsername}`;
+        case 'tiktok':
+            return `https://tiktok.com/@${cleanUsername}`;
+        case 'twitter':
+            return `https://twitter.com/${cleanUsername}`;
+        case 'custom':
+            return username.startsWith('http') ? username : `https://${username}`;
+        default:
+            return username;
     }
 }

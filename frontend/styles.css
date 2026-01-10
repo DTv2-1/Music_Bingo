@@ -777,6 +777,46 @@ button:disabled {
     animation: slideDown 0.3s ease;
 }
 
+.social-input-group {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.platform-selector {
+    min-width: 140px;
+    padding: 10px 12px;
+    border: 2px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 500;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.platform-selector:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.social-input-group input[type="text"] {
+    flex: 1;
+}
+
+.social-preview {
+    display: block;
+    margin-top: 8px;
+    color: #667eea;
+    font-weight: 500;
+    font-size: 0.9em;
+    padding: 8px 12px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 6px;
+}
+
+
 @keyframes slideDown {
     from {
         opacity: 0;
