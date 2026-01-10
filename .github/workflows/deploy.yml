@@ -36,10 +36,13 @@ jobs:
           # Install/update Python dependencies
           pip3 install -r backend/requirements.txt
           
+          # Update nginx configuration if changed
+          sudo cp nginx.conf /etc/nginx/sites-available/music-bingo || true
+          
           # Restart the Flask app via supervisor
           sudo supervisorctl restart music-bingo
           
-          # Restart nginx if needed
-          sudo systemctl reload nginx
+          # Reload nginx to apply any config changes
+          sudo nginx -t && sudo systemctl reload nginx
           
           echo "✅ Deployment completed successfully!"
