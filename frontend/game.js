@@ -1493,6 +1493,18 @@ function setButtonState(buttonId, enabled) {
 // ============================================================================
 
 document.addEventListener('keydown', (e) => {
+    // Ignore keyboard shortcuts when user is typing in an input/textarea
+    const activeElement = document.activeElement;
+    const isTyping = activeElement && (
+        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.isContentEditable
+    );
+    
+    if (isTyping) {
+        return; // Don't intercept keys when typing
+    }
+    
     // Space or Enter = Next track
     if (e.code === 'Space' || e.code === 'Enter') {
         e.preventDefault();
