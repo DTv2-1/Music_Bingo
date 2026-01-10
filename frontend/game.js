@@ -101,10 +101,16 @@ function initializeSetupModal() {
     const savedPlayers = localStorage.getItem('numPlayers');
     const savedVoice = localStorage.getItem('voiceId');
     const savedDecades = localStorage.getItem('selectedDecades');
+    const savedPubLogo = localStorage.getItem('pubLogo');
+    const savedSocialMedia = localStorage.getItem('socialMedia');
+    const savedIncludeQR = localStorage.getItem('includeQR');
     
     if (savedVenue) setupVenueName.value = savedVenue;
     if (savedPlayers) setupNumPlayers.value = savedPlayers;
     if (savedVoice) document.getElementById('setupVoice').value = savedVoice;
+    if (savedPubLogo) document.getElementById('setupPubLogo').value = savedPubLogo;
+    if (savedSocialMedia) document.getElementById('setupSocialMedia').value = savedSocialMedia;
+    if (savedIncludeQR === 'true') document.getElementById('setupIncludeQR').checked = true;
     
     // Restore decade checkbox selections
     if (savedDecades) {
@@ -298,6 +304,11 @@ async function completeSetup() {
             return;
         }
         
+        // Get marketing/branding fields (optional)
+        const pubLogo = document.getElementById('setupPubLogo').value.trim();
+        const socialMedia = document.getElementById('setupSocialMedia').value.trim();
+        const includeQR = document.getElementById('setupIncludeQR').checked;
+        
         // Save settings
         gameState.venueName = venueName;
         gameState.selectedDecades = selectedDecades;
@@ -305,6 +316,9 @@ async function completeSetup() {
         localStorage.setItem('numPlayers', numPlayers.toString());
         localStorage.setItem('voiceId', selectedVoice);
         localStorage.setItem('selectedDecades', JSON.stringify(selectedDecades));
+        localStorage.setItem('pubLogo', pubLogo);
+        localStorage.setItem('socialMedia', socialMedia);
+        localStorage.setItem('includeQR', includeQR.toString());
         localStorage.setItem('setupCompleted', 'true');
         
         // Update main UI inputs
@@ -1265,6 +1279,9 @@ function resetSetup() {
     localStorage.removeItem('numPlayers');
     localStorage.removeItem('voiceId');
     localStorage.removeItem('selectedDecades');
+    localStorage.removeItem('pubLogo');
+    localStorage.removeItem('socialMedia');
+    localStorage.removeItem('includeQR');
     clearGameState();
     
     // Reset game state
@@ -1678,6 +1695,11 @@ async function generateCards() {
     btn.disabled = true;
     
     try {
+        // Get branding data from localStorage
+        const pubLogo = localStorage.getItem('pubLogo') || '';
+        const socialMedia = localStorage.getItem('socialMedia') || '';
+        const includeQR = localStorage.getItem('includeQR') === 'true';
+        
         const response = await fetch(`${CONFIG.API_URL}/api/generate-cards`, {
             method: 'POST',
             headers: {
@@ -1686,7 +1708,10 @@ async function generateCards() {
             body: JSON.stringify({
                 venue_name: venueName,
                 num_players: numPlayers,
-                optimal_songs: optimalSongs
+                optimal_songs: optimalSongs,
+                pub_logo: pubLogo,
+                social_media: socialMedia,
+                include_qr: includeQR
             })
         });
         

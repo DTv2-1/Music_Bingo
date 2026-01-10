@@ -651,6 +651,54 @@ button:disabled {
     cursor: not-allowed;
 }
 
+/* Marketing Section Styles */
+.setup-section-divider {
+    margin: 30px 0 20px 0;
+    padding-top: 25px;
+    border-top: 2px solid #e9ecef;
+}
+
+.setup-section-divider h3 {
+    font-size: 1.2em;
+    color: #2c3e50;
+    margin: 0 0 8px 0;
+    font-weight: 600;
+}
+
+.section-description {
+    color: #7f8c8d;
+    font-size: 0.95em;
+    margin: 0 0 15px 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    transition: all 0.2s ease;
+}
+
+.checkbox-label:hover {
+    background: #e9ecef;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+.checkbox-label span {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 1em;
+}
+
 .setup-estimation {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
