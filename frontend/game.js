@@ -1706,13 +1706,23 @@ async function generateCards() {
         // Get branding data from localStorage
         let pubLogo = localStorage.getItem('pubLogo') || '';
         
+        console.log('📋 Preparing to generate cards...');
+        console.log('   Venue:', venueName);
+        console.log('   Players:', numPlayers);
+        console.log('   Pub Logo (stored):', pubLogo);
+        
         // If pubLogo is a relative path, convert to full URL
         if (pubLogo && !pubLogo.startsWith('http')) {
             pubLogo = `${CONFIG.API_URL}${pubLogo}`;
+            console.log('   Pub Logo (converted):', pubLogo);
         }
         
         const socialMedia = localStorage.getItem('socialMedia') || '';
         const includeQR = localStorage.getItem('includeQR') === 'true';
+        
+        console.log('   Social Media:', socialMedia);
+        console.log('   Include QR:', includeQR);
+        console.log('📤 Sending request to backend...');
         
         const response = await fetch(`${CONFIG.API_URL}/api/generate-cards`, {
             method: 'POST',
@@ -1729,11 +1739,16 @@ async function generateCards() {
             })
         });
         
+        console.log('📨 Response status:', response.status);
+        
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Backend error:', errorText);
             throw new Error('Failed to generate cards');
         }
         
         const result = await response.json();
+        console.log('✅ Backend response:', result);
         
         // Show success message with game info
         alert(`✅ Cards generated successfully!\n\nVenue: ${venueName}\nPlayers: ${numPlayers}\nOptimal songs: ${optimalSongs}\nEstimated duration: ${estimatedMinutes} minutes\n\nCards: ${result.num_cards}\nFile size: ${result.file_size_mb}MB\n\nDownloading now...`);
@@ -1748,9 +1763,10 @@ async function generateCards() {
         console.log('📥 Downloading PDF from:', link.href);
         link.click();
         document.body.removeChild(link);
+        console.log('✅ PDF download triggered');
         
     } catch (error) {
-        console.error('Error generating cards:', error);
+        console.error('❌ Error generating cards:', error);
         alert('❌ Error generating cards. Please try again.');
     } finally {
         btn.textContent = originalText;
