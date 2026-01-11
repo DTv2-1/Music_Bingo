@@ -117,6 +117,10 @@ def download_logo(url: str) -> Optional[BytesIO]:
     # Check if it's a local file path
     if not url.startswith('http'):
         try:
+            # If path starts with /data/, it's relative to project root
+            if url.startswith('/data/'):
+                url = str(PROJECT_ROOT / url.lstrip('/'))
+            
             with open(url, 'rb') as f:
                 return BytesIO(f.read())
         except Exception as e:

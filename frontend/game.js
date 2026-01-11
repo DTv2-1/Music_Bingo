@@ -1704,7 +1704,13 @@ async function generateCards() {
     
     try {
         // Get branding data from localStorage
-        const pubLogo = localStorage.getItem('pubLogo') || '';
+        let pubLogo = localStorage.getItem('pubLogo') || '';
+        
+        // If pubLogo is a relative path, convert to full URL
+        if (pubLogo && !pubLogo.startsWith('http')) {
+            pubLogo = `${CONFIG.API_URL}${pubLogo}`;
+        }
+        
         const socialMedia = localStorage.getItem('socialMedia') || '';
         const includeQR = localStorage.getItem('includeQR') === 'true';
         
@@ -1730,13 +1736,16 @@ async function generateCards() {
         const result = await response.json();
         
         // Show success message with game info
-        alert(`✅ Cards generated successfully!\n\nVenue: ${venueName}\nPlayers: ${numPlayers}\nOptimal songs: ${optimalSongs}\nEstimated duration: ${estimatedMinutes} minutes\n\nCards: ${result.num_cards}\nPages: ${result.num_pages}\n\nDownloading now...`);
+        alert(`✅ Cards generated successfully!\n\nVenue: ${venueName}\nPlayers: ${numPlayers}\nOptimal songs: ${optimalSongs}\nEstimated duration: ${estimatedMinutes} minutes\n\nCards: ${result.num_cards}\nFile size: ${result.file_size_mb}MB\n\nDownloading now...`);
         
-        // Download the PDF automatically
+        // Download the PDF automatically with timestamp to force fresh download
+        const timestamp = new Date().getTime();
         const link = document.createElement('a');
-        link.href = `${CONFIG.API_URL}/data/cards/music_bingo_cards.pdf`;
+        link.href = `${CONFIG.API_URL}/data/cards/music_bingo_cards.pdf?t=${timestamp}`;
         link.download = `music_bingo_${venueName.replace(/\s+/g, '_')}_${numPlayers}players.pdf`;
+        link.target = '_blank';
         document.body.appendChild(link);
+        console.log('📥 Downloading PDF from:', link.href);
         link.click();
         document.body.removeChild(link);
         
