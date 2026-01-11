@@ -1,506 +1,531 @@
 """
-generate_cards.py - Bingo Card PDF Generator
-Creates printable 5x5 bingo cards with Perfect DJ branding
+generate_cards.py - Professional Bingo Card PDF Generator with ReportLab
+Creates printable 5x5 bingo cards with pub branding, logos, and QR codes
 
-Requirements:
-- 50 unique cards (no duplicates)
-- A4 portrait (210mm x 297mm)
-- 5x5 grid with FREE center square
-- Songs: "Artist - Title" or just "Title" if too long
-- Professional typography (fits within cells)
-- Optional: Perfect DJ logo at top
-- Output: data/cards/music_bingo_cards.pdf
-
-Card winning patterns supported:
-- Any horizontal line (5 in a row)
-- Any vertical line (5 in a column)
-- Diagonal lines (2 options)
-- Four corners
-- Full house (entire card)
+Features:
+- High-quality pub logo placement
+- QR codes for social media
+- Professional typography and layout
+- 50 unique cards per game
+- A4 portrait format
+- Perfect DJ branding
 """
 
 import json
 import random
 import os
 import sys
+import argparse
 from pathlib import Path
-from typing import List, Dict, Set
-from fpdf import FPDF
-from dotenv import load_dotenv
+from typing import List, Dict, Set, Optional
+import requests
+from io import BytesIO
 
-# Load environment variables
-load_dotenv()
+# ReportLab imports
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.pdfgen import canvas
+
+# QR Code generation
+import qrcode
 
 # Configuration
-INPUT_POOL = Path("data/pool.json")
-OUTPUT_DIR = Path("data/cards")
+SCRIPT_DIR = Path(__file__).parent
+PROJECT_ROOT = SCRIPT_DIR.parent
+INPUT_POOL = PROJECT_ROOT / "data" / "pool.json"
+OUTPUT_DIR = PROJECT_ROOT / "data" / "cards"
 OUTPUT_FILE = OUTPUT_DIR / "music_bingo_cards.pdf"
 NUM_CARDS = 50
 GRID_SIZE = 5  # 5x5 bingo
 SONGS_PER_CARD = 24  # 25 cells - 1 FREE
 
 # Perfect DJ Branding
-LOGO_PATH = Path("frontend/assets/perfectdj_logo.png")  # Logo file (place here when available)
-WEBSITE_URL = "www.perfectdj.co.uk"  # Perfect DJ website (update when confirmed)
-DEFAULT_VENUE_NAME = os.getenv('VENUE_NAME', 'Music Bingo')  # Venue name from .env
+PERFECT_DJ_LOGO = PROJECT_ROOT / "frontend" / "assets" / "perfect-dj-logo.png"
+WEBSITE_URL = "www.perfectdj.co.uk"
 
 
-def calculate_optimal_songs(num_players: int, target_duration_minutes: int = 45) -> int:
-    """
-    Calculate optimal number of songs based on number of players
-    
-    FIXED LOGIC: Use ~3x players formula
-    - More players = MORE songs needed (not less!)
-    - Ensures enough variety so players don't get duplicate songs
-    - Each card has 24 unique numbers (25 - 1 FREE)
-    
-    Args:
-        num_players: Number of players/cards in game
-        target_duration_minutes: Target game duration (default 45 min)
-        
-    Returns:
-        Optimal number of songs to play
-    """
-    # FIXED: Use ~3x players formula (more players = more songs needed)
-    # This ensures enough variety so players don't get the same songs
-    MULTIPLIER = 3
-    base_songs = int(num_players * MULTIPLIER)
-    
-    # Ensure reasonable minimum and maximum
-    base_songs = max(base_songs, 30)   # Minimum 30 songs
-    base_songs = min(base_songs, 150)  # Maximum 150 songs
-    
-    # Adjust based on target duration
-    # Assuming ~30 seconds per song (8s clip + 22s for announcements/gap)
-    songs_per_minute = 2  # Conservative estimate
-    max_songs_for_duration = target_duration_minutes * songs_per_minute
-    
-    # Take the minimum to respect time constraint
-    optimal_songs = min(base_songs, max_songs_for_duration)
-    
-    return optimal_songs
+def calculate_optimal_songs(num_players: int) -> int:
+    """Calculate optimal number of songs based on players"""
+    base_songs = int(num_players * 3)
+    base_songs = max(base_songs, 30)
+    base_songs = min(base_songs, 150)
+    return base_songs
 
 
-def estimate_game_duration(num_songs: int, seconds_per_song: int = 30) -> int:
-    """
-    Estimate game duration in minutes
-    
-    Args:
-        num_songs: Number of songs to play
-        seconds_per_song: Average time per song (clip + announcement)
-        
-    Returns:
-        Estimated duration in minutes
-    """
-    total_seconds = num_songs * seconds_per_song
-    return int(total_seconds / 60)
-
-# A4 dimensions in mm
-PAGE_WIDTH = 210
-PAGE_HEIGHT = 297
-
-# Card layout for 2 cards per page (in mm)
-CARD_MARGIN_TOP = 10
-CARD_MARGIN_SIDE = 10
-CARD_SPACING = 8  # Space between two cards on same page
-CARD_WIDTH = PAGE_WIDTH - (2 * CARD_MARGIN_SIDE)
-CARD_HEIGHT = (PAGE_HEIGHT - (2 * CARD_MARGIN_TOP) - CARD_SPACING) / 2  # Split page in half
-
-# Grid calculations
-CELL_WIDTH = CARD_WIDTH / GRID_SIZE
-CELL_HEIGHT = (CARD_HEIGHT - 30) / GRID_SIZE  # Leave space for header and footer
-
-
-class BingoCardPDF(FPDF):
-    """Custom FPDF class for bingo cards with Perfect DJ branding"""
-    
-    def __init__(self):
-        super().__init__(orientation='P', unit='mm', format='A4')
-        self.set_auto_page_break(False)
-        
-    def header(self):
-        """No page header - we'll draw headers per card"""
-        pass
-
-
-def load_song_pool(pool_path: Path) -> List[Dict]:
-    """Load songs from pool.json"""
-    with open(pool_path, 'r', encoding='utf-8') as f:
+def load_pool() -> List[Dict]:
+    """Load song pool from JSON"""
+    with open(INPUT_POOL, 'r', encoding='utf-8') as f:
         data = json.load(f)
-    
-    songs = data.get("songs", [])
-    
-    if len(songs) < 24:  # Need at least 24 (25 - 1 FREE)
-        raise ValueError(f"Pool has only {len(songs)} songs, need at least 24")
-    
-    print(f"✓ Loaded {len(songs)} songs from pool")
-    return songs
+    return data.get('songs', [])
 
 
-def format_song_for_card(song: Dict, max_length: int = 35) -> str:
-    """
-    Format song with conditional logic based on artist duplication:
-    - If artist appears multiple times: ALWAYS show "Artist - Title"
-    - If artist is unique: show only Artist OR only Title (randomly)
+def format_song_title(song: Dict, max_length: int = 45) -> str:
+    """Format song title to fit in cell"""
+    title = song.get('title', 'Unknown')
+    artist = song.get('artist', '')
     
-    Args:
-        song: Song dict with title, artist, and has_duplicate_artist flag
-        max_length: Max characters before truncating
-        
-    Returns:
-        Formatted string that fits in bingo cell
-    """
-    artist = song["artist"]
-    title = song["title"]
-    has_duplicate = song.get("has_duplicate_artist", False)
+    # Try full format first
+    full = f"{artist} - {title}" if artist else title
     
-    # Replace smart quotes and special characters with ASCII equivalents
-    replacements = {
-        '\u2019': "'",  # Right single quotation mark
-        '\u2018': "'",  # Left single quotation mark
-        '\u201c': '"',  # Left double quotation mark
-        '\u201d': '"',  # Right double quotation mark
-        '\u2013': '-',  # En dash
-        '\u2014': '-',  # Em dash
-        '\u2026': '...',  # Ellipsis
-    }
+    if len(full) <= max_length:
+        return full
     
-    for old, new in replacements.items():
-        artist = artist.replace(old, new)
-        title = title.replace(old, new)
+    # Try title only
+    if len(title) <= max_length:
+        return title
     
-    # If artist has duplicates, ALWAYS show "Artist - Title"
-    if has_duplicate:
-        full_format = f"{artist} - {title}"
-        
-        if len(full_format) <= max_length:
-            return full_format
-        
-        # Try abbreviated artist if too long
-        artist_parts = artist.split()
-        short_artist = artist_parts[0] if artist_parts else artist
-        short_format = f"{short_artist} - {title}"
-        
-        if len(short_format) <= max_length:
-            return short_format
-        
-        # Last resort: truncate title
-        available_for_title = max_length - len(short_artist) - 3
-        truncated_title = title[:available_for_title] + "..."
-        return f"{short_artist} - {truncated_title}"
-    
-    # Artist is unique - randomly show artist OR title (50/50)
-    import random
-    show_artist = random.choice([True, False])
-    
-    if show_artist:
-        # Show only artist
-        if len(artist) <= max_length:
-            return artist
-        else:
-            return artist[:max_length - 3] + "..."
-    else:
-        # Show only title
-        if len(title) <= max_length:
-            return title
-        else:
-            return title[:max_length - 3] + "..."
+    # Truncate title
+    return title[:max_length-3] + "..."
 
 
-def generate_card_songs(all_songs: List[Dict], used_combinations: Set[frozenset]) -> List[str]:
-    """
-    Generate 24 unique songs for one card (25th is FREE)
-    Ensures this exact combination hasn't been used before
+def generate_qr_code(url: str, size: int = 150) -> Optional[BytesIO]:
+    """Generate QR code image as BytesIO"""
+    if not url:
+        return None
     
-    Args:
-        all_songs: Pool of available songs
-        used_combinations: Set of frozensets tracking used card combinations
+    try:
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=2,
+        )
+        qr.add_data(url)
+        qr.make(fit=True)
         
-    Returns:
-        List of 24 formatted song strings
-    """
-    max_attempts = 100
-    
-    for attempt in range(max_attempts):
-        # Randomly select 24 songs
-        selected_songs = random.sample(all_songs, 24)
-        song_ids = frozenset(s["id"] for s in selected_songs)
+        img = qr.make_image(fill_color="black", back_color="white")
         
-        # Check if this combination is unique
-        if song_ids not in used_combinations:
-            used_combinations.add(song_ids)
-            
-            # Format songs for display
-            formatted = [format_song_for_card(song) for song in selected_songs]
-            
-            # Shuffle the order
-            random.shuffle(formatted)
-            
-            return formatted
-    
-    # If we can't find unique combination (unlikely with 250+ songs)
-    # Just return a random selection
-    print(f"⚠ Warning: Could not find unique combination after {max_attempts} attempts")
-    selected = random.sample(all_songs, 24)
-    formatted = [format_song_for_card(song) for song in selected]
-    random.shuffle(formatted)
-    return formatted
+        # Save to BytesIO
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+        return buffer
+    except Exception as e:
+        print(f"Error generating QR code: {e}")
+        return None
 
 
-def create_bingo_card(pdf: BingoCardPDF, songs: List[str], card_number: int, y_offset: float, venue_name: str = None):
-    """
-    Draw one bingo card on current page
+def download_logo(url: str) -> Optional[BytesIO]:
+    """Download logo from URL or load from local file"""
+    if not url:
+        return None
     
-    Args:
-        pdf: FPDF object
-        songs: List of 24 formatted song strings
-        card_number: Card number (1-50)
-        y_offset: Vertical offset for this card (top or bottom of page)
-        venue_name: Name of the venue (optional)
-    """
-    # Insert FREE in center (position 12 in 0-indexed 24-item list)
-    grid_songs = songs[:12] + ["FREE"] + songs[12:]
-    
-    # Starting position
-    start_x = CARD_MARGIN_SIDE
-    start_y = y_offset
-    
-    # Card header
-    header_height = 15
-    pdf.set_fill_color(102, 126, 234)  # Purple background
-    pdf.rect(start_x, start_y, CARD_WIDTH, header_height, 'F')
-    
-    pdf.set_font('Helvetica', 'B', 16)
-    pdf.set_text_color(255, 255, 255)  # White text
-    pdf.set_xy(start_x, start_y + 3)
-    
-    # Display venue-specific title if provided
-    if venue_name:
-        title = f'MUSIC BINGO at {venue_name}'
-        # Adjust font size if title is too long
-        if len(title) > 30:
-            pdf.set_font('Helvetica', 'B', 12)
-        pdf.cell(CARD_WIDTH, 8, title, align='C')
-    else:
-        pdf.cell(CARD_WIDTH, 8, 'MUSIC BINGO', align='C')
-    
-    pdf.set_font('Helvetica', '', 7)
-    pdf.set_xy(start_x, start_y + 10)
-    pdf.cell(CARD_WIDTH, 3, 'Mark the song when you hear it play!', align='C')
-    
-    # Reset text color
-    pdf.set_text_color(0, 0, 0)
-    
-    # Adjust grid start to be below header
-    grid_start_y = start_y + header_height + 2
-    
-    # Draw grid
-    for row in range(GRID_SIZE):
-        for col in range(GRID_SIZE):
-            x = start_x + (col * CELL_WIDTH)
-            y = grid_start_y + (row * CELL_HEIGHT)
-            
-            # Alternating background colors for visual interest
-            if (row + col) % 2 == 0:
-                pdf.set_fill_color(245, 245, 255)  # Very light blue
-            else:
-                pdf.set_fill_color(255, 250, 245)  # Very light orange
-            
-            # Cell with colored background
-            pdf.rect(x, y, CELL_WIDTH, CELL_HEIGHT, 'FD')
-            
-            # Colored border
-            pdf.set_draw_color(102, 126, 234)  # Purple border
-            pdf.set_line_width(0.3)
-            pdf.rect(x, y, CELL_WIDTH, CELL_HEIGHT)
-            
-            # Song text
-            song_index = row * GRID_SIZE + col
-            song_text = grid_songs[song_index]
-            
-            # Special formatting for FREE cell
-            if song_text == "FREE":
-                # Gold/yellow background for FREE
-                pdf.set_fill_color(255, 215, 0)  # Gold
-                pdf.rect(x, y, CELL_WIDTH, CELL_HEIGHT, 'F')
-                pdf.set_draw_color(102, 126, 234)  # Purple border
-                pdf.rect(x, y, CELL_WIDTH, CELL_HEIGHT)
-                
-                # Perfect DJ logo at top (if available)
-                if LOGO_PATH.exists():
-                    try:
-                        logo_width = 20  # mm
-                        logo_height = 8  # mm (adjust based on actual logo aspect ratio)
-                        logo_x = x + (CELL_WIDTH - logo_width) / 2
-                        logo_y = y + 2
-                        pdf.image(str(LOGO_PATH), logo_x, logo_y, logo_width, logo_height)
-                    except Exception as e:
-                        print(f"⚠️  Warning: Could not add logo to card {card_number}: {e}")
-                
-                # "FREE" text centered
-                pdf.set_font('Helvetica', 'B', 14)
-                pdf.set_text_color(139, 0, 139)  # Dark magenta
-                pdf.set_xy(x, y + (CELL_HEIGHT / 2) - 2)
-                pdf.cell(CELL_WIDTH, 4, 'FREE', align='C')
-                
-                # Website URL at bottom
-                pdf.set_font('Helvetica', '', 5)
-                pdf.set_text_color(102, 126, 234)  # Purple
-                pdf.set_xy(x, y + CELL_HEIGHT - 3.5)
-                pdf.cell(CELL_WIDTH, 3, WEBSITE_URL, align='C')
-            else:
-                # Dynamic font sizing based on text length
-                if len(song_text) > 30:
-                    font_size = 5
-                    line_height = 2
-                elif len(song_text) > 20:
-                    font_size = 6
-                    line_height = 2.5
-                else:
-                    font_size = 7
-                    line_height = 3
-                
-                pdf.set_font('Helvetica', '', font_size)
-                pdf.set_text_color(0, 0, 0)  # Black
-                
-                # Multi-line text if needed
-                words = song_text.split()
-                lines = []
-                current_line = []
-                
-                for word in words:
-                    test_line = ' '.join(current_line + [word])
-                    # Rough estimate: each char is ~2mm at size 8
-                    if len(test_line) * (font_size / 4) < (CELL_WIDTH - 4):
-                        current_line.append(word)
-                    else:
-                        if current_line:
-                            lines.append(' '.join(current_line))
-                        current_line = [word]
-                
-                if current_line:
-                    lines.append(' '.join(current_line))
-                
-                # Limit to 3 lines max
-                lines = lines[:3]
-                
-                # Center text vertically
-                total_height = len(lines) * line_height
-                start_y_text = y + (CELL_HEIGHT - total_height) / 2
-                
-                for i, line in enumerate(lines):
-                    pdf.set_xy(x + 2, start_y_text + (i * line_height))
-                    pdf.cell(CELL_WIDTH - 4, line_height, line, align='C')
-    
-    # Perfect DJ footer (between grid and card number)
-    footer_start_y = grid_start_y + (GRID_SIZE * CELL_HEIGHT) + 1
-    pdf.set_font('Helvetica', 'I', 6)
-    pdf.set_text_color(102, 126, 234)  # Purple text
-    pdf.set_xy(CARD_MARGIN_SIDE, footer_start_y)
-    pdf.cell(CARD_WIDTH, 3, 'Powered by Perfect DJ - perfectdj.co.uk', align='C')
-    
-    # Card number at bottom with colored background
-    card_num_y = footer_start_y + 4
-    pdf.set_fill_color(102, 126, 234)  # Purple background
-    pdf.rect(CARD_MARGIN_SIDE, card_num_y, CARD_WIDTH, 6, 'F')
-    
-    pdf.set_font('Helvetica', 'B', 8)
-    pdf.set_text_color(255, 255, 255)  # White text
-    pdf.set_xy(CARD_MARGIN_SIDE, card_num_y + 1)
-    pdf.cell(CARD_WIDTH, 4, f'Card #{card_number}', align='C')
-
-
-def generate_cards(songs: List[Dict], num_cards: int, output_path: Path, venue_name: str = None):
-    """
-    Generate PDF with all bingo cards (2 per page)
-    
-    Args:
-        songs: Pool of songs
-        num_cards: Number of cards to generate
-        output_path: Where to save PDF
-        venue_name: Name of the venue (optional)
-    """
-    print(f"\n🎴 Generating {num_cards} bingo cards (2 per page)...")
-    
-    pdf = BingoCardPDF()
-    used_combinations = set()
-    
-    for i in range(1, num_cards + 1):
-        # Add new page for every 2 cards (or first card)
-        if i == 1 or i % 2 == 1:
-            pdf.add_page()
-        
-        # Generate unique songs for this card
-        card_songs = generate_card_songs(songs, used_combinations)
-        
-        # Determine position (top or bottom of page)
-        if i % 2 == 1:
-            # Odd card number - top of page
-            y_offset = CARD_MARGIN_TOP
-        else:
-            # Even card number - bottom of page
-            y_offset = CARD_MARGIN_TOP + CARD_HEIGHT + CARD_SPACING
-        
-        # Draw the card
-        create_bingo_card(pdf, card_songs, i, y_offset, venue_name)
-        
-        if i % 10 == 0:
-            print(f"  Generated {i}/{num_cards} cards...")
-    
-    # Save PDF
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    pdf.output(str(output_path))
-    
-    file_size_mb = output_path.stat().st_size / (1024 * 1024)
-    num_pages = (num_cards + 1) // 2  # 2 cards per page, round up
-    
-    print(f"\n✓ PDF generated successfully!")
-    print(f"  File: {output_path}")
-    print(f"  Size: {file_size_mb:.2f} MB")
-    print(f"  Cards: {num_cards}")
-    print(f"  Pages: {num_pages} (2 cards per page)")
-    print(f"\n💡 Print on A4 paper (portrait) for best results")
-    print(f"💡 Cut along the middle to separate the two cards")
-
-
-if __name__ == "__main__":
-    print("=" * 60)
-    print("MUSIC BINGO - CARD GENERATOR")
-    print("=" * 60)
-    print()
-    
-    # Get venue name and num_players from command line or defaults
-    venue_name = DEFAULT_VENUE_NAME
-    num_players = NUM_CARDS  # Default to 50 if not specified
-    
-    if len(sys.argv) > 1:
-        venue_name = sys.argv[1]
-    
-    if len(sys.argv) > 2:
+    # Check if it's a local file path
+    if not url.startswith('http'):
         try:
-            num_players = int(sys.argv[2])
-            # Add 20% margin for extra cards
-            num_cards = int(num_players * 1.2)
-            # Minimum 10 cards, maximum 100 cards
-            num_cards = max(10, min(100, num_cards))
-        except ValueError:
-            print(f"⚠️  Invalid num_players '{sys.argv[2]}', using default {NUM_CARDS}")
-            num_cards = NUM_CARDS
-    else:
-        num_cards = NUM_CARDS
+            with open(url, 'rb') as f:
+                return BytesIO(f.read())
+        except Exception as e:
+            print(f"Error loading local logo: {e}")
+            return None
     
-    if venue_name != 'Music Bingo':
-        print(f"🏠 Venue: {venue_name}")
-    print(f"👥 Players: {num_players}")
-    print(f"🎴 Cards to generate: {num_cards} ({num_players} + 20% margin)")
-    print()
+    # Download from URL
+    try:
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            return BytesIO(response.content)
+    except Exception as e:
+        print(f"Error downloading logo: {e}")
     
-    # Load song pool
-    songs = load_song_pool(INPUT_POOL)
+    return None
+
+
+def get_logo_with_aspect_ratio(logo_buffer: BytesIO, max_width: float = 40, max_height: float = 20) -> Optional[Image]:
+    """Create ReportLab Image with preserved aspect ratio"""
+    try:
+        from PIL import Image as PILImage
+        
+        # Open image to get dimensions
+        pil_img = PILImage.open(logo_buffer)
+        orig_width, orig_height = pil_img.size
+        
+        # Convert to RGB if necessary (removes transparency issues)
+        if pil_img.mode in ('RGBA', 'LA', 'P'):
+            # Create white background
+            background = PILImage.new('RGB', pil_img.size, (255, 255, 255))
+            if pil_img.mode == 'P':
+                pil_img = pil_img.convert('RGBA')
+            if 'A' in pil_img.mode:
+                background.paste(pil_img, mask=pil_img.split()[-1])
+            else:
+                background.paste(pil_img)
+            pil_img = background
+        elif pil_img.mode != 'RGB':
+            pil_img = pil_img.convert('RGB')
+        
+        # Calculate aspect ratio
+        aspect = orig_width / orig_height
+        
+        # Calculate new dimensions maintaining aspect ratio
+        if aspect > (max_width / max_height):
+            # Width is the limiting factor
+            new_width = max_width * mm
+            new_height = (max_width / aspect) * mm
+        else:
+            # Height is the limiting factor
+            new_height = max_height * mm
+            new_width = (max_height * aspect) * mm
+        
+        # Save to new buffer as RGB JPEG (much faster)
+        output_buffer = BytesIO()
+        pil_img.save(output_buffer, format='JPEG', quality=95)
+        output_buffer.seek(0)
+        
+        # Create ReportLab Image with correct dimensions
+        rl_image = Image(output_buffer, width=new_width, height=new_height)
+        rl_image.hAlign = 'CENTER'
+        
+        return rl_image
+    except Exception as e:
+        print(f"Error processing logo aspect ratio: {e}")
+        return None
+
+
+def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str, 
+                     pub_logo_path: str = None, social_media_url: str = None, 
+                     include_qr: bool = False) -> List:
+    """Create a single bingo card with ReportLab elements"""
+    elements = []
+    
+    # Styles
+    styles = getSampleStyleSheet()
+    
+    # Header style
+    header_style = ParagraphStyle(
+        'CustomHeader',
+        parent=styles['Heading1'],
+        fontSize=20,
+        textColor=colors.HexColor('#667eea'),
+        alignment=TA_CENTER,
+        spaceAfter=5*mm,
+    )
+    
+    # Venue style
+    venue_style = ParagraphStyle(
+        'Venue',
+        parent=styles['Normal'],
+        fontSize=12,
+        textColor=colors.HexColor('#4a5568'),
+        alignment=TA_CENTER,
+        spaceAfter=8*mm,
+    )
+    
+    # --- HEADER SECTION ---
+    # Title
+    title = Paragraph(f"MUSIC BINGO at {venue_name}", header_style)
+    elements.append(title)
+    
+    subtitle = Paragraph("Mark the song when you hear it play!", venue_style)
+    elements.append(subtitle)
+    
+    # --- PUB LOGO (if provided) ---
+    if pub_logo_path:
+        try:
+            from PIL import Image as PILImage
+            
+            # Get original dimensions
+            pil_img = PILImage.open(pub_logo_path)
+            orig_width, orig_height = pil_img.size
+            aspect = orig_width / orig_height
+            
+            # Calculate dimensions with aspect ratio
+            max_width = 80
+            max_height = 40
+            
+            if aspect > (max_width / max_height):
+                new_width = max_width * mm
+                new_height = (max_width / aspect) * mm
+            else:
+                new_height = max_height * mm
+                new_width = (max_height * aspect) * mm
+            
+            pub_logo = Image(pub_logo_path, width=new_width, height=new_height)
+            pub_logo.hAlign = 'CENTER'
+            elements.append(pub_logo)
+            elements.append(Spacer(1, 5*mm))
+        except Exception as e:
+            pass  # Skip if error
+    
+    # --- BINGO GRID ---
+    # Create 5x5 grid data
+    grid_data = []
+    song_index = 0
+    
+    for row in range(GRID_SIZE):
+        row_data = []
+        for col in range(GRID_SIZE):
+            # Center cell is FREE
+            if row == 2 and col == 2:
+                cell_style = ParagraphStyle(
+                    'FreeCell',
+                    parent=styles['Normal'],
+                    fontSize=16,
+                    textColor=colors.black,
+                    alignment=TA_CENTER,
+                    leading=14,
+                )
+                cell_content = Paragraph("<b>FREE</b><br/><font size='8'>www.perfectdj.co.uk</font>", cell_style)
+            else:
+                song = songs[song_index]
+                song_text = format_song_title(song, max_length=40)
+                
+                cell_style = ParagraphStyle(
+                    'SongCell',
+                    parent=styles['Normal'],
+                    fontSize=8,
+                    textColor=colors.black,
+                    alignment=TA_CENTER,
+                    leading=10,
+                )
+                cell_content = Paragraph(song_text, cell_style)
+                song_index += 1
+            
+            row_data.append(cell_content)
+        grid_data.append(row_data)
+    
+    # Create table
+    col_width = 35*mm
+    row_height = 20*mm
+    
+    table = Table(grid_data, colWidths=[col_width]*GRID_SIZE, rowHeights=[row_height]*GRID_SIZE)
+    
+    # Table styling - Black on white for best printing
+    table.setStyle(TableStyle([
+        # Black grid lines
+        ('GRID', (0, 0), (-1, -1), 1.5, colors.black),
+        
+        # All cells white background
+        ('BACKGROUND', (0, 0), (-1, -1), colors.white),
+        
+        # FREE cell - light gray background to distinguish it
+        ('BACKGROUND', (2, 2), (2, 2), colors.lightgrey),
+        
+        # All cells
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 5),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+    ]))
+    
+    elements.append(table)
+    elements.append(Spacer(1, 5*mm))
+    
+    # --- FOOTER SECTION ---
+    footer_elements = []
+    
+    # QR Code and social media
+    if social_media_url and include_qr:
+        qr_buffer = generate_qr_code(social_media_url)
+        if qr_buffer:
+            try:
+                # Create footer table with QR and text side by side
+                footer_data = []
+                
+                qr_img = Image(qr_buffer, width=20*mm, height=20*mm)
+                
+                social_text_style = ParagraphStyle(
+                    'SocialText',
+                    parent=styles['Normal'],
+                    fontSize=10,
+                    alignment=TA_LEFT,
+                    leftIndent=5*mm,
+                )
+                social_text = Paragraph(f"<b>Follow us!</b><br/>{social_media_url}", social_text_style)
+                
+                footer_data.append([qr_img, social_text])
+                
+                footer_table = Table(footer_data, colWidths=[25*mm, 150*mm])
+                footer_table.setStyle(TableStyle([
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('ALIGN', (0, 0), (0, 0), 'CENTER'),
+                ]))
+                
+                elements.append(footer_table)
+            except Exception as e:
+                print(f"Error adding QR code: {e}")
+    
+    # Card number
+    card_style = ParagraphStyle(
+        'CardNumber',
+        parent=styles['Normal'],
+        fontSize=10,
+        textColor=colors.HexColor('#667eea'),
+        alignment=TA_CENTER,
+    )
+    card_text = Paragraph(f"<b>Card #{card_num}</b>", card_style)
+    elements.append(Spacer(1, 3*mm))
+    elements.append(card_text)
+    
+    # Perfect DJ footer
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=8,
+        textColor=colors.gray,
+        alignment=TA_CENTER,
+    )
+    footer = Paragraph(f"Powered by Perfect DJ - {WEBSITE_URL}", footer_style)
+    elements.append(Spacer(1, 2*mm))
+    elements.append(footer)
+    
+    return elements
+
+
+def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
+                  pub_logo: str = None, social_media: str = None, include_qr: bool = False):
+    """Generate all bingo cards"""
+    
+    print(f"\n{'='*60}")
+    print(f"🎵 MUSIC BINGO CARD GENERATOR (ReportLab)")
+    print(f"{'='*60}")
+    print(f"Venue: {venue_name}")
+    print(f"Players: {num_players}")
+    print(f"Pub Logo: {pub_logo if pub_logo else 'None'}")
+    print(f"Social Media: {social_media if social_media else 'None'}")
+    print(f"Include QR: {include_qr}")
+    print(f"{'='*60}\n")
+    
+    # Load songs
+    all_songs = load_pool()
+    print(f"✓ Loaded {len(all_songs)} songs from pool")
+    
+    # Calculate optimal songs
+    optimal_songs = calculate_optimal_songs(num_players)
+    print(f"✓ Using {optimal_songs} songs for {num_players} players")
+    
+    # Shuffle and select songs
+    selected_songs = random.sample(all_songs, min(optimal_songs, len(all_songs)))
+    print(f"✓ Selected {len(selected_songs)} songs")
+    
+    # Create output directory
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    
+    # Load pub logo once (if provided) and save as temp file
+    pub_logo_path = None
+    if pub_logo:
+        logo_buffer = download_logo(pub_logo)
+        if logo_buffer:
+            try:
+                from PIL import Image as PILImage
+                import tempfile
+                
+                # Convert to RGB
+                pil_img = PILImage.open(logo_buffer)
+                if pil_img.mode in ('RGBA', 'LA', 'P'):
+                    background = PILImage.new('RGB', pil_img.size, (255, 255, 255))
+                    if pil_img.mode == 'P':
+                        pil_img = pil_img.convert('RGBA')
+                    if 'A' in pil_img.mode:
+                        background.paste(pil_img, mask=pil_img.split()[-1])
+                    else:
+                        background.paste(pil_img)
+                    pil_img = background
+                elif pil_img.mode != 'RGB':
+                    pil_img = pil_img.convert('RGB')
+                
+                # Save as temporary JPEG
+                temp_logo = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg')
+                pil_img.save(temp_logo.name, format='JPEG', quality=95)
+                pub_logo_path = temp_logo.name
+                temp_logo.close()
+                
+                print(f"✓ Loaded pub logo")
+            except Exception as e:
+                print(f"Error processing logo: {e}")
+    
+    # Create PDF
+    print(f"\n📄 Generating PDF cards...")
+    
+    doc = SimpleDocTemplate(
+        str(OUTPUT_FILE),
+        pagesize=A4,
+        leftMargin=15*mm,
+        rightMargin=15*mm,
+        topMargin=15*mm,
+        bottomMargin=15*mm,
+    )
+    
+    story = []
     
     # Generate cards
-    generate_cards(songs, num_cards, OUTPUT_FILE, venue_name)
+    for i in range(NUM_CARDS):
+        # Shuffle songs for this card
+        card_songs = random.sample(selected_songs, SONGS_PER_CARD)
+        
+        # Create card
+        card_elements = create_bingo_card(
+            card_songs,
+            i + 1,
+            venue_name,
+            pub_logo_path,
+            social_media,
+            include_qr
+        )
+        
+        story.extend(card_elements)
+        
+        # Add page break except for last card
+        if i < NUM_CARDS - 1:
+            from reportlab.platypus import PageBreak
+            story.append(PageBreak())
+        
+        if (i + 1) % 10 == 0:
+            print(f"  ✓ Generated {i + 1}/{NUM_CARDS} cards")
     
-    print("\n" + "=" * 60)
-    print("NEXT STEP: Open frontend/game.html to play")
-    print("=" * 60)
+    # Build PDF
+    print(f"\n📝 Building PDF document...")
+    print(f"   Total flowables in story: {len(story)}")
+    print(f"   Starting PDF build (this may take a moment)...")
+    
+    doc.build(story)
+    
+    # Cleanup temp logo file
+    if pub_logo_path:
+        try:
+            import os
+            os.unlink(pub_logo_path)
+        except:
+            pass
+    
+    print(f"\n{'='*60}")
+    print(f"✅ SUCCESS!")
+    print(f"{'='*60}")
+    print(f"Generated: {OUTPUT_FILE}")
+    print(f"Cards: {NUM_CARDS}")
+    print(f"Pages: {NUM_CARDS}")
+    print(f"Songs per card: {SONGS_PER_CARD}")
+    print(f"Total songs available: {len(selected_songs)}")
+    print(f"{'='*60}\n")
+    
+    return {
+        'num_cards': NUM_CARDS,
+        'num_pages': NUM_CARDS,
+        'songs_per_card': SONGS_PER_CARD,
+        'total_songs': len(selected_songs)
+    }
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Generate Music Bingo cards with branding')
+    parser.add_argument('--venue_name', default='Music Bingo', help='Name of the venue')
+    parser.add_argument('--num_players', type=int, default=25, help='Number of players')
+    parser.add_argument('--pub_logo', default=None, help='URL or path to pub logo image')
+    parser.add_argument('--social_media', default=None, help='Social media URL to encode in QR code')
+    parser.add_argument('--include_qr', type=lambda x: x.lower() == 'true', default=False, 
+                       help='Whether to include QR code (true/false)')
+    
+    args = parser.parse_args()
+    
+    generate_cards(
+        venue_name=args.venue_name,
+        num_players=args.num_players,
+        pub_logo=args.pub_logo,
+        social_media=args.social_media,
+        include_qr=args.include_qr
+    )

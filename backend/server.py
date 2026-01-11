@@ -235,14 +235,32 @@ def generate_cards_api():
         data = request.get_json()
         venue_name = data.get('venue_name', 'Music Bingo')
         num_players = data.get('num_players', 25)
-        optimal_songs = data.get('optimal_songs', 48)
+        pub_logo = data.get('pub_logo')  # URL or path to logo
+        social_media = data.get('social_media')  # Social media URL
+        include_qr = data.get('include_qr', False)  # Include QR code
         
         # Path to generate_cards.py
         script_path = os.path.join(BASE_DIR, 'backend', 'generate_cards.py')
         
-        # Run the generator script with venue name and num_players
+        # Build command with argparse arguments
+        cmd = [
+            'python3', script_path,
+            '--venue_name', venue_name,
+            '--num_players', str(num_players)
+        ]
+        
+        if pub_logo:
+            cmd.extend(['--pub_logo', pub_logo])
+        
+        if social_media:
+            cmd.extend(['--social_media', social_media])
+        
+        if include_qr:
+            cmd.extend(['--include_qr', 'true'])
+        
+        # Run the generator script
         result = subprocess.run(
-            ['python3', script_path, venue_name, str(num_players)],
+            cmd,
             cwd=BASE_DIR,
             capture_output=True,
             text=True,
@@ -259,20 +277,19 @@ def generate_cards_api():
         cards_path = Path(DATA_DIR) / 'cards' / 'music_bingo_cards.pdf'
         file_size_mb = cards_path.stat().st_size / (1024 * 1024)
         
-        # Calculate actual number of cards generated (20% margin)
-        num_cards_generated = int(num_players * 1.2)
-        num_cards_generated = max(10, min(100, num_cards_generated))
-        num_pages = (num_cards_generated + 1) // 2  # 2 cards per page
+        # Parse output to get actual numbers
+        num_cards_generated = 50  # Fixed from generator
         
         return jsonify({
             'success': True,
             'message': 'Cards generated successfully',
             'venue_name': venue_name,
             'num_players': num_players,
-            'optimal_songs': optimal_songs,
+            'pub_logo': pub_logo if pub_logo else None,
+            'social_media': social_media if social_media else None,
+            'include_qr': include_qr,
             'filename': 'music_bingo_cards.pdf',
             'num_cards': num_cards_generated,
-            'num_pages': num_pages,
             'file_size_mb': round(file_size_mb, 2)
         })
         
