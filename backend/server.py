@@ -273,7 +273,7 @@ def generate_cards_api():
             cwd=BASE_DIR,
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120  # Increased to 120 seconds for ReportLab PDF generation
         )
         
         if result.returncode != 0:
