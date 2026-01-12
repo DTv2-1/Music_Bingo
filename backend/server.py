@@ -246,8 +246,8 @@ def generate_cards_api():
         if not game_date:
             game_date = datetime.now().strftime("%A, %B %d, %Y")
         
-        # Path to generate_cards.py
-        script_path = os.path.join(BASE_DIR, 'backend', 'generate_cards.py')
+        # Path to generate_cards.py (in Docker it's in same dir as server.py)
+        script_path = os.path.join(os.path.dirname(__file__), 'generate_cards.py')
         
         # Build command with argparse arguments
         cmd = [

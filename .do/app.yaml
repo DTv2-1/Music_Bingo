@@ -12,8 +12,7 @@ services:
     http_port: 8080
     
     routes:
-      - path: /api
-      - path: /data
+      - path: /
     
     envs:
       - key: ELEVENLABS_API_KEY
