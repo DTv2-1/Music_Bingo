@@ -8,10 +8,8 @@ services:
       branch: main
       deploy_on_push: true
     
-    source_dir: backend
-    run_command: gunicorn --workers 2 --bind 0.0.0.0:8080 --timeout 120 wsgi:app
+    dockerfile_path: Dockerfile
     
-    environment_slug: python
     instance_count: 1
     instance_size_slug: basic-xs
     
