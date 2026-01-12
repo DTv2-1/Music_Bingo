@@ -8,8 +8,8 @@ services:
       branch: main
       deploy_on_push: true
     
-    build_command: pip install -r backend/requirements.txt
-    run_command: gunicorn --workers 2 --bind 0.0.0.0:8080 --timeout 120 --chdir backend wsgi:app
+    source_dir: backend
+    run_command: gunicorn --workers 2 --bind 0.0.0.0:8080 --timeout 120 wsgi:app
     
     environment_slug: python
     instance_count: 1
