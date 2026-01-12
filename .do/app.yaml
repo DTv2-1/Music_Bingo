@@ -39,7 +39,7 @@ services:
     
     source_dir: frontend
     
-    environment_slug: python
+    environment_slug: node-js
     instance_count: 1
     instance_size_slug: basic-xs
     
@@ -47,8 +47,6 @@ services:
     
     routes:
       - path: /
-    
-    run_command: bash start.sh
     
     envs:
       - key: BACKEND_URL
