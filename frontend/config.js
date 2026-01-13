@@ -13,7 +13,7 @@ const BACKEND_URL = (() => {
         return 'http://localhost:5001';
     }
     
-    // Same origin (droplet setup)
+    // Same origin (droplet setup) - this shouldn't happen in App Platform
     return window.location.origin;
 })();
 

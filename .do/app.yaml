@@ -1,6 +1,27 @@
 name: music-bingo
 region: lon
 
+ingress:
+  rules:
+    - match:
+        path:
+          prefix: /api
+      component:
+        name: backend
+        preserve_path_prefix: true
+    - match:
+        path:
+          prefix: /data
+      component:
+        name: backend
+        preserve_path_prefix: true
+    - match:
+        path:
+          prefix: /
+      component:
+        name: frontend
+        preserve_path_prefix: true
+
 services:
   - name: backend
     github:
@@ -10,9 +31,6 @@ services:
     
     dockerfile_path: Dockerfile
     http_port: 8080
-    
-    routes:
-      - path: /
     
     envs:
       - key: ELEVENLABS_API_KEY
@@ -38,10 +56,7 @@ services:
     environment_slug: node-js
     http_port: 8080
     
-    routes:
-      - path: /
-    
     envs:
       - key: BACKEND_URL
         scope: RUN_TIME
-        value: ${backend.PUBLIC_URL}
+        value: ${APP_URL}
