@@ -275,11 +275,18 @@ async function testVoice(event, voiceId, voiceName) {
 // MUSIC SELECTION
 // ============================================================================
 
+let currentMusicPreview = null;
+
 function initializeMusicSelection() {
     const musicStyles = document.querySelectorAll('.music-style');
     
     musicStyles.forEach(style => {
-        style.addEventListener('click', () => {
+        style.addEventListener('click', (e) => {
+            // Don't select if clicking the preview button
+            if (e.target.classList.contains('preview-music-btn')) {
+                return;
+            }
+            
             // Remove selected from all styles
             musicStyles.forEach(s => s.classList.remove('selected'));
             
@@ -291,6 +298,94 @@ function initializeMusicSelection() {
             console.log('Music style selected:', jingleData.musicPrompt);
         });
     });
+}
+
+async function previewMusic(event, musicPrompt, musicName) {
+    event.stopPropagation(); // Prevent style selection
+    
+    const btn = event.target;
+    
+    // Stop any currently playing preview
+    if (currentMusicPreview && !currentMusicPreview.paused) {
+        currentMusicPreview.pause();
+        currentMusicPreview = null;
+        // Reset all buttons
+        document.querySelectorAll('.preview-music-btn').forEach(b => {
+            b.textContent = '🔊 Preview';
+            b.classList.remove('playing');
+            b.disabled = false;
+        });
+        return;
+    }
+    
+    try {
+        // Disable all preview buttons
+        document.querySelectorAll('.preview-music-btn').forEach(b => b.disabled = true);
+        
+        btn.textContent = '⏳ Loading...';
+        btn.classList.add('playing');
+        
+        console.log('Generating music preview for:', musicName);
+        
+        // Call Music Generation API
+        const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL || 'http://localhost:8080';
+        const endpoint = apiUrl.includes('/api') ? `${apiUrl}/generate-music-preview` : `${apiUrl}/api/generate-music-preview`;
+        
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                music_prompt: musicPrompt,
+                duration: 5  // 5 second preview
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to generate music preview');
+        }
+        
+        // Get audio blob
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        // Play audio
+        currentMusicPreview = new Audio(audioUrl);
+        btn.textContent = '⏸️ Stop';
+        
+        currentMusicPreview.play();
+        
+        currentMusicPreview.addEventListener('ended', () => {
+            btn.textContent = '🔊 Preview';
+            btn.classList.remove('playing');
+            document.querySelectorAll('.preview-music-btn').forEach(b => b.disabled = false);
+            URL.revokeObjectURL(audioUrl);
+            currentMusicPreview = null;
+        });
+        
+        currentMusicPreview.addEventListener('error', () => {
+            btn.textContent = '🔊 Preview';
+            btn.classList.remove('playing');
+            document.querySelectorAll('.preview-music-btn').forEach(b => b.disabled = false);
+            alert('Error playing music preview');
+            currentMusicPreview = null;
+        });
+        
+        // Enable other buttons
+        document.querySelectorAll('.preview-music-btn').forEach(b => {
+            if (b !== btn) b.disabled = false;
+        });
+        
+    } catch (error) {
+        console.error('Error previewing music:', error);
+        btn.textContent = '🔊 Preview';
+        btn.classList.remove('playing');
+        document.querySelectorAll('.preview-music-btn').forEach(b => b.disabled = false);
+        
+        // Show user-friendly message
+        alert('Music preview unavailable. This feature requires ElevenLabs Music API access. You can still select this style and generate your jingle!');
+    }
 }
 
 // ============================================================================

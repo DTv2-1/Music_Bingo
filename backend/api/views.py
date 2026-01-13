@@ -595,3 +595,57 @@ def download_jingle(request, filename):
     except Exception as e:
         logger.error(f"Error serving jingle: {e}", exc_info=True)
         raise Http404('Error serving file')
+
+
+@api_view(['POST'])
+def generate_music_preview(request):
+    """
+    Generate a short music preview (5 seconds)
+    POST /api/generate-music-preview
+    Body: {
+        "music_prompt": "upbeat pub guitar music",
+        "duration": 5
+    }
+    """
+    try:
+        data = request.data
+        music_prompt = data.get('music_prompt', 'upbeat background music')
+        duration = int(data.get('duration', 5))
+        
+        if not ELEVENLABS_API_KEY:
+            return Response({'error': 'ElevenLabs API key not configured'}, status=500)
+        
+        logger.info(f"Generating music preview: '{music_prompt}', {duration}s")
+        
+        # Call ElevenLabs Sound Generation API
+        url = 'https://api.elevenlabs.io/v1/sound-generation'
+        payload = {
+            'text': music_prompt,
+            'duration_seconds': duration
+        }
+        headers = {
+            'xi-api-key': ELEVENLABS_API_KEY,
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.post(url, json=payload, headers=headers, timeout=30)
+        
+        if response.status_code != 200:
+            logger.error(f"Music API error: {response.status_code} - {response.text}")
+            # Return a fallback simple tone
+            from pydub.generators import Sine
+            music_audio = Sine(440).to_audio_segment(duration=duration * 1000).apply_gain(-20)
+            music_io = io.BytesIO()
+            music_audio.export(music_io, format='mp3')
+            music_io.seek(0)
+            
+            return HttpResponse(music_io.getvalue(), content_type='audio/mpeg')
+        
+        logger.info(f"Music preview generated: {len(response.content)} bytes")
+        
+        # Return audio directly
+        return HttpResponse(response.content, content_type='audio/mpeg')
+        
+    except Exception as e:
+        logger.error(f"Error generating music preview: {e}", exc_info=True)
+        return Response({'error': str(e)}, status=500)

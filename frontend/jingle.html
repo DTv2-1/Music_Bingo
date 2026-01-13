@@ -239,7 +239,7 @@
 
         .music-styles {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 12px;
             margin-top: 15px;
         }
@@ -254,6 +254,7 @@
             transition: all 0.3s;
             text-align: center;
             font-weight: 600;
+            position: relative;
         }
 
         .music-style:hover {
@@ -264,6 +265,40 @@
         .music-style.selected {
             border-color: #FFD700;
             box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+
+        .music-style-name {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .preview-music-btn {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-top: 5px;
+        }
+
+        .preview-music-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .preview-music-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .preview-music-btn.playing {
+            background: rgba(76, 175, 80, 0.8);
+            border-color: #4CAF50;
         }
 
         .progress-section {
@@ -498,22 +533,40 @@
                 <label>Choose music style:</label>
                 <div class="music-styles" id="musicStyles">
                     <div class="music-style selected" data-prompt="upbeat energetic pub background music with guitar">
-                        🎸 Pub Rock
+                        <span class="music-style-name">🎸 Pub Rock</span>
+                        <button class="preview-music-btn" onclick="previewMusic(event, 'upbeat energetic pub background music with guitar', 'Pub Rock')">
+                            🔊 Preview
+                        </button>
                     </div>
                     <div class="music-style" data-prompt="smooth jazzy piano background music for bar">
-                        🎹 Jazz Piano
+                        <span class="music-style-name">🎹 Jazz Piano</span>
+                        <button class="preview-music-btn" onclick="previewMusic(event, 'smooth jazzy piano background music for bar', 'Jazz Piano')">
+                            🔊 Preview
+                        </button>
                     </div>
                     <div class="music-style" data-prompt="energetic electronic dance background music">
-                        🎧 Electronic
+                        <span class="music-style-name">🎧 Electronic</span>
+                        <button class="preview-music-btn" onclick="previewMusic(event, 'energetic electronic dance background music', 'Electronic')">
+                            🔊 Preview
+                        </button>
                     </div>
                     <div class="music-style" data-prompt="acoustic indie folk guitar background music">
-                        🎵 Acoustic
+                        <span class="music-style-name">🎵 Acoustic</span>
+                        <button class="preview-music-btn" onclick="previewMusic(event, 'acoustic indie folk guitar background music', 'Acoustic')">
+                            🔊 Preview
+                        </button>
                     </div>
                     <div class="music-style" data-prompt="upbeat irish folk music with fiddle">
-                        🍀 Irish Folk
+                        <span class="music-style-name">🍀 Irish Folk</span>
+                        <button class="preview-music-btn" onclick="previewMusic(event, 'upbeat irish folk music with fiddle', 'Irish Folk')">
+                            🔊 Preview
+                        </button>
                     </div>
                     <div class="music-style" data-prompt="funky disco groove background music">
-                        💃 Funky
+                        <span class="music-style-name">💃 Funky</span>
+                        <button class="preview-music-btn" onclick="previewMusic(event, 'funky disco groove background music', 'Funky')">
+                            🔊 Preview
+                        </button>
                     </div>
                 </div>
             </div>
