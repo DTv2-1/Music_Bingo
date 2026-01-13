@@ -8,6 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ .
 COPY data/ ./data/
+COPY frontend/assets/perfect-dj-logo.png ./assets/perfect-dj-logo.png
 
 # Expose port
 EXPOSE 8080

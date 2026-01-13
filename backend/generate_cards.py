@@ -53,8 +53,12 @@ NUM_CARDS = 50
 GRID_SIZE = 5  # 5x5 bingo
 SONGS_PER_CARD = 24  # 25 cells - 1 FREE
 
-# Perfect DJ Branding
-PERFECT_DJ_LOGO = PROJECT_ROOT / "frontend" / "assets" / "perfect-dj-logo.png"
+# Perfect DJ Branding - Check multiple possible locations
+PERFECT_DJ_LOGO_PATHS = [
+    PROJECT_ROOT / "frontend" / "assets" / "perfect-dj-logo.png",  # Local dev
+    PROJECT_ROOT / "assets" / "perfect-dj-logo.png",  # Docker if copied
+    Path("/app/frontend/assets/perfect-dj-logo.png"),  # Docker absolute
+]
 WEBSITE_URL = "www.perfectdj.co.uk"
 
 
@@ -263,13 +267,16 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
             
             pub_logo = Image(pub_logo_path, width=new_width, height=new_height)
             
-            # Perfect DJ logo on right (smaller)
+            # Perfect DJ logo on right
             perfect_dj_logo = None
             try:
-                dj_logo_path = Path(__file__).parent.parent / 'frontend' / 'assets' / 'perfect-dj-logo.png'
-                if dj_logo_path.exists():
-                    perfect_dj_logo = Image(str(dj_logo_path), width=15*mm, height=15*mm)  # Reduced from 20mm
-            except:
+                # Try multiple paths for Docker compatibility
+                for logo_path in PERFECT_DJ_LOGO_PATHS:
+                    if logo_path.exists():
+                        perfect_dj_logo = Image(str(logo_path), width=20*mm, height=20*mm)
+                        break
+            except Exception as e:
+                print(f"Warning: Could not load Perfect DJ logo: {e}")
                 pass
             
             # Create header table with logos on left and right
@@ -339,10 +346,10 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
                 cell_style = ParagraphStyle(
                     'SongCell',
                     parent=styles['Normal'],
-                    fontSize=7,  # Reduced from 8
+                    fontSize=8,  # Increased from 7 to 8 (larger cells = more space)
                     textColor=colors.black,
                     alignment=TA_CENTER,
-                    leading=7,  # Reduced from 8
+                    leading=9,  # Increased from 7 to 9
                 )
                 cell_content = Paragraph(song_text, cell_style)
                 song_index += 1
@@ -350,9 +357,9 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
             row_data.append(cell_content)
         grid_data.append(row_data)
     
-    # Create table - optimized size for 2 per page
-    col_width = 28*mm  # Reduced from 30mm
-    row_height = 10*mm  # Reduced from 11mm
+    # Create table - LARGER to use more space
+    col_width = 32*mm  # Increased from 28mm to 32mm
+    row_height = 12*mm  # Increased from 10mm to 12mm
     
     table = Table(grid_data, colWidths=[col_width]*GRID_SIZE, rowHeights=[row_height]*GRID_SIZE)
     
@@ -502,10 +509,10 @@ def generate_batch_pdf(batch_data):
     doc = SimpleDocTemplate(
         temp_path,
         pagesize=A4,
-        leftMargin=15*mm,
-        rightMargin=15*mm,
-        topMargin=10*mm,
-        bottomMargin=10*mm,
+        leftMargin=10*mm,  # Reduced from 15mm
+        rightMargin=10*mm,  # Reduced from 15mm
+        topMargin=8*mm,  # Reduced from 10mm
+        bottomMargin=8*mm,  # Reduced from 10mm
     )
     
     # Reconstruct QR buffer if data provided
