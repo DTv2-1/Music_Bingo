@@ -631,19 +631,20 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
             print(f"✓ Generated QR code ({time.time()-step_start:.2f}s)")
     
     # Check if parallel processing is beneficial
-    # OPTIMIZED: Use ALL available cores for maximum speed
+    # MEMORY-OPTIMIZED: Limit workers to avoid OOM on App Platform
     num_cpus = mp.cpu_count()
-    use_parallel = True  # Always use parallel - it's 4-8x faster
+    use_parallel = True  # Always use parallel - it's faster
     
     if use_parallel:
-        # **PARALLEL GENERATION** - OPTIMIZED for maximum speed
-        print(f"\n📄 Generating PDF cards in parallel (OPTIMIZED)...")
+        # **PARALLEL GENERATION** - MEMORY-OPTIMIZED for cloud deployment
+        print(f"\n📄 Generating PDF cards in parallel (MEMORY-OPTIMIZED)...")
         parallel_start = time.time()
         
         batch_size = 10  # 10 cards per batch
-        # OPTIMIZATION: Use max cores available (minus 1 for system)
-        num_workers = max(4, num_cpus - 1)  # Minimum 4 workers, use all available cores
-        print(f"   Using {num_workers} parallel workers (CPUs: {num_cpus}) - MAXIMUM SPEED MODE")
+        # MEMORY OPTIMIZATION: Limit to 2 workers to avoid OOM (exit code 128)
+        # App Platform has memory limits - using all cores causes out-of-memory crashes
+        num_workers = min(2, num_cpus)  # Maximum 2 workers to stay within memory limits
+        print(f"   Using {num_workers} parallel workers (CPUs: {num_cpus}) - MEMORY-SAFE MODE")
         
         # Prepare batch data
         batches = []
