@@ -27,9 +27,9 @@ ELEVENLABS_VOICE_ID = os.getenv('ELEVENLABS_VOICE_ID', '21m00Tcm4TlvDq8ikWAM')
 VENUE_NAME = os.getenv('VENUE_NAME', 'this venue')
 
 # Paths
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
-FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
+FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), 'frontend')
 
 # ============================================================================
 # STATIC FILES - Serve frontend and data
