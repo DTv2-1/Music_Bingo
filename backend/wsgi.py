@@ -1,8 +1,11 @@
 """
-WSGI entry point for production deployment with Gunicorn
+WSGI config for music_bingo project.
 """
 
-from server import app
+import os
 
-if __name__ == "__main__":
-    app.run()
+from django.core.wsgi import get_wsgi_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'music_bingo.settings')
+
+application = get_wsgi_application()
