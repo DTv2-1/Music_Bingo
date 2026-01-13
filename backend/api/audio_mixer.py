@@ -1,0 +1,118 @@
+"""
+Audio Mixer Module for Jingle Generation
+Combines TTS audio with AI-generated music background
+"""
+
+import io
+import logging
+from pydub import AudioSegment
+from pydub.effects import normalize
+
+logger = logging.getLogger(__name__)
+
+
+def mix_tts_with_music(tts_bytes, music_bytes, tts_volume=0, music_volume=-6):
+    """
+    Mix TTS audio with background music
+    
+    Args:
+        tts_bytes: MP3 bytes of TTS audio
+        music_bytes: MP3 bytes of background music
+        tts_volume: Volume adjustment for TTS in dB (0 = no change)
+        music_volume: Volume adjustment for music in dB (-6 = half volume)
+    
+    Returns:
+        bytes: Mixed audio as MP3
+    """
+    try:
+        # Load audio segments
+        logger.info("Loading TTS audio...")
+        tts_audio = AudioSegment.from_mp3(io.BytesIO(tts_bytes))
+        
+        logger.info("Loading background music...")
+        bg_audio = AudioSegment.from_mp3(io.BytesIO(music_bytes))
+        
+        # Apply volume adjustments
+        tts_audio = tts_audio + tts_volume
+        bg_audio = bg_audio + music_volume
+        
+        # Apply fade in/out to background music
+        logger.info("Applying fade effects...")
+        bg_audio = bg_audio.fade_in(500).fade_out(500)
+        
+        # Ensure background music is at least as long as TTS
+        if len(bg_audio) < len(tts_audio):
+            logger.warning(f"Background music too short ({len(bg_audio)}ms), extending...")
+            # Loop the background music if needed
+            repetitions = (len(tts_audio) // len(bg_audio)) + 1
+            bg_audio = bg_audio * repetitions
+        
+        # Trim background to match TTS duration
+        bg_audio = bg_audio[:len(tts_audio)]
+        
+        # Overlay TTS on top of background music
+        logger.info("Mixing audio tracks...")
+        mixed = bg_audio.overlay(tts_audio, position=0)
+        
+        # Normalize audio to prevent clipping
+        logger.info("Normalizing audio...")
+        mixed = normalize(mixed)
+        
+        # Ensure exact 10 seconds (trim or extend)
+        target_duration = 10000  # 10 seconds in milliseconds
+        if len(mixed) > target_duration:
+            logger.info(f"Trimming to 10 seconds (was {len(mixed)}ms)...")
+            mixed = mixed[:target_duration]
+        elif len(mixed) < target_duration:
+            logger.info(f"Extending to 10 seconds (was {len(mixed)}ms)...")
+            silence = AudioSegment.silent(duration=target_duration - len(mixed))
+            mixed = mixed + silence
+        
+        # Export to MP3
+        logger.info("Exporting final mix...")
+        output = io.BytesIO()
+        mixed.export(output, format="mp3", bitrate="128k")
+        
+        output.seek(0)
+        result = output.getvalue()
+        
+        logger.info(f"Successfully mixed audio: {len(result)} bytes")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error mixing audio: {e}", exc_info=True)
+        raise
+
+
+def validate_audio(audio_bytes, max_duration_ms=15000):
+    """
+    Validate audio file
+    
+    Args:
+        audio_bytes: Audio data in bytes
+        max_duration_ms: Maximum duration in milliseconds
+    
+    Returns:
+        dict: Audio info (duration, channels, sample_rate)
+    
+    Raises:
+        ValueError: If audio is invalid
+    """
+    try:
+        audio = AudioSegment.from_mp3(io.BytesIO(audio_bytes))
+        
+        duration_ms = len(audio)
+        if duration_ms > max_duration_ms:
+            raise ValueError(f"Audio too long: {duration_ms}ms (max: {max_duration_ms}ms)")
+        
+        return {
+            'duration_ms': duration_ms,
+            'duration_seconds': duration_ms / 1000,
+            'channels': audio.channels,
+            'sample_rate': audio.frame_rate,
+            'sample_width': audio.sample_width
+        }
+        
+    except Exception as e:
+        logger.error(f"Error validating audio: {e}")
+        raise ValueError(f"Invalid audio file: {e}")

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jingle Generator - Music Bingo</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Jingle-specific styles */
+        .jingle-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .jingle-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .jingle-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .jingle-header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .wizard-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .step::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: rgba(255,255,255,0.3);
+            z-index: 0;
+        }
+
+        .step:first-child::before {
+            display: none;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-number {
+            background: #4CAF50;
+            transform: scale(1.2);
+        }
+
+        .step.completed .step-number {
+            background: #2196F3;
+        }
+
+        .step-label {
+            color: white;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .step.active .step-label {
+            opacity: 1;
+            font-weight: bold;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .char-counter.warning {
+            color: #ff9800;
+        }
+
+        .char-counter.error {
+            color: #f44336;
+        }
+
+        .templates {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .template-btn {
+            padding: 12px;
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .template-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .voice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .voice-card {
+            padding: 20px;
+            background: #f5f5f5;
+            border: 3px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .voice-card:hover {
+            background: #e8eaf6;
+            transform: translateY(-2px);
+        }
+
+        .voice-card.selected {
+            border-color: #667eea;
+            background: #e8eaf6;
+        }
+
+        .voice-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .voice-desc {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .music-styles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .music-style {
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: 3px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .music-style:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .music-style.selected {
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+
+        .progress-section {
+            display: none;
+        }
+
+        .progress-section.active {
+            display: block;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #666;
+            margin: 10px 0;
+        }
+
+        .audio-player {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .audio-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin: 20px 0;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #c62828;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="jingle-container">
+        <a href="game.html" class="back-link">← Back to Music Bingo</a>
+        
+        <div class="jingle-header">
+            <h1>🎵 Jingle Generator</h1>
+            <p>Create professional 10-second ad jingles in minutes</p>
+        </div>
+
+        <!-- Wizard Steps -->
+        <div class="wizard-steps">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Your Text</div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Voice</div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Music</div>
+            </div>
+            <div class="step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Generate</div>
+            </div>
+        </div>
+
+        <!-- Step 1: Text Input -->
+        <div class="form-card" id="step1" data-step="1">
+            <div class="form-group">
+                <label for="jingleText">Enter your jingle text:</label>
+                <textarea 
+                    id="jingleText" 
+                    placeholder="e.g., Every Wednesday Evening, Happy Hour two for one cocktails between 5pm and 7pm"
+                    maxlength="150"
+                ></textarea>
+                <div class="char-counter">
+                    <span id="charCount">0</span> / 150 characters
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Or choose a template:</label>
+                <div class="templates">
+                    <button class="template-btn" data-template="Every Wednesday Evening, Happy Hour two for one cocktails between 5pm and 7pm">Happy Hour</button>
+                    <button class="template-btn" data-template="Join us this Friday for live music night starting at 8pm. Great food, drinks and atmosphere!">Live Music</button>
+                    <button class="template-btn" data-template="New menu available now! Try our chef's special burger with fries for just £10">Food Special</button>
+                    <button class="template-btn" data-template="Quiz night every Thursday at 7pm. Form your teams and win amazing prizes!">Quiz Night</button>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="nextStep()">Next: Choose Voice →</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Voice Selection -->
+        <div class="form-card hidden" id="step2" data-step="2">
+            <div class="form-group">
+                <label>Choose a voice:</label>
+                <div class="voice-grid" id="voiceGrid">
+                    <div class="voice-card selected" data-voice="21m00Tcm4TlvDq8ikWAM">
+                        <div class="voice-name">British Male</div>
+                        <div class="voice-desc">Professional & Clear</div>
+                    </div>
+                    <div class="voice-card" data-voice="EXAVITQu4vr4xnSDxMaL">
+                        <div class="voice-name">British Female</div>
+                        <div class="voice-desc">Friendly & Warm</div>
+                    </div>
+                    <div class="voice-card" data-voice="pNInz6obpgDQGcFmaJgB">
+                        <div class="voice-name">Energetic</div>
+                        <div class="voice-desc">Upbeat & Fun</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="previousStep()">← Previous</button>
+                <button class="btn btn-primary" onclick="nextStep()">Next: Choose Music →</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Music Selection -->
+        <div class="form-card hidden" id="step3" data-step="3">
+            <div class="form-group">
+                <label>Choose music style:</label>
+                <div class="music-styles" id="musicStyles">
+                    <div class="music-style selected" data-prompt="upbeat energetic pub background music with guitar">
+                        🎸 Pub Rock
+                    </div>
+                    <div class="music-style" data-prompt="smooth jazzy piano background music for bar">
+                        🎹 Jazz Piano
+                    </div>
+                    <div class="music-style" data-prompt="energetic electronic dance background music">
+                        🎧 Electronic
+                    </div>
+                    <div class="music-style" data-prompt="acoustic indie folk guitar background music">
+                        🎵 Acoustic
+                    </div>
+                    <div class="music-style" data-prompt="upbeat irish folk music with fiddle">
+                        🍀 Irish Folk
+                    </div>
+                    <div class="music-style" data-prompt="funky disco groove background music">
+                        💃 Funky
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="previousStep()">← Previous</button>
+                <button class="btn btn-primary" onclick="nextStep()">Next: Generate →</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Generate & Download -->
+        <div class="form-card hidden" id="step4" data-step="4">
+            <div class="form-group">
+                <h3 style="text-align: center; margin-bottom: 20px;">Ready to generate your jingle!</h3>
+                
+                <div id="summarySection">
+                    <p><strong>Text:</strong> <span id="summaryText"></span></p>
+                    <p><strong>Voice:</strong> <span id="summaryVoice"></span></p>
+                    <p><strong>Music:</strong> <span id="summaryMusic"></span></p>
+                </div>
+
+                <div class="progress-section" id="progressSection">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressBar" style="width: 0%">0%</div>
+                    </div>
+                    <div class="progress-text" id="progressText">Initializing...</div>
+                </div>
+
+                <div class="error-message hidden" id="errorMessage"></div>
+                
+                <div class="audio-player hidden" id="audioPlayer">
+                    <audio controls id="jingleAudio" style="width: 100%"></audio>
+                    <div class="audio-controls">
+                        <button class="btn btn-success" id="downloadBtn">
+                            ⬇️ Download Jingle
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetWizard()">
+                            🔄 Create Another
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group" id="generateButtons">
+                <button class="btn btn-secondary" onclick="previousStep()">← Previous</button>
+                <button class="btn btn-primary" id="generateBtn" onclick="generateJingle()">
+                    ✨ Generate Jingle
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="jingle.js"></script>
+</body>
+</html>

@@ -10,6 +10,7 @@ import threading
 import uuid
 import time
 import subprocess
+import io
 from pathlib import Path
 from datetime import datetime
 
@@ -368,3 +369,229 @@ def upload_logo(request):
 def get_config(request):
     """Get public configuration"""
     return Response({'venue_name': VENUE_NAME})
+
+
+# ============================================================================
+# JINGLE GENERATION ENDPOINTS
+# ============================================================================
+
+@api_view(['POST'])
+def generate_jingle(request):
+    """
+    Generate a jingle with TTS + AI music
+    POST /api/generate-jingle
+    Body: {
+        "text": "Happy Hour 2x1 cocktails 5-7pm",
+        "voice_id": "optional",
+        "music_prompt": "upbeat pub guitar riff",
+        "duration": 10
+    }
+    Returns: {task_id: "uuid"}
+    """
+    try:
+        from .audio_mixer import mix_tts_with_music
+        
+        data = request.data
+        text = data.get('text', '').strip()
+        voice_id = data.get('voice_id', ELEVENLABS_VOICE_ID)
+        music_prompt = data.get('music_prompt', 'upbeat energetic pub background music')
+        duration = int(data.get('duration', 10))
+        
+        # Validation
+        if not text:
+            return Response({'error': 'Text is required'}, status=400)
+        
+        if len(text) > 150:
+            return Response({'error': 'Text too long (max 150 characters)'}, status=400)
+        
+        if not ELEVENLABS_API_KEY:
+            return Response({'error': 'ElevenLabs API key not configured'}, status=500)
+        
+        logger.info(f"Starting jingle generation: text='{text}', music_prompt='{music_prompt}'")
+        
+        # Generate task ID
+        task_id = str(uuid.uuid4())
+        
+        # Initialize task status
+        tasks_storage[task_id] = {
+            'status': 'pending',
+            'progress': 0,
+            'current_step': 'initializing',
+            'result': None,
+            'error': None,
+            'started_at': time.time()
+        }
+        
+        # Start background task
+        def background_jingle_generation():
+            try:
+                logger.info(f"Task {task_id}: Starting generation process")
+                tasks_storage[task_id]['status'] = 'processing'
+                
+                # Step 1: Generate TTS
+                logger.info(f"Task {task_id}: Generating TTS...")
+                tasks_storage[task_id].update({'progress': 20, 'current_step': 'generating_voice'})
+                
+                tts_url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
+                tts_payload = {
+                    'text': text,
+                    'model_id': 'eleven_monolingual_v1',
+                    'voice_settings': {
+                        'stability': 0.5,
+                        'similarity_boost': 0.75
+                    }
+                }
+                tts_headers = {
+                    'xi-api-key': ELEVENLABS_API_KEY,
+                    'Content-Type': 'application/json'
+                }
+                
+                tts_response = requests.post(tts_url, json=tts_payload, headers=tts_headers, timeout=30)
+                
+                if tts_response.status_code != 200:
+                    raise Exception(f'TTS API error: {tts_response.status_code} - {tts_response.text}')
+                
+                tts_bytes = tts_response.content
+                logger.info(f"Task {task_id}: TTS generated ({len(tts_bytes)} bytes)")
+                
+                # Step 2: Generate Music
+                logger.info(f"Task {task_id}: Generating music...")
+                tasks_storage[task_id].update({'progress': 50, 'current_step': 'generating_music'})
+                
+                # ElevenLabs Music Generation API
+                music_url = 'https://api.elevenlabs.io/v1/sound-generation'
+                music_payload = {
+                    'text': music_prompt,
+                    'duration_seconds': duration
+                }
+                music_headers = {
+                    'xi-api-key': ELEVENLABS_API_KEY,
+                    'Content-Type': 'application/json'
+                }
+                
+                music_response = requests.post(music_url, json=music_payload, headers=music_headers, timeout=60)
+                
+                if music_response.status_code != 200:
+                    logger.warning(f"Music API error: {music_response.status_code}, using fallback")
+                    # Fallback: use silent background or default music
+                    # For now, we'll create a simple tone as placeholder
+                    from pydub.generators import Sine
+                    music_audio = Sine(440).to_audio_segment(duration=duration * 1000).apply_gain(-20)
+                    music_io = io.BytesIO()
+                    music_audio.export(music_io, format='mp3')
+                    music_bytes = music_io.getvalue()
+                else:
+                    music_bytes = music_response.content
+                
+                logger.info(f"Task {task_id}: Music generated ({len(music_bytes)} bytes)")
+                
+                # Step 3: Mix audio
+                logger.info(f"Task {task_id}: Mixing audio...")
+                tasks_storage[task_id].update({'progress': 75, 'current_step': 'mixing'})
+                
+                mixed_audio = mix_tts_with_music(tts_bytes, music_bytes)
+                
+                # Step 4: Save file
+                logger.info(f"Task {task_id}: Saving file...")
+                tasks_storage[task_id].update({'progress': 90, 'current_step': 'finalizing'})
+                
+                jingles_dir = DATA_DIR / 'jingles'
+                jingles_dir.mkdir(parents=True, exist_ok=True)
+                
+                timestamp = int(time.time())
+                filename = f'jingle_{timestamp}_{task_id[:8]}.mp3'
+                file_path = jingles_dir / filename
+                
+                with open(file_path, 'wb') as f:
+                    f.write(mixed_audio)
+                
+                logger.info(f"Task {task_id}: Jingle saved to {file_path}")
+                
+                # Update task status
+                tasks_storage[task_id].update({
+                    'status': 'completed',
+                    'progress': 100,
+                    'current_step': 'completed',
+                    'result': {
+                        'audio_url': f'/api/jingles/{filename}',
+                        'filename': filename,
+                        'duration_seconds': duration,
+                        'size_bytes': len(mixed_audio)
+                    },
+                    'completed_at': time.time()
+                })
+                
+                logger.info(f"Task {task_id}: COMPLETED successfully")
+                
+            except Exception as e:
+                logger.error(f"Task {task_id}: ERROR - {e}", exc_info=True)
+                tasks_storage[task_id].update({
+                    'status': 'failed',
+                    'error': str(e),
+                    'failed_at': time.time()
+                })
+        
+        # Start thread
+        thread = threading.Thread(target=background_jingle_generation)
+        thread.daemon = True
+        thread.start()
+        
+        return Response({
+            'task_id': task_id,
+            'status': 'pending',
+            'message': 'Jingle generation started'
+        }, status=202)
+        
+    except Exception as e:
+        logger.error(f"Error starting jingle generation: {e}", exc_info=True)
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['GET'])
+def get_jingle_status(request, task_id):
+    """
+    Get jingle generation task status
+    GET /api/jingle-tasks/<task_id>
+    """
+    try:
+        task = tasks_storage.get(task_id)
+        
+        if not task:
+            return Response({'error': 'Task not found'}, status=404)
+        
+        return Response(task)
+        
+    except Exception as e:
+        logger.error(f"Error getting task status: {e}", exc_info=True)
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['GET'])
+def download_jingle(request, filename):
+    """
+    Download generated jingle
+    GET /api/jingles/<filename>
+    """
+    try:
+        jingles_dir = DATA_DIR / 'jingles'
+        file_path = jingles_dir / filename
+        
+        if not file_path.exists():
+            raise Http404('Jingle not found')
+        
+        # Security check: prevent directory traversal
+        if not str(file_path.resolve()).startswith(str(jingles_dir.resolve())):
+            raise Http404('Invalid file path')
+        
+        logger.info(f"Serving jingle: {file_path}")
+        
+        response = FileResponse(open(file_path, 'rb'), content_type='audio/mpeg')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response
+        
+    except Http404:
+        raise
+    except Exception as e:
+        logger.error(f"Error serving jingle: {e}", exc_info=True)
+        raise Http404('Error serving file')
