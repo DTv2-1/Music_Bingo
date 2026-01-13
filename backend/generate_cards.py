@@ -23,6 +23,7 @@ from io import BytesIO
 import multiprocessing as mp
 from concurrent.futures import ProcessPoolExecutor
 import tempfile
+import psutil
 
 # ReportLab imports
 from reportlab.lib.pagesizes import A4, landscape
@@ -267,37 +268,14 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
             
             pub_logo = Image(pub_logo_path, width=new_width, height=new_height)
             
-            # Perfect DJ logo on right
-            perfect_dj_logo = None
-            try:
-                # Try multiple paths for Docker compatibility
-                for logo_path in PERFECT_DJ_LOGO_PATHS:
-                    if logo_path.exists():
-                        perfect_dj_logo = Image(str(logo_path), width=20*mm, height=20*mm)
-                        break
-            except Exception as e:
-                print(f"Warning: Could not load Perfect DJ logo: {e}")
-                pass
-            
-            # Create header table with logos on left and right
-            if perfect_dj_logo:
-                # Ajustado para mover el título más a la izquierda
-                header_table = Table([[pub_logo, Paragraph(f"<b>MUSIC BINGO</b><br/><font size='8'>{venue_name}</font>", header_style), perfect_dj_logo]], 
-                                    colWidths=[30*mm, 90*mm, 30*mm])  # 30mm izq + 30mm der = balanceado
-                header_table.setStyle(TableStyle([
-                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                    ('ALIGN', (0, 0), (0, 0), 'LEFT'),
-                    ('ALIGN', (1, 0), (1, 0), 'CENTER'),
-                    ('ALIGN', (2, 0), (2, 0), 'RIGHT'),
-                ]))
-            else:
-                header_table = Table([[pub_logo, Paragraph(f"<b>MUSIC BINGO</b><br/><font size='8'>{venue_name}</font>", header_style)]], 
-                                    colWidths=[45*mm, 115*mm])  # Adjusted
-                header_table.setStyle(TableStyle([
-                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                    ('ALIGN', (0, 0), (0, 0), 'LEFT'),
-                    ('ALIGN', (1, 0), (1, 0), 'CENTER'),
-                ]))
+            # Create header table with pub logo only (no Perfect DJ logo)
+            header_table = Table([[pub_logo, Paragraph(f"<b>MUSIC BINGO</b><br/><font size='8'>{venue_name}</font>", header_style)]], 
+                                colWidths=[45*mm, 115*mm])
+            header_table.setStyle(TableStyle([
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+                ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+            ]))
             
             elements.append(header_table)
             elements.append(Spacer(1, 1*mm))  # Reduced from 2mm to 1mm
@@ -338,7 +316,7 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
                     alignment=TA_CENTER,
                     leading=12,
                 )
-                cell_content = Paragraph("<b>FREE</b><br/><font size='7'>www.perfectdj.co.uk</font>", cell_style)
+                cell_content = Paragraph("<b>FREE</b>", cell_style)
             else:
                 song = songs[song_index]
                 song_text = format_song_title(song, max_length=40)
@@ -558,6 +536,10 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     import time
     start_time = time.time()
     
+    # Memory monitoring
+    process = psutil.Process()
+    mem_start = process.memory_info()
+    
     print(f"\n{'='*60}")
     print(f"🎵 MUSIC BINGO CARD GENERATOR (ReportLab)")
     print(f"{'='*60}")
@@ -566,12 +548,14 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"Pub Logo: {pub_logo if pub_logo else 'None'}")
     print(f"Social Media: {social_media if social_media else 'None'}")
     print(f"Include QR: {include_qr}")
+    print(f"📊 Memory at start: {mem_start.rss / 1024 / 1024:.1f} MB")
     print(f"{'='*60}\n")
     
     # Load songs
     step_start = time.time()
     all_songs = load_pool()
-    print(f"✓ Loaded {len(all_songs)} songs from pool ({time.time()-step_start:.2f}s)")
+    mem_after_load = process.memory_info()
+    print(f"✓ Loaded {len(all_songs)} songs from pool ({time.time()-step_start:.2f}s) - Memory: {mem_after_load.rss / 1024 / 1024:.1f} MB")
     
     # Calculate optimal songs
     step_start = time.time()
@@ -616,7 +600,8 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
                 pub_logo_path = temp_logo.name
                 temp_logo.close()
                 
-                print(f"✓ Loaded pub logo ({time.time()-step_start:.2f}s)")
+                mem_after_logo = process.memory_info()
+                print(f"✓ Loaded pub logo ({time.time()-step_start:.2f}s) - Memory: {mem_after_logo.rss / 1024 / 1024:.1f} MB")
             except Exception as e:
                 print(f"Error processing logo: {e}")
     
@@ -628,7 +613,8 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         qr_buffer_cache = generate_qr_code(social_media)
         if qr_buffer_cache:
             qr_buffer_data = qr_buffer_cache.getvalue()  # Get bytes for serialization
-            print(f"✓ Generated QR code ({time.time()-step_start:.2f}s)")
+            mem_after_qr = process.memory_info()
+            print(f"✓ Generated QR code ({time.time()-step_start:.2f}s) - Memory: {mem_after_qr.rss / 1024 / 1024:.1f} MB")
     
     # Check if parallel processing is beneficial
     # MEMORY-OPTIMIZED: Limit workers to avoid OOM on App Platform
@@ -638,6 +624,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     if use_parallel:
         # **PARALLEL GENERATION** - MEMORY-OPTIMIZED for cloud deployment
         print(f"\n📄 Generating PDF cards in parallel (MEMORY-OPTIMIZED)...")
+        print(f"PROGRESS: 0")  # Structured progress for backend parsing
         parallel_start = time.time()
         
         batch_size = 10  # 10 cards per batch
@@ -663,14 +650,30 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
                 qr_buffer_data
             ))
         
-        # Generate PDFs in parallel
+        # Generate PDFs in parallel with progress tracking
         with ProcessPoolExecutor(max_workers=num_workers) as executor:
-            temp_pdfs = list(executor.map(generate_batch_pdf, batches))
+            temp_pdfs = []
+            futures = [executor.submit(generate_batch_pdf, batch) for batch in batches]
+            
+            for i, future in enumerate(futures):
+                try:
+                    result = future.result(timeout=60)
+                    temp_pdfs.append(result)
+                    progress = (i + 1) / len(futures) * 90  # Reserve 10% for merging
+                    mem_info = process.memory_info()
+                    print(f"PROGRESS: {progress:.0f}")  # Structured progress
+                    print(f"  📊 Progress: {progress:.0f}% ({i+1}/{len(futures)} batches) - Memory: {mem_info.rss / 1024 / 1024:.1f} MB")
+                except Exception as e:
+                    print(f"  ❌ Batch {i} failed: {e}")
+                    raise
         
         print(f"  ✓ All batches generated ({time.time()-parallel_start:.2f}s)")
+        mem_info = process.memory_info()
+        print(f"  📈 Final memory: {mem_info.rss / 1024 / 1024:.1f} MB")
         
         # Merge all PDFs
         print(f"\n📝 Merging PDF batches...")
+        print(f"PROGRESS: 90")  # Structured progress for merging stage
         merge_start = time.time()
         
         merger = PdfWriter()
@@ -682,6 +685,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         with open(str(OUTPUT_FILE), 'wb') as output_file:
             merger.write(output_file)
         
+        print(f"PROGRESS: 100")  # Completed
         print(f"   ✓ PDF merged ({time.time()-merge_start:.2f}s)")
         
         # Cleanup temp files
@@ -767,6 +771,22 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
 
 
 if __name__ == '__main__':
+    import psutil
+    
+    # Log system resources at start
+    process = psutil.Process()
+    mem_info = process.memory_info()
+    print(f"\n🔧 SYSTEM INFO:")
+    print(f"   PID: {process.pid}")
+    print(f"   Memory RSS: {mem_info.rss / 1024 / 1024:.1f} MB")
+    print(f"   CPU Count: {mp.cpu_count()}")
+    try:
+        vm = psutil.virtual_memory()
+        print(f"   Available Memory: {vm.available / 1024 / 1024:.1f} MB")
+        print(f"   Total Memory: {vm.total / 1024 / 1024:.1f} MB")
+    except:
+        pass
+    
     parser = argparse.ArgumentParser(description='Generate Music Bingo cards with branding')
     parser.add_argument('--venue_name', default='Music Bingo', help='Name of the venue')
     parser.add_argument('--num_players', type=int, default=25, help='Number of players')

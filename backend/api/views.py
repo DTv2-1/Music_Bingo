@@ -82,6 +82,7 @@ def generate_cards_async(request):
             'status': 'pending',
             'result': None,
             'error': None,
+            'progress': 0,
             'started_at': time.time()
         }
         
@@ -120,7 +121,62 @@ def generate_cards_async(request):
                     logger.info(f"Task {task_id}: QR code enabled")
                 
                 logger.info(f"Task {task_id}: Running command: {' '.join(cmd)}")
-                result = subprocess.run(cmd, cwd=str(BASE_DIR), capture_output=True, text=True, timeout=180)
+                
+                # Run with real-time output capture for progress tracking
+                process = subprocess.Popen(
+                    cmd,
+                    cwd=str(BASE_DIR),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    bufsize=1
+                )
+                
+                stdout_lines = []
+                stderr_lines = []
+                
+                # Read output line by line for progress tracking
+                while True:
+                    output = process.stdout.readline()
+                    if output == '' and process.poll() is not None:
+                        break
+                    if output:
+                        line = output.strip()
+                        stdout_lines.append(line)
+                        logger.info(f"Task {task_id}: {line}")
+                        
+                        # Parse structured progress from output (PROGRESS: XX)
+                        if line.startswith('PROGRESS:'):
+                            try:
+                                progress_str = line.split('PROGRESS:')[1].strip()
+                                progress_val = int(float(progress_str))
+                                tasks_storage[task_id]['progress'] = progress_val
+                                logger.info(f"Task {task_id}: Progress updated to {progress_val}%")
+                            except Exception as e:
+                                logger.warning(f"Task {task_id}: Failed to parse progress: {e}")
+                        # Also parse emoji format for backwards compatibility
+                        elif '📊 Progress:' in line:
+                            try:
+                                progress_str = line.split('Progress:')[1].split('%')[0].strip()
+                                tasks_storage[task_id]['progress'] = int(float(progress_str))
+                            except:
+                                pass
+                
+                # Get any remaining stderr
+                stderr_output = process.stderr.read()
+                if stderr_output:
+                    stderr_lines.append(stderr_output)
+                
+                return_code = process.poll()
+                
+                # Create result object similar to subprocess.run
+                class Result:
+                    def __init__(self, returncode, stdout, stderr):
+                        self.returncode = returncode
+                        self.stdout = stdout
+                        self.stderr = stderr
+                
+                result = Result(return_code, '\n'.join(stdout_lines), '\n'.join(stderr_lines))
                 
                 if result.returncode != 0:
                     logger.error(f"Task {task_id}: Failed with error: {result.stderr}")
@@ -155,6 +211,7 @@ def get_task_status(request, task_id):
     response = {
         'task_id': task_id,
         'status': task['status'],
+        'progress': task.get('progress', 0),
         'elapsed_time': round(time.time() - task['started_at'], 2)
     }
     

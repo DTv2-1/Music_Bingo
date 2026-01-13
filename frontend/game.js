@@ -1759,7 +1759,12 @@ async function generateCards() {
                 }
                 
                 const status = await statusResponse.json();
-                console.log(`📊 Status check #${attempts}:`, status.status, `(${status.elapsed_time}s)`);
+                console.log(`📊 Status check #${attempts}:`, status.status, `(${status.elapsed_time}s), Progress: ${status.progress || 0}%`);
+                
+                // Update button with progress
+                if (status.status === 'processing' && status.progress) {
+                    btn.textContent = `⏳ Generating... ${status.progress}%`;
+                }
                 
                 if (status.status === 'completed') {
                     // Success!
