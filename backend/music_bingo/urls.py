@@ -22,9 +22,10 @@ from django.conf import settings
 from pathlib import Path
 
 # Serve frontend static files
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-FRONTEND_DIR = BASE_DIR / 'frontend'
-DATA_DIR = BASE_DIR / 'data'
+# In Docker: /app/music_bingo/urls.py -> parent = /app/music_bingo -> parent = /app
+BASE_DIR = Path(__file__).resolve().parent.parent  # /app
+FRONTEND_DIR = BASE_DIR / 'frontend'  # /app/frontend
+DATA_DIR = BASE_DIR / 'data'  # /app/data
 
 def index_view(request):
     from django.http import FileResponse
