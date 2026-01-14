@@ -14,15 +14,59 @@ let jingleData = {
     musicPrompt: 'upbeat energetic pub background music with guitar',
     duration: 10,
     voiceSettings: {
-        stability: 0.50,
-        similarity_boost: 0.75,
-        style: 0.50,
-        use_speaker_boost: true
+        stability: 0.65,           // Higher for consistency in noisy environments
+        similarity_boost: 0.90,    // Max clarity for pub settings
+        style: 0.40,               // Less dramatic, more clear
+        use_speaker_boost: true    // Always on for pubs
     }
 };
 
 let pollingInterval = null;
 let previewAudio = null; // For voice preview
+
+// Voice Settings Presets for Different Environments
+const VOICE_PRESETS = {
+    pub: {
+        name: '🍻 Pub/Bar (Optimized)',
+        settings: {
+            stability: 0.65,
+            similarity_boost: 0.90,
+            style: 0.40,
+            use_speaker_boost: true
+        },
+        description: 'Maximum clarity for noisy environments'
+    },
+    energetic: {
+        name: '🔥 Energetic/Party',
+        settings: {
+            stability: 0.45,
+            similarity_boost: 0.80,
+            style: 0.70,
+            use_speaker_boost: true
+        },
+        description: 'Dynamic and exciting for events'
+    },
+    professional: {
+        name: '🎼 Professional/Clear',
+        settings: {
+            stability: 0.75,
+            similarity_boost: 0.85,
+            style: 0.30,
+            use_speaker_boost: true
+        },
+        description: 'Crystal clear for announcements'
+    },
+    balanced: {
+        name: '⚖️ Balanced',
+        settings: {
+            stability: 0.50,
+            similarity_boost: 0.75,
+            style: 0.50,
+            use_speaker_boost: true
+        },
+        description: 'Good for most situations'
+    }
+};
 
 // ============================================================================
 // INITIALIZATION
@@ -340,12 +384,24 @@ function getVoiceName(voiceId) {
 }
 
 function getMusicStyleName(prompt) {
-    if (prompt.includes('upbeat energetic')) return 'Upbeat';
-    if (prompt.includes('smooth jazz')) return 'Smooth Jazz';
-    if (prompt.includes('rock guitar')) return 'Rock';
-    if (prompt.includes('electronic')) return 'Electronic';
+    // PUB/ENTERTAINMENT STYLES
+    if (prompt.includes('pub') && prompt.includes('guitar')) return 'Pub Rock';
+    if (prompt.includes('jazzy piano') || prompt.includes('smooth jazz')) return 'Jazz Piano';
+    if (prompt.includes('electronic dance')) return 'Electronic';
     if (prompt.includes('irish folk')) return 'Irish Folk';
-    if (prompt.includes('funky')) return 'Funky';
+    if (prompt.includes('funky disco')) return 'Funky';
+    
+    // COMMERCIAL/ADVERTISING STYLES
+    if (prompt.includes('commercial jingle') || prompt.includes('commercial pop')) return 'Commercial Pop';
+    if (prompt.includes('corporate') && prompt.includes('motivational')) return 'Corporate';
+    if (prompt.includes('whistling ukulele') || prompt.includes('happy commercial')) return 'Happy Whistling';
+    if (prompt.includes('retro') && prompt.includes('80s')) return 'Retro 80s';
+    
+    // VERSATILE/EVENT STYLES
+    if (prompt.includes('acoustic') && prompt.includes('folk')) return 'Acoustic';
+    if (prompt.includes('rock and roll') || prompt.includes('rock guitar')) return 'Rock & Roll';
+    if (prompt.includes('chill lounge') || prompt.includes('relaxing')) return 'Chill Lounge';
+    
     return 'Custom';
 }
 
@@ -1032,33 +1088,54 @@ function toggleSpeakerBoost() {
 }
 
 function resetVoiceSettings() {
-    // Reset to defaults
-    jingleData.voiceSettings = {
-        stability: 0.50,
-        similarity_boost: 0.75,
-        style: 0.50,
-        use_speaker_boost: true
-    };
+    // Reset to pub-optimized defaults
+    applyVoicePreset('pub');
+    showQuickMessage('✅ Voice settings reset to pub-optimized defaults');
+    console.log('Voice settings reset to pub defaults');
+}
+
+function applyVoicePreset(presetName) {
+    const preset = VOICE_PRESETS[presetName];
+    if (!preset) {
+        console.error('Unknown preset:', presetName);
+        return;
+    }
+    
+    console.log(`Applying preset: ${preset.name}`, preset.settings);
+    
+    // Update jingleData
+    jingleData.voiceSettings = { ...preset.settings };
     
     // Update sliders
-    document.getElementById('stabilitySlider').value = 50;
-    document.getElementById('similaritySlider').value = 75;
-    document.getElementById('styleSlider').value = 50;
+    document.getElementById('stabilitySlider').value = preset.settings.stability * 100;
+    document.getElementById('similaritySlider').value = preset.settings.similarity_boost * 100;
+    document.getElementById('styleSlider').value = preset.settings.style * 100;
     
     // Update displays
-    document.getElementById('stabilityValue').textContent = '0.50';
-    document.getElementById('similarityValue').textContent = '0.75';
-    document.getElementById('styleValue').textContent = '0.50';
+    document.getElementById('stabilityValue').textContent = preset.settings.stability.toFixed(2);
+    document.getElementById('similarityValue').textContent = preset.settings.similarity_boost.toFixed(2);
+    document.getElementById('styleValue').textContent = preset.settings.style.toFixed(2);
     
     // Update speaker boost
     const toggle = document.getElementById('speakerBoostToggle');
     const value = document.getElementById('speakerBoostValue');
-    toggle.classList.add('active');
-    value.textContent = 'ON';
-    value.style.background = '#4CAF50';
+    if (preset.settings.use_speaker_boost) {
+        toggle.classList.add('active');
+        value.textContent = 'ON';
+        value.style.background = '#4CAF50';
+    } else {
+        toggle.classList.remove('active');
+        value.textContent = 'OFF';
+        value.style.background = '#f44336';
+    }
     
-    showQuickMessage('✅ Voice settings reset to defaults');
-    console.log('Voice settings reset to defaults');
+    // Update preset selector
+    const selector = document.getElementById('voicePresetSelector');
+    if (selector) {
+        selector.value = presetName;
+    }
+    
+    showQuickMessage(`✅ Applied: ${preset.name}`);
 }
 
 async function previewVoiceWithSettings() {

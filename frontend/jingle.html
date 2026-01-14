@@ -946,10 +946,18 @@
             <div class="form-group">
                 <label>Or use a quick start:</label>
                 <div class="templates">
-                    <button class="template-btn" onclick="useQuickTemplate('Happy Hour two for one cocktails between 5pm and 7pm this Wednesday!')">Happy Hour</button>
-                    <button class="template-btn" onclick="useQuickTemplate('Join us this Friday for live music night starting at 8pm. Great food, drinks and atmosphere!')">Live Music</button>
-                    <button class="template-btn" onclick="useQuickTemplate('New menu available now! Try our chef special burger with fries for just £10')">Food Special</button>
-                    <button class="template-btn" onclick="useQuickTemplate('Quiz night every Thursday at 7pm. Form your teams and win amazing prizes!')">Quiz Night</button>
+                    <!-- PUB/ENTERTAINMENT -->
+                    <button class="template-btn" onclick="useQuickTemplate('Happy Hour! Two for one cocktails between 5pm and 7pm this Wednesday!')">🍹 Happy Hour</button>
+                    <button class="template-btn" onclick="useQuickTemplate('Join us this Friday for live music night starting at 8pm. Great food, drinks and atmosphere!')">🎸 Live Music</button>
+                    <button class="template-btn" onclick="useQuickTemplate('Quiz night every Thursday at 7pm. Form your teams and win amazing prizes!')">🧠 Quiz Night</button>
+                    <button class="template-btn" onclick="useQuickTemplate('Big game tonight! Watch all the action on our big screens. Food and drink specials available!')">⚽ Sports Night</button>
+                    <button class="template-btn" onclick="useQuickTemplate('Karaoke night this Saturday! Sign up at the bar and show us your talent!')">🎤 Karaoke</button>
+                    <!-- FOOD/RESTAURANT -->
+                    <button class="template-btn" onclick="useQuickTemplate('New menu available now! Try our chef special burger with fries for just £10')">🍔 Food Special</button>
+                    <button class="template-btn" onclick="useQuickTemplate('Two for one on all pizzas every Tuesday! Dine in or takeaway. Book your table now!')">🍕 Pizza Deal</button>
+                    <!-- COMMERCIAL/PROMO -->
+                    <button class="template-btn" onclick="useQuickTemplate('Flash sale this weekend only! Up to 50 percent off selected items. Visit us today!')">🔥 Flash Sale</button>
+                    <button class="template-btn" onclick="useQuickTemplate('Grand opening celebration! Join us next Saturday for special offers and live entertainment!')">🎉 Grand Opening</button>
                 </div>
             </div>
 
@@ -1025,12 +1033,29 @@
             <!-- Voice Settings Controls -->
             <div class="voice-settings">
                 <h3>🎛️ Advanced Voice Settings</h3>
+                
+                <!-- Presets Selector -->
+                <div class="setting-item" style="margin-bottom: 20px;">
+                    <div class="setting-label">
+                        <span>Quick Presets</span>
+                    </div>
+                    <select id="voicePresetSelector" onchange="applyVoicePreset(this.value)" style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0; font-size: 0.95em; background: white; cursor: pointer;">
+                        <option value="pub">🍻 Pub/Bar (Optimized) - Maximum clarity</option>
+                        <option value="energetic">🔥 Energetic/Party - Dynamic & exciting</option>
+                        <option value="professional">🎼 Professional/Clear - Crystal clear</option>
+                        <option value="balanced">⚖️ Balanced - Good for most situations</option>
+                    </select>
+                    <div class="setting-description" style="margin-top: 8px; font-style: italic;">
+                        Pre-configured settings optimized for different environments
+                    </div>
+                </div>
+
                 <div class="settings-grid">
                     <!-- Stability -->
                     <div class="setting-item">
                         <div class="setting-label">
                             <span>Stability</span>
-                            <span class="setting-value" id="stabilityValue">0.50</span>
+                            <span class="setting-value" id="stabilityValue">0.65</span>
                         </div>
                         <div class="slider-container">
                             <input type="range" 
@@ -1038,7 +1063,7 @@
                                    id="stabilitySlider" 
                                    min="0" 
                                    max="100" 
-                                   value="50"
+                                   value="65"
                                    oninput="updateVoiceSetting('stability', this.value)">
                         </div>
                         <div class="setting-description">
@@ -1050,7 +1075,7 @@
                     <div class="setting-item">
                         <div class="setting-label">
                             <span>Clarity (Similarity Boost)</span>
-                            <span class="setting-value" id="similarityValue">0.75</span>
+                            <span class="setting-value" id="similarityValue">0.90</span>
                         </div>
                         <div class="slider-container">
                             <input type="range" 
@@ -1058,7 +1083,7 @@
                                    id="similaritySlider" 
                                    min="0" 
                                    max="100" 
-                                   value="75"
+                                   value="90"
                                    oninput="updateVoiceSetting('similarity_boost', this.value)">
                         </div>
                         <div class="setting-description">
@@ -1070,7 +1095,7 @@
                     <div class="setting-item">
                         <div class="setting-label">
                             <span>Style (Exaggeration)</span>
-                            <span class="setting-value" id="styleValue">0.50</span>
+                            <span class="setting-value" id="styleValue">0.40</span>
                         </div>
                         <div class="slider-container">
                             <input type="range" 
@@ -1078,7 +1103,9 @@
                                    id="styleSlider" 
                                    min="0" 
                                    max="100" 
-                                   value="50"
+                                   value="40"
+                                   oninput="updateVoiceSetting('style', this.value)">
+                        </div>
                                    oninput="updateVoiceSetting('style', this.value)">
                         </div>
                         <div class="setting-description">
@@ -1122,6 +1149,7 @@
             <div class="form-group">
                 <label>Choose music style:</label>
                 <div class="music-styles" id="musicStyles">
+                    <!-- PUB/ENTERTAINMENT STYLES -->
                     <div class="music-style selected" data-prompt="upbeat energetic pub background music with guitar">
                         <span class="music-style-name">🎸 Pub Rock</span>
                         <button class="preview-music-btn" onclick="previewMusic(event, 'upbeat energetic pub background music with guitar', 'Pub Rock')">
@@ -1140,12 +1168,6 @@
                             🔊 Preview
                         </button>
                     </div>
-                    <div class="music-style" data-prompt="acoustic indie folk guitar background music">
-                        <span class="music-style-name">🎵 Acoustic</span>
-                        <button class="preview-music-btn" onclick="previewMusic(event, 'acoustic indie folk guitar background music', 'Acoustic')">
-                            🔊 Preview
-                        </button>
-                    </div>
                     <div class="music-style" data-prompt="upbeat irish folk music with fiddle">
                         <span class="music-style-name">🍀 Irish Folk</span>
                         <button class="preview-music-btn" onclick="previewMusic(event, 'upbeat irish folk music with fiddle', 'Irish Folk')">
@@ -1155,6 +1177,52 @@
                     <div class="music-style" data-prompt="funky disco groove background music">
                         <span class="music-style-name">💃 Funky</span>
                         <button class="preview-music-btn" onclick="previewMusic(event, 'funky disco groove background music', 'Funky')">
+                            🔊 Preview
+                        </button>
+                    </div>
+                    
+                    <!-- COMMERCIAL/ADVERTISING STYLES -->
+                    <div class="music-style" data-prompt="catchy upbeat commercial jingle with memorable melody">
+                        <span class="music-style-name">📻 Commercial Pop</span>
+                        <button class="preview-music-btn" onclick="previewMusic(event, 'catchy upbeat commercial jingle with memorable melody', 'Commercial Pop')">
+                            🔊 Preview
+                        </button>
+                    </div>
+                    <div class="music-style" data-prompt="corporate uplifting motivational background music">
+                        <span class="music-style-name">💼 Corporate</span>
+                        <button class="preview-music-btn" onclick="previewMusic(event, 'corporate uplifting motivational background music', 'Corporate')">
+                            🔊 Preview
+                        </button>
+                    </div>
+                    <div class="music-style" data-prompt="catchy whistling ukulele happy commercial music">
+                        <span class="music-style-name">😊 Happy Whistling</span>
+                        <button class="preview-music-btn" onclick="previewMusic(event, 'catchy whistling ukulele happy commercial music', 'Happy Whistling')">
+                            🔊 Preview
+                        </button>
+                    </div>
+                    <div class="music-style" data-prompt="retro vintage 80s synth advertising jingle">
+                        <span class="music-style-name">🕹️ Retro 80s</span>
+                        <button class="preview-music-btn" onclick="previewMusic(event, 'retro vintage 80s synth advertising jingle', 'Retro 80s')">
+                            🔊 Preview
+                        </button>
+                    </div>
+                    
+                    <!-- VERSATILE/EVENT STYLES -->
+                    <div class="music-style" data-prompt="acoustic indie folk guitar background music">
+                        <span class="music-style-name">🎵 Acoustic</span>
+                        <button class="preview-music-btn" onclick="previewMusic(event, 'acoustic indie folk guitar background music', 'Acoustic')">
+                            🔊 Preview
+                        </button>
+                    </div>
+                    <div class="music-style" data-prompt="energetic rock and roll electric guitar background">
+                        <span class="music-style-name">⚡ Rock & Roll</span>
+                        <button class="preview-music-btn" onclick="previewMusic(event, 'energetic rock and roll electric guitar background', 'Rock & Roll')">
+                            🔊 Preview
+                        </button>
+                    </div>
+                    <div class="music-style" data-prompt="smooth chill lounge relaxing background music">
+                        <span class="music-style-name">🌴 Chill Lounge</span>
+                        <button class="preview-music-btn" onclick="previewMusic(event, 'smooth chill lounge relaxing background music', 'Chill Lounge')">
                             🔊 Preview
                         </button>
                     </div>
