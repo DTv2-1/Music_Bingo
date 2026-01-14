@@ -25,7 +25,7 @@ ingress:
 services:
   - name: backend
     github:
-      repo: 1di210299/Music_Bingo
+      repo: DTv2-1/Music_Bingo
       branch: main
       deploy_on_push: true
     
@@ -49,7 +49,7 @@ services:
 
   - name: frontend
     github:
-      repo: 1di210299/Music_Bingo
+      repo: DTv2-1/Music_Bingo
       branch: main
       deploy_on_push: true
     
