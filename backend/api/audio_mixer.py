@@ -39,14 +39,18 @@ def mix_tts_with_music(tts_bytes, music_bytes, tts_volume=0, music_volume=-8):
         
         logger.info("Loading background music...")
         bg_audio = AudioSegment.from_mp3(io.BytesIO(music_bytes))
+        logger.info(f"Music duration BEFORE adjustments: {len(bg_audio)}ms")
+        logger.info(f"Music volume adjustment: {music_volume}dB")
         
         # Apply volume adjustments
         tts_audio = tts_audio + tts_volume
         bg_audio = bg_audio + music_volume
+        logger.info(f"Volume adjustments applied - TTS: {tts_volume}dB, Music: {music_volume}dB")
         
         # Apply fade in/out to background music
         logger.info("Applying fade effects...")
         bg_audio = bg_audio.fade_in(500).fade_out(500)
+        logger.info(f"Fade effects applied - Music duration AFTER fade: {len(bg_audio)}ms")
         
         # Ensure background music is at least as long as TTS
         if len(bg_audio) < len(tts_audio):
@@ -57,10 +61,13 @@ def mix_tts_with_music(tts_bytes, music_bytes, tts_volume=0, music_volume=-8):
         
         # Trim background to match TTS duration
         bg_audio = bg_audio[:len(tts_audio)]
+        logger.info(f"Music trimmed to match TTS: {len(bg_audio)}ms")
         
         # Overlay TTS on top of background music
         logger.info("Mixing audio tracks...")
+        logger.info(f"Final pre-mix - TTS: {len(tts_audio)}ms, Music: {len(bg_audio)}ms")
         mixed = bg_audio.overlay(tts_audio, position=0)
+        logger.info(f"Mixed audio duration: {len(mixed)}ms")
         
         # Normalize audio to prevent clipping
         logger.info("Normalizing audio...")
