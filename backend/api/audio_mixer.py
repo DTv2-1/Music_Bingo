@@ -11,7 +11,7 @@ from pydub.effects import normalize
 logger = logging.getLogger(__name__)
 
 
-def mix_tts_with_music(tts_bytes, music_bytes, tts_volume=0, music_volume=-8):
+def mix_tts_with_music(tts_bytes, music_bytes, tts_volume=0, music_volume=-6):
     """
     Mix TTS audio with background music
     
@@ -19,7 +19,7 @@ def mix_tts_with_music(tts_bytes, music_bytes, tts_volume=0, music_volume=-8):
         tts_bytes: MP3 bytes of TTS audio
         music_bytes: MP3 bytes of background music
         tts_volume: Volume adjustment for TTS in dB (0 = no change)
-        music_volume: Volume adjustment for music in dB (-8 = balanced, voice clear but music audible)
+        music_volume: Volume adjustment for music in dB (-6 = half volume, clearly audible)
     
     Returns:
         bytes: Mixed audio as MP3
@@ -52,34 +52,42 @@ def mix_tts_with_music(tts_bytes, music_bytes, tts_volume=0, music_volume=-8):
         bg_audio = bg_audio.fade_in(500).fade_out(500)
         logger.info(f"Fade effects applied - Music duration AFTER fade: {len(bg_audio)}ms")
         
-        # Ensure background music is at least as long as TTS
-        if len(bg_audio) < len(tts_audio):
-            logger.warning(f"Background music too short ({len(bg_audio)}ms), extending...")
+        # Ensure background music is at least 10 seconds (target duration)
+        target_duration = 10000  # 10 seconds in milliseconds
+        if len(bg_audio) < target_duration:
+            logger.warning(f"Background music too short ({len(bg_audio)}ms), extending to {target_duration}ms...")
             # Loop the background music if needed
-            repetitions = (len(tts_audio) // len(bg_audio)) + 1
+            repetitions = (target_duration // len(bg_audio)) + 1
             bg_audio = bg_audio * repetitions
         
-        # Trim background to match TTS duration
-        bg_audio = bg_audio[:len(tts_audio)]
-        logger.info(f"Music trimmed to match TTS: {len(bg_audio)}ms")
+        # Trim background to exactly 10 seconds
+        bg_audio = bg_audio[:target_duration]
+        logger.info(f"Music duration set to target: {len(bg_audio)}ms")
         
-        # Overlay TTS on top of background music
+        # Overlay TTS on top of background music (centered if TTS is shorter)
         logger.info("Mixing audio tracks...")
         logger.info(f"Final pre-mix - TTS: {len(tts_audio)}ms, Music: {len(bg_audio)}ms")
-        mixed = bg_audio.overlay(tts_audio, position=0)
+        
+        # Center the TTS if it's shorter than 10 seconds
+        if len(tts_audio) < target_duration:
+            tts_start_position = (target_duration - len(tts_audio)) // 2
+            logger.info(f"Centering TTS at position {tts_start_position}ms")
+            mixed = bg_audio.overlay(tts_audio, position=tts_start_position)
+        else:
+            mixed = bg_audio.overlay(tts_audio, position=0)
+        
         logger.info(f"Mixed audio duration: {len(mixed)}ms")
         
         # Normalize audio to prevent clipping
         logger.info("Normalizing audio...")
         mixed = normalize(mixed)
         
-        # Ensure exact 10 seconds (trim or extend)
-        target_duration = 10000  # 10 seconds in milliseconds
+        # Final check: ensure exactly 10 seconds
         if len(mixed) > target_duration:
             logger.info(f"Trimming to 10 seconds (was {len(mixed)}ms)...")
             mixed = mixed[:target_duration]
         elif len(mixed) < target_duration:
-            logger.info(f"Extending to 10 seconds (was {len(mixed)}ms)...")
+            logger.warning(f"Audio shorter than target, padding to 10 seconds (was {len(mixed)}ms)...")
             silence = AudioSegment.silent(duration=target_duration - len(mixed))
             mixed = mixed + silence
         
