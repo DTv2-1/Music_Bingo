@@ -11,7 +11,7 @@ from pydub.effects import normalize
 logger = logging.getLogger(__name__)
 
 
-def mix_tts_with_music(tts_bytes, music_bytes, tts_volume=0, music_volume=-12):
+def mix_tts_with_music(tts_bytes, music_bytes, tts_volume=0, music_volume=-8):
     """
     Mix TTS audio with background music
     
@@ -19,7 +19,7 @@ def mix_tts_with_music(tts_bytes, music_bytes, tts_volume=0, music_volume=-12):
         tts_bytes: MP3 bytes of TTS audio
         music_bytes: MP3 bytes of background music
         tts_volume: Volume adjustment for TTS in dB (0 = no change)
-        music_volume: Volume adjustment for music in dB (-12 = quarter volume, clearer voice)
+        music_volume: Volume adjustment for music in dB (-8 = balanced, voice clear but music audible)
     
     Returns:
         bytes: Mixed audio as MP3
@@ -28,6 +28,14 @@ def mix_tts_with_music(tts_bytes, music_bytes, tts_volume=0, music_volume=-12):
         # Load audio segments
         logger.info("Loading TTS audio...")
         tts_audio = AudioSegment.from_mp3(io.BytesIO(tts_bytes))
+        
+        # Trim TTS if longer than 9 seconds to ensure final output is 10s
+        max_tts_duration = 9000  # 9 seconds in milliseconds
+        if len(tts_audio) > max_tts_duration:
+            logger.warning(f"TTS too long ({len(tts_audio)}ms), trimming to {max_tts_duration}ms")
+            tts_audio = tts_audio[:max_tts_duration]
+        
+        logger.info(f"TTS duration: {len(tts_audio)}ms")
         
         logger.info("Loading background music...")
         bg_audio = AudioSegment.from_mp3(io.BytesIO(music_bytes))

@@ -451,6 +451,21 @@ def generate_jingle(request):
         music_prompt = data.get('music_prompt', 'upbeat energetic pub background music')
         duration = int(data.get('duration', 10))
         
+        # Estimate TTS duration and truncate if too long
+        # Average speaking rate: ~150 words/min = 2.5 words/sec
+        # For 9 seconds max: ~22 words
+        words = text.split()
+        word_count = len(words)
+        estimated_duration = word_count / 2.5  # seconds
+        
+        if estimated_duration > 9:
+            logger.warning(f"Text too long ({word_count} words ≈ {estimated_duration:.1f}s), truncating to ~9s")
+            max_words = int(2.5 * 9)  # ~22 words for 9 seconds
+            text = ' '.join(words[:max_words])
+            logger.info(f"Truncated text: '{text}'")
+        
+        logger.info(f"Generating jingle: {word_count} words (≈{estimated_duration:.1f}s)")
+        
         # Get voice settings (with defaults)
         voice_settings = data.get('voiceSettings', {})
         voice_settings_payload = {
