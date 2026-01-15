@@ -449,22 +449,11 @@ def generate_jingle(request):
         text = data.get('text', '').strip()
         voice_id = data.get('voice_id', ELEVENLABS_VOICE_ID)
         music_prompt = data.get('music_prompt', 'upbeat energetic pub background music')
-        duration = int(data.get('duration', 10))
         
-        # Estimate TTS duration and truncate if too long
-        # Average speaking rate: ~150 words/min = 2.5 words/sec
-        # For 9 seconds max: ~22 words
-        words = text.split()
-        word_count = len(words)
-        estimated_duration = word_count / 2.5  # seconds
+        # No text truncation - let TTS handle the full text
+        # Duration will be calculated dynamically after TTS generation
         
-        if estimated_duration > 9:
-            logger.warning(f"Text too long ({word_count} words ≈ {estimated_duration:.1f}s), truncating to ~9s")
-            max_words = int(2.5 * 9)  # ~22 words for 9 seconds
-            text = ' '.join(words[:max_words])
-            logger.info(f"Truncated text: '{text}'")
-        
-        logger.info(f"Generating jingle: {word_count} words (≈{estimated_duration:.1f}s)")
+        logger.info(f"Generating jingle for text: '{text[:50]}...'")
         
         # Get voice settings (with defaults)
         voice_settings = data.get('voiceSettings', {})
@@ -529,6 +518,16 @@ def generate_jingle(request):
                 tts_bytes = tts_response.content
                 logger.info(f"Task {task_id}: TTS generated ({len(tts_bytes)} bytes)")
                 
+                # Calculate actual TTS duration to generate matching music
+                from pydub import AudioSegment
+                tts_audio = AudioSegment.from_mp3(io.BytesIO(tts_bytes))
+                tts_duration_seconds = len(tts_audio) / 1000  # Convert ms to seconds
+                logger.info(f"Task {task_id}: TTS duration: {tts_duration_seconds:.2f}s")
+                
+                # Generate music with TTS duration + 2 seconds for intro/outro
+                music_duration = min(max(int(tts_duration_seconds) + 2, 5), 30)  # Between 5-30 seconds
+                logger.info(f"Task {task_id}: Music target duration: {music_duration}s")
+                
                 # Step 2: Generate Music
                 logger.info(f"Task {task_id}: Generating music...")
                 tasks_storage[task_id].update({'progress': 50, 'current_step': 'generating_music'})
@@ -537,7 +536,7 @@ def generate_jingle(request):
                 music_url = 'https://api.elevenlabs.io/v1/sound-generation'
                 music_payload = {
                     'text': music_prompt,
-                    'duration_seconds': duration
+                    'duration_seconds': music_duration
                 }
                 music_headers = {
                     'xi-api-key': ELEVENLABS_API_KEY,
@@ -551,7 +550,7 @@ def generate_jingle(request):
                     # Fallback: use silent background or default music
                     # For now, we'll create a simple tone as placeholder
                     from pydub.generators import Sine
-                    music_audio = Sine(440).to_audio_segment(duration=duration * 1000).apply_gain(-20)
+                    music_audio = Sine(440).to_audio_segment(duration=music_duration * 1000).apply_gain(-20)
                     music_io = io.BytesIO()
                     music_audio.export(music_io, format='mp3')
                     music_bytes = music_io.getvalue()
@@ -582,6 +581,11 @@ def generate_jingle(request):
                 
                 logger.info(f"Task {task_id}: Jingle saved to {file_path}")
                 
+                # Calculate actual duration from final mixed audio
+                from pydub import AudioSegment
+                final_audio = AudioSegment.from_mp3(io.BytesIO(mixed_audio))
+                actual_duration = len(final_audio) / 1000  # ms to seconds
+                
                 # Update task status
                 tasks_storage[task_id].update({
                     'status': 'completed',
@@ -590,7 +594,7 @@ def generate_jingle(request):
                     'result': {
                         'audio_url': f'/api/jingles/{filename}',
                         'filename': filename,
-                        'duration_seconds': duration,
+                        'duration_seconds': actual_duration,
                         'size_bytes': len(mixed_audio)
                     },
                     'completed_at': time.time()
