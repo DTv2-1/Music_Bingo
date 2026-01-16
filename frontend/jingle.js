@@ -435,9 +435,10 @@ function initializeVoiceSelection() {
 }
 
 async function testVoice(event, voiceId, voiceName) {
-    event.stopPropagation(); // Prevent card selection
+    event.stopPropagation(); // Prevent immediate card selection
     
     const btn = event.target;
+    const voiceCard = btn.closest('.voice-card');
     
     // Stop any currently playing audio
     if (currentTestAudio && !currentTestAudio.paused) {
@@ -453,6 +454,12 @@ async function testVoice(event, voiceId, voiceName) {
     }
     
     try {
+        // Select this voice when test button is clicked
+        document.querySelectorAll('.voice-card').forEach(c => c.classList.remove('selected'));
+        voiceCard.classList.add('selected');
+        jingleData.voiceId = voiceId;
+        console.log('Voice selected via test:', voiceId);
+        
         // Disable all test buttons
         document.querySelectorAll('.test-voice-btn').forEach(b => b.disabled = true);
         
@@ -551,9 +558,10 @@ function initializeMusicSelection() {
 }
 
 async function previewMusic(event, musicPrompt, musicName) {
-    event.stopPropagation(); // Prevent style selection
+    event.stopPropagation(); // Prevent immediate style selection
     
     const btn = event.target;
+    const styleCard = btn.closest('.music-style');
     
     // Stop any currently playing preview
     if (currentMusicPreview && !currentMusicPreview.paused) {
@@ -569,6 +577,12 @@ async function previewMusic(event, musicPrompt, musicName) {
     }
     
     try {
+        // Select this music style when preview is clicked
+        document.querySelectorAll('.music-style').forEach(s => s.classList.remove('selected'));
+        styleCard.classList.add('selected');
+        jingleData.musicPrompt = musicPrompt;
+        console.log('Music style selected via preview:', musicPrompt);
+        
         // Disable all preview buttons
         document.querySelectorAll('.preview-music-btn').forEach(b => b.disabled = true);
         
