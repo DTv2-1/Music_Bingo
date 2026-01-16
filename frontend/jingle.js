@@ -657,6 +657,7 @@ function updateSummary() {
 
 async function generateJingle() {
     console.log('🎬 Starting jingle generation...');
+    console.log('Current jingleData:', jingleData);
     
     // Show progress section
     document.getElementById('progressSection').classList.add('active');
@@ -668,12 +669,22 @@ async function generateJingle() {
         const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL || 'http://localhost:8080';
         const endpoint = apiUrl.includes('/api') ? `${apiUrl}/generate-jingle` : `${apiUrl}/api/generate-jingle`;
         
+        // Convert camelCase to snake_case for backend compatibility
+        const payload = {
+            text: jingleData.text,
+            voice_id: jingleData.voiceId,
+            music_prompt: jingleData.musicPrompt,
+            voiceSettings: jingleData.voiceSettings
+        };
+        
+        console.log('Sending payload:', payload);
+        
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(jingleData)
+            body: JSON.stringify(payload)
         });
         
         if (!response.ok) {
