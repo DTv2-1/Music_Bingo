@@ -217,34 +217,26 @@ let gameInitialized = false;
 window.addEventListener('DOMContentLoaded', async () => {
     console.log('🎮 Music Bingo - Waiting for setup...');
     
-    // Check if setup was already completed
-    const setupCompleted = localStorage.getItem('setupCompleted');
+    // Always show setup modal on page load
+    // This allows users to see their saved configuration
     const savedVenueName = localStorage.getItem('venueName');
     
-    if (setupCompleted && savedVenueName) {
-        // Load venue config from database before initializing game
-        console.log('✓ Setup already completed, loading venue config...');
+    if (savedVenueName) {
+        console.log(`📂 Loading saved configuration for: ${savedVenueName}`);
+        
+        // Load venue config from database
         const venueConfig = await loadVenueConfig(savedVenueName);
         
         if (venueConfig) {
-            // Restore configuration to localStorage for game to use
-            localStorage.setItem('numPlayers', venueConfig.numPlayers || '25');
-            localStorage.setItem('voiceId', venueConfig.voiceId || 'JBFqnCBsd6RMkjVDRZzb');
-            localStorage.setItem('selectedDecades', venueConfig.selectedDecades || '[]');
-            localStorage.setItem('pubLogo', venueConfig.pubLogo || '');
-            localStorage.setItem('socialMedia', venueConfig.socialUsername || '');
-            localStorage.setItem('includeQR', venueConfig.includeQR || 'false');
-            localStorage.setItem('prize4Corners', venueConfig.prize4Corners || '');
-            localStorage.setItem('prizeFirstLine', venueConfig.prizeFirstLine || '');
-            localStorage.setItem('prizeFullHouse', venueConfig.prizeFullHouse || '');
-            
-            console.log('✅ Venue configuration restored from database');
+            console.log('✅ Configuration found, displaying setup modal with saved settings');
+            // Show setup modal with loaded configuration
+            await initializeSetupModal();
+        } else {
+            console.log('⚠️ No configuration found, showing blank setup modal');
+            await initializeSetupModal();
         }
-        
-        document.getElementById('setupModal').classList.add('hidden');
-        await initializeGame();
     } else {
-        // Show setup modal
+        // First time setup - no venue name saved
         console.log('⚙️ First time setup required');
         await initializeSetupModal();
     }
