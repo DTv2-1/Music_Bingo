@@ -20,4 +20,9 @@ urlpatterns = [
     path('jingles', views.list_jingles, name='list-jingles'),
     path('generate-music-preview', views.generate_music_preview, name='generate-music-preview'),
     path('playlist', views.manage_playlist, name='manage-playlist'),
+    # Jingle Schedule Management - RESTful pattern
+    path('jingle-schedules/active', views.get_active_jingles, name='active-schedules'),  # GET: Filter active
+    path('jingle-schedules/<int:schedule_id>/delete', views.delete_jingle_schedule, name='delete-schedule'),  # DELETE
+    path('jingle-schedules/<int:schedule_id>', views.update_jingle_schedule, name='update-schedule'),  # PUT: Update
+    path('jingle-schedules', views.create_jingle_schedule, name='jingle-schedules'),  # POST: Create, GET: List all
 ]

@@ -837,4 +837,479 @@ def manage_playlist(request):
         except Exception as e:
             logger.error(f"Error saving playlist: {e}", exc_info=True)
             return Response({'error': str(e)}, status=500)
-        return Response({'error': str(e)}, status=500)
+
+
+# ============================================================================
+# JINGLE SCHEDULE MANAGEMENT ENDPOINTS
+# ============================================================================
+
+@api_view(['POST', 'GET'])
+def create_jingle_schedule(request):
+    """
+    Create a new jingle schedule or list all schedules
+    POST /api/jingle-schedules - Create new schedule
+    GET /api/jingle-schedules - List all schedules
+    
+    POST Body: {
+        "jingle_name": "Tuesday Night Taco Promotion",
+        "jingle_filename": "jingle_67890.mp3",
+        "start_date": "2026-01-14",
+        "end_date": "2026-03-31",
+        "time_start": "17:00",
+        "time_end": "22:00",
+        "days_of_week": {
+            "monday": false,
+            "tuesday": true,
+            ...
+        },
+        "repeat_pattern": "regular",
+        "enabled": true,
+        "priority": 10
+    }
+    
+    Returns: {
+        "success": true,
+        "schedule_id": 1,
+        "message": "Schedule created successfully"
+    }
+    """
+    if request.method == 'GET':
+        # List all schedules
+        try:
+            from .models import JingleSchedule
+            
+            # Get all schedules ordered by priority
+            all_schedules = JingleSchedule.objects.all().order_by('-priority', '-created_at')
+            
+            schedules_list = []
+            for schedule in all_schedules:
+                schedules_list.append({
+                    'id': schedule.id,
+                    'jingle_name': schedule.jingle_name,
+                    'jingle_filename': schedule.jingle_filename,
+                    'start_date': schedule.start_date.strftime('%Y-%m-%d'),
+                    'end_date': schedule.end_date.strftime('%Y-%m-%d') if schedule.end_date else None,
+                    'time_start': schedule.time_start.strftime('%H:%M') if schedule.time_start else None,
+                    'time_end': schedule.time_end.strftime('%H:%M') if schedule.time_end else None,
+                    'days_of_week': {
+                        'monday': schedule.monday,
+                        'tuesday': schedule.tuesday,
+                        'wednesday': schedule.wednesday,
+                        'thursday': schedule.thursday,
+                        'friday': schedule.friday,
+                        'saturday': schedule.saturday,
+                        'sunday': schedule.sunday
+                    },
+                    'repeat_pattern': schedule.repeat_pattern,
+                    'enabled': schedule.enabled,
+                    'priority': schedule.priority,
+                    'is_active_now': schedule.is_active_now(),
+                    'interval': schedule.get_interval(),
+                    'created_at': schedule.created_at.isoformat(),
+                    'updated_at': schedule.updated_at.isoformat()
+                })
+            
+            logger.info(f"Listed {len(schedules_list)} jingle schedules")
+            
+            return Response({
+                'schedules': schedules_list
+            })
+            
+        except Exception as e:
+            logger.error(f"Error listing jingle schedules: {e}", exc_info=True)
+            return Response({
+                'error': str(e)
+            }, status=500)
+    
+    # POST: Create new schedule
+    try:
+        from .models import JingleSchedule
+        from datetime import datetime
+        
+        data = request.data
+        
+        # Validate required fields
+        jingle_name = data.get('jingle_name', '').strip()
+        if not jingle_name:
+            return Response({
+                'error': 'Jingle name is required'
+            }, status=400)
+        
+        jingle_filename = data.get('jingle_filename', '').strip()
+        if not jingle_filename:
+            return Response({
+                'error': 'Jingle filename is required'
+            }, status=400)
+        
+        # Verify jingle file exists (optional check - skip if in development)
+        jingles_dir = DATA_DIR / 'jingles'
+        jingle_path = jingles_dir / jingle_filename
+        if not jingle_path.exists():
+            logger.warning(f'Jingle file not found at {jingle_path}, but continuing anyway')
+            # In production, uncomment this to enforce file existence:
+            # return Response({
+            #     'error': f'Jingle file not found: {jingle_filename}'
+            # }, status=404)
+        
+        start_date = data.get('start_date')
+        if not start_date:
+            return Response({
+                'error': 'Start date is required'
+            }, status=400)
+        
+        # Validate date format
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+        except ValueError:
+            return Response({
+                'error': 'Invalid start_date format. Use YYYY-MM-DD'
+            }, status=400)
+        
+        # Validate end_date if provided
+        end_date = data.get('end_date')
+        end_date_obj = None
+        if end_date:
+            try:
+                end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({
+                    'error': 'Invalid end_date format. Use YYYY-MM-DD'
+                }, status=400)
+            
+            # Validate end_date is after start_date
+            if end_date_obj < start_date_obj:
+                return Response({
+                    'error': 'End date must be after start date'
+                }, status=400)
+        
+        # Validate time_start and time_end if provided
+        time_start = data.get('time_start')
+        time_end = data.get('time_end')
+        time_start_obj = None
+        time_end_obj = None
+        
+        if time_start:
+            try:
+                time_start_obj = datetime.strptime(time_start, '%H:%M').time()
+            except ValueError:
+                return Response({
+                    'error': 'Invalid time_start format. Use HH:MM'
+                }, status=400)
+        
+        if time_end:
+            try:
+                time_end_obj = datetime.strptime(time_end, '%H:%M').time()
+            except ValueError:
+                return Response({
+                    'error': 'Invalid time_end format. Use HH:MM'
+                }, status=400)
+        
+        # Validate time_end is after time_start
+        if time_start_obj and time_end_obj and time_end_obj <= time_start_obj:
+            return Response({
+                'error': 'End time must be after start time'
+            }, status=400)
+        
+        # Validate days_of_week
+        days_of_week = data.get('days_of_week', {})
+        if not any(days_of_week.values()):
+            return Response({
+                'error': 'At least one day of the week must be selected'
+            }, status=400)
+        
+        # Validate repeat_pattern
+        repeat_pattern = data.get('repeat_pattern', 'regular')
+        if repeat_pattern not in ['occasional', 'regular', 'often']:
+            return Response({
+                'error': 'Invalid repeat_pattern. Must be: occasional, regular, or often'
+            }, status=400)
+        
+        # Validate priority
+        priority = int(data.get('priority', 0))
+        if priority < 0 or priority > 100:
+            return Response({
+                'error': 'Priority must be between 0 and 100'
+            }, status=400)
+        
+        # Create JingleSchedule
+        schedule = JingleSchedule.objects.create(
+            jingle_name=jingle_name,
+            jingle_filename=jingle_filename,
+            start_date=start_date_obj,
+            end_date=end_date_obj,
+            time_start=time_start_obj,
+            time_end=time_end_obj,
+            monday=days_of_week.get('monday', False),
+            tuesday=days_of_week.get('tuesday', False),
+            wednesday=days_of_week.get('wednesday', False),
+            thursday=days_of_week.get('thursday', False),
+            friday=days_of_week.get('friday', False),
+            saturday=days_of_week.get('saturday', False),
+            sunday=days_of_week.get('sunday', False),
+            repeat_pattern=repeat_pattern,
+            enabled=data.get('enabled', True),
+            priority=priority
+        )
+        
+        logger.info(f"Created jingle schedule #{schedule.id}: {jingle_name}")
+        
+        return Response({
+            'success': True,
+            'schedule_id': schedule.id,
+            'message': 'Schedule created successfully'
+        }, status=201)
+        
+    except Exception as e:
+        logger.error(f"Error creating jingle schedule: {e}", exc_info=True)
+        return Response({
+            'error': str(e)
+        }, status=500)
+
+
+@api_view(['GET'])
+def get_active_jingles(request):
+    """
+    Get all currently active jingle schedules
+    GET /api/jingle-schedules/active
+    
+    Evaluates each schedule based on:
+    - enabled flag
+    - current date within date range
+    - current time within time range (if specified)
+    - current day of week matches selected days
+    
+    Returns schedules sorted by priority (highest first)
+    
+    Returns: {
+        "active_jingles": [
+            {
+                "id": 1,
+                "jingle_name": "Tuesday Night Taco Promotion",
+                "jingle_filename": "jingle_67890.mp3",
+                "interval": 6,
+                "priority": 10
+            }
+        ]
+    }
+    """
+    try:
+        from .models import JingleSchedule
+        
+        # Get all enabled schedules
+        all_schedules = JingleSchedule.objects.filter(enabled=True).order_by('-priority', '-created_at')
+        
+        # Filter to only active schedules using is_active_now()
+        active_schedules = []
+        for schedule in all_schedules:
+            if schedule.is_active_now():
+                active_schedules.append({
+                    'id': schedule.id,
+                    'jingle_name': schedule.jingle_name,
+                    'jingle_filename': schedule.jingle_filename,
+                    'interval': schedule.get_interval(),
+                    'priority': schedule.priority
+                })
+        
+        logger.info(f"Found {len(active_schedules)} active jingle schedules out of {len(all_schedules)} enabled")
+        
+        return Response({
+            'active_jingles': active_schedules
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting active jingles: {e}", exc_info=True)
+        return Response({
+            'error': str(e)
+        }, status=500)
+
+
+@api_view(['PUT'])
+def update_jingle_schedule(request, schedule_id):
+    """
+    Update an existing jingle schedule
+    PUT /api/jingle-schedules/<schedule_id>
+    
+    Body: {
+        "enabled": false,
+        "priority": 5,
+        "end_date": "2026-06-30",
+        ... (any fields to update)
+    }
+    
+    Returns: {
+        "success": true,
+        "message": "Schedule updated successfully"
+    }
+    """
+    try:
+        from .models import JingleSchedule
+        from datetime import datetime
+        
+        # Get schedule by ID
+        try:
+            schedule = JingleSchedule.objects.get(id=schedule_id)
+        except JingleSchedule.DoesNotExist:
+            return Response({
+                'error': f'Schedule with id {schedule_id} not found'
+            }, status=404)
+        
+        data = request.data
+        
+        # Update fields if provided
+        if 'jingle_name' in data:
+            schedule.jingle_name = data['jingle_name'].strip()
+        
+        if 'jingle_filename' in data:
+            jingle_filename = data['jingle_filename'].strip()
+            # Optionally verify file exists
+            jingles_dir = DATA_DIR / 'jingles'
+            jingle_path = jingles_dir / jingle_filename
+            if not jingle_path.exists():
+                logger.warning(f'Jingle file not found at {jingle_path}, but continuing anyway')
+            schedule.jingle_filename = jingle_filename
+        
+        if 'start_date' in data:
+            try:
+                schedule.start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+            except ValueError:
+                return Response({
+                    'error': 'Invalid start_date format. Use YYYY-MM-DD'
+                }, status=400)
+        
+        if 'end_date' in data:
+            if data['end_date']:
+                try:
+                    end_date = datetime.strptime(data['end_date'], '%Y-%m-%d').date()
+                    if end_date < schedule.start_date:
+                        return Response({
+                            'error': 'End date must be after start date'
+                        }, status=400)
+                    schedule.end_date = end_date
+                except ValueError:
+                    return Response({
+                        'error': 'Invalid end_date format. Use YYYY-MM-DD'
+                    }, status=400)
+            else:
+                schedule.end_date = None
+        
+        if 'time_start' in data:
+            if data['time_start']:
+                try:
+                    schedule.time_start = datetime.strptime(data['time_start'], '%H:%M').time()
+                except ValueError:
+                    return Response({
+                        'error': 'Invalid time_start format. Use HH:MM'
+                    }, status=400)
+            else:
+                schedule.time_start = None
+        
+        if 'time_end' in data:
+            if data['time_end']:
+                try:
+                    schedule.time_end = datetime.strptime(data['time_end'], '%H:%M').time()
+                except ValueError:
+                    return Response({
+                        'error': 'Invalid time_end format. Use HH:MM'
+                    }, status=400)
+            else:
+                schedule.time_end = None
+        
+        # Validate time_end is after time_start
+        if schedule.time_start and schedule.time_end and schedule.time_end <= schedule.time_start:
+            return Response({
+                'error': 'End time must be after start time'
+            }, status=400)
+        
+        if 'days_of_week' in data:
+            days = data['days_of_week']
+            schedule.monday = days.get('monday', schedule.monday)
+            schedule.tuesday = days.get('tuesday', schedule.tuesday)
+            schedule.wednesday = days.get('wednesday', schedule.wednesday)
+            schedule.thursday = days.get('thursday', schedule.thursday)
+            schedule.friday = days.get('friday', schedule.friday)
+            schedule.saturday = days.get('saturday', schedule.saturday)
+            schedule.sunday = days.get('sunday', schedule.sunday)
+            
+            # Validate at least one day selected
+            if not any([schedule.monday, schedule.tuesday, schedule.wednesday, 
+                       schedule.thursday, schedule.friday, schedule.saturday, schedule.sunday]):
+                return Response({
+                    'error': 'At least one day of the week must be selected'
+                }, status=400)
+        
+        if 'repeat_pattern' in data:
+            pattern = data['repeat_pattern']
+            if pattern not in ['occasional', 'regular', 'often']:
+                return Response({
+                    'error': 'Invalid repeat_pattern. Must be: occasional, regular, or often'
+                }, status=400)
+            schedule.repeat_pattern = pattern
+        
+        if 'enabled' in data:
+            schedule.enabled = bool(data['enabled'])
+        
+        if 'priority' in data:
+            priority = int(data['priority'])
+            if priority < 0 or priority > 100:
+                return Response({
+                    'error': 'Priority must be between 0 and 100'
+                }, status=400)
+            schedule.priority = priority
+        
+        # Save changes
+        schedule.save()
+        
+        logger.info(f"Updated jingle schedule #{schedule.id}: {schedule.jingle_name}")
+        
+        return Response({
+            'success': True,
+            'message': 'Schedule updated successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error updating jingle schedule: {e}", exc_info=True)
+        return Response({
+            'error': str(e)
+        }, status=500)
+
+
+@api_view(['DELETE'])
+def delete_jingle_schedule(request, schedule_id):
+    """
+    Delete a jingle schedule
+    DELETE /api/jingle-schedules/<schedule_id>
+    
+    Returns: {
+        "success": true,
+        "message": "Schedule deleted successfully"
+    }
+    """
+    try:
+        from .models import JingleSchedule
+        
+        # Get schedule by ID
+        try:
+            schedule = JingleSchedule.objects.get(id=schedule_id)
+        except JingleSchedule.DoesNotExist:
+            return Response({
+                'error': f'Schedule with id {schedule_id} not found'
+            }, status=404)
+        
+        # Store name for logging before deletion
+        schedule_name = schedule.jingle_name
+        
+        # Delete the schedule
+        schedule.delete()
+        
+        logger.info(f"Deleted jingle schedule #{schedule_id}: {schedule_name}")
+        
+        return Response({
+            'success': True,
+            'message': 'Schedule deleted successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error deleting jingle schedule: {e}", exc_info=True)
+        return Response({
+            'error': str(e)
+        }, status=500)
