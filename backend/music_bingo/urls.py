@@ -42,8 +42,8 @@ def jingle_manager_view(request):
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
-    path("jingle-manager", jingle_manager_view, name="jingle-manager"),
-    path("jingle", jingle_view, name="jingle"),
+    path("jingle-manager/", jingle_manager_view, name="jingle-manager"),
+    path("jingle/", jingle_view, name="jingle"),
     path("", index_view),
     re_path(r'^(?P<path>game\.js|styles\.css|config\.js|env-loader\.js|jingle\.js|jingle-manager\.js)$', lambda request, path: serve(request, path, document_root=str(FRONTEND_DIR))),
     re_path(r'^assets/(?P<path>.*)$', lambda request, path: serve(request, path, document_root=str(FRONTEND_DIR / 'assets'))),
