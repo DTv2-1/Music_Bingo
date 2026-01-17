@@ -78,7 +78,7 @@ function setupEventListeners() {
 // Load available jingles from backend
 async function loadJingles() {
     try {
-        const url = `${CONFIG.API_URL}/jingles`;
+        const url = `${CONFIG.API_URL}/api/jingles`;
         console.log('📥 Loading jingles from:', url);
         
         const response = await fetch(url);
@@ -112,7 +112,7 @@ async function loadJingles() {
 // Load all schedules
 async function loadSchedules() {
     try {
-        const url = `${CONFIG.API_URL}/jingle-schedules`;
+        const url = `${CONFIG.API_URL}/api/jingle-schedules`;
         console.log('📥 Loading schedules from:', url);
         
         const response = await fetch(url);
@@ -395,14 +395,14 @@ async function handleSubmit(e) {
         let response;
         if (editingScheduleId) {
             // Update existing schedule
-            response = await fetch(`${CONFIG.API_URL}/jingle-schedules/${editingScheduleId}`, {
+            response = await fetch(`${CONFIG.API_URL}/api/jingle-schedules/${editingScheduleId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
         } else {
             // Create new schedule
-            response = await fetch(`${CONFIG.API_URL}/jingle-schedules`, {
+            response = await fetch(`${CONFIG.API_URL}/api/jingle-schedules`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -427,7 +427,7 @@ async function handleSubmit(e) {
 // Toggle schedule enabled/disabled
 async function toggleSchedule(scheduleId, currentEnabled) {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/jingle-schedules/${scheduleId}`, {
+        const response = await fetch(`${CONFIG.API_URL}/api/jingle-schedules/${scheduleId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ enabled: !currentEnabled })
@@ -454,7 +454,7 @@ async function deleteSchedule(scheduleId) {
     }
     
     try {
-        const response = await fetch(`${CONFIG.API_URL}/jingle-schedules/${scheduleId}/delete`, {
+        const response = await fetch(`${CONFIG.API_URL}/api/jingle-schedules/${scheduleId}/delete`, {
             method: 'DELETE'
         });
         
@@ -474,7 +474,7 @@ async function deleteSchedule(scheduleId) {
 
 // Preview jingle
 function previewJingle(filename) {
-    const audio = new Audio(`${window.API_BASE_URL}/jingles/${filename}`);
+    const audio = new Audio(`${CONFIG.API_URL}/api/jingles/${filename}`);
     audio.play().catch(error => {
         console.error('Error playing jingle:', error);
         showNotification('Failed to play jingle', 'error');
