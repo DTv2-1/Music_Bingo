@@ -182,3 +182,85 @@ class JinglePlayHistory(models.Model):
     
     def __str__(self):
         return f"{self.jingle_filename} played at {self.played_at}"
+
+
+class VenueConfiguration(models.Model):
+    """
+    Store venue-specific configuration for Music Bingo
+    Each venue has its own branding, settings, and preferences
+    """
+    venue_name = models.CharField(
+        max_length=200,
+        unique=True,
+        help_text="Unique venue name (e.g., 'The Admiral Rodney Southwell')"
+    )
+    
+    # Game Settings
+    num_players = models.IntegerField(
+        default=25,
+        validators=[MinValueValidator(5), MaxValueValidator(100)],
+        help_text="Default number of players for this venue"
+    )
+    voice_id = models.CharField(
+        max_length=100,
+        default='JBFqnCBsd6RMkjVDRZzb',
+        help_text="ElevenLabs voice ID for announcements"
+    )
+    selected_decades = models.JSONField(
+        default=list,
+        help_text="Array of selected decades (e.g., ['60s', '70s', '80s'])"
+    )
+    
+    # Branding
+    pub_logo = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="URL to pub logo image"
+    )
+    
+    # Social Media
+    social_platform = models.CharField(
+        max_length=50,
+        blank=True,
+        default='instagram',
+        help_text="Social media platform (instagram, facebook, tiktok, twitter)"
+    )
+    social_username = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Social media username (without @)"
+    )
+    include_qr = models.BooleanField(
+        default=False,
+        help_text="Include QR code on bingo cards"
+    )
+    
+    # Prizes
+    prize_4corners = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Prize for 4 corners (e.g., '£10 voucher')"
+    )
+    prize_first_line = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Prize for first line (e.g., '£15 voucher')"
+    )
+    prize_full_house = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Prize for full house (e.g., '£50 cash prize')"
+    )
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['venue_name']
+        verbose_name = "Venue Configuration"
+        verbose_name_plural = "Venue Configurations"
+    
+    def __str__(self):
+        return f"{self.venue_name} Configuration"

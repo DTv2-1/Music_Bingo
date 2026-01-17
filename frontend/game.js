@@ -58,19 +58,90 @@ function saveVenueConfig(venueName, config) {
         lastUpdated: new Date().toISOString()
     };
     localStorage.setItem('venueConfigs', JSON.stringify(existingConfigs));
-    console.log(`💾 Saved config for venue: ${venueName}`);
+    console.log(`💾 Saved config to localStorage for venue: ${venueName}`);
+    
+    // Also save to database
+    saveVenueConfigToDatabase(venueName, config);
+}
+
+/**
+ * Save venue configuration to database via API
+ */
+async function saveVenueConfigToDatabase(venueName, config) {
+    try {
+        const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL || 'http://localhost:8080';
+        const url = `${apiUrl}/api/venue-config/${encodeURIComponent(venueName)}`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                num_players: parseInt(config.numPlayers) || 25,
+                voice_id: config.voiceId,
+                selected_decades: JSON.parse(config.selectedDecades || '[]'),
+                pub_logo: config.pubLogo,
+                social_platform: config.socialPlatform,
+                social_username: config.socialUsername,
+                include_qr: config.includeQR === 'true',
+                prize_4corners: config.prize4Corners,
+                prize_first_line: config.prizeFirstLine,
+                prize_full_house: config.prizeFullHouse
+            })
+        });
+        
+        if (response.ok) {
+            console.log(`✅ Saved config to database for venue: ${venueName}`);
+        } else {
+            console.warn(`⚠️ Failed to save to database, using localStorage only`);
+        }
+    } catch (error) {
+        console.warn(`⚠️ Database save failed, using localStorage only:`, error);
+    }
 }
 
 /**
  * Load venue-specific configuration from localStorage
  * Returns null if no config exists for this venue
  */
-function loadVenueConfig(venueName) {
+async function loadVenueConfig(venueName) {
+    // First try to load from database
+    try {
+        const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL || 'http://localhost:8080';
+        const url = `${apiUrl}/api/venue-config/${encodeURIComponent(venueName)}`;
+        
+        const response = await fetch(url);
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.config) {
+                console.log(`📂 Loaded config from database for venue: ${venueName}`);
+                // Convert database format to localStorage format
+                return {
+                    venueName: data.config.venue_name,
+                    numPlayers: data.config.num_players.toString(),
+                    voiceId: data.config.voice_id,
+                    selectedDecades: JSON.stringify(data.config.selected_decades),
+                    pubLogo: data.config.pub_logo,
+                    socialPlatform: data.config.social_platform,
+                    socialUsername: data.config.social_username,
+                    includeQR: data.config.include_qr.toString(),
+                    prize4Corners: data.config.prize_4corners,
+                    prizeFirstLine: data.config.prize_first_line,
+                    prizeFullHouse: data.config.prize_full_house,
+                    lastUpdated: data.config.updated_at
+                };
+            }
+        }
+    } catch (error) {
+        console.warn('⚠️ Could not load from database, trying localStorage:', error);
+    }
+    
+    // Fallback to localStorage
     const venueKey = `venue_${venueName.toLowerCase().replace(/\s+/g, '_')}`;
     const existingConfigs = JSON.parse(localStorage.getItem('venueConfigs') || '{}');
     const config = existingConfigs[venueKey];
     if (config) {
-        console.log(`📂 Loaded config for venue: ${venueName}`);
+        console.log(`📂 Loaded config from localStorage for venue: ${venueName}`);
     }
     return config || null;
 }
@@ -165,7 +236,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 /**
  * Initialize the setup modal with event listeners
  */
-function initializeSetupModal() {
+async function initializeSetupModal() {
     const setupVenueName = document.getElementById('setupVenueName');
     const setupNumPlayers = document.getElementById('setupNumPlayers');
     const setupEstimation = document.getElementById('setupEstimation');
@@ -176,7 +247,7 @@ function initializeSetupModal() {
         setupVenueName.value = savedVenue;
         
         // Try to load venue-specific config
-        const venueConfig = loadVenueConfig(savedVenue);
+        const venueConfig = await loadVenueConfig(savedVenue);
         if (venueConfig) {
             // Restore all venue-specific settings
             if (venueConfig.numPlayers) setupNumPlayers.value = venueConfig.numPlayers;
@@ -195,8 +266,11 @@ function initializeSetupModal() {
                 document.getElementById('setupPubLogo').value = venueConfig.pubLogo;
                 showLogoPreview(venueConfig.pubLogo);
             }
-            if (venueConfig.socialMedia) {
-                document.getElementById('setupSocialMedia').value = venueConfig.socialMedia;
+            if (venueConfig.socialPlatform) {
+                document.getElementById('socialPlatform').value = venueConfig.socialPlatform;
+            }
+            if (venueConfig.socialUsername) {
+                document.getElementById('setupSocialMedia').value = venueConfig.socialUsername;
             }
             if (venueConfig.includeQR === 'true') {
                 document.getElementById('setupIncludeQR').checked = true;
@@ -207,39 +281,47 @@ function initializeSetupModal() {
             if (venueConfig.prizeFullHouse) document.getElementById('prizeFullHouse').value = venueConfig.prizeFullHouse;
             
             console.log('✅ Restored venue-specific configuration');
-            return; // Exit early, config loaded
+            // Don't return - continue to set up listeners
         }
     }
     
-    // Fallback: load global settings (for backward compatibility)
-    const savedPlayers = localStorage.getItem('numPlayers');
-    const savedVoice = localStorage.getItem('voiceId');
-    const savedDecades = localStorage.getItem('selectedDecades');
-    const savedPubLogo = localStorage.getItem('pubLogo');
-    const savedSocialMedia = localStorage.getItem('socialMedia');
-    const savedIncludeQR = localStorage.getItem('includeQR');
-    
-    if (savedPlayers) setupNumPlayers.value = savedPlayers;
-    if (savedVoice) document.getElementById('setupVoice').value = savedVoice;
-    if (savedPubLogo) {
-        document.getElementById('setupPubLogo').value = savedPubLogo;
-        showLogoPreview(savedPubLogo);
-    }
-    if (savedSocialMedia) document.getElementById('setupSocialMedia').value = savedSocialMedia;
-    if (savedIncludeQR === 'true') {
-        document.getElementById('setupIncludeQR').checked = true;
-        toggleSocialMediaField();
-    }
-    
-    // Restore decade checkbox selections
-    if (savedDecades) {
-        try {
-            const decades = JSON.parse(savedDecades);
-            document.querySelectorAll('input[name="decades"]').forEach(checkbox => {
-                checkbox.checked = decades.includes(checkbox.value);
-            });
-        } catch (e) {
-            console.warn('Could not restore decade selection:', e);
+    // Fallback: load global settings (for backward compatibility) - only if no venue config loaded
+    if (!savedVenue || !loadVenueConfig(savedVenue)) {
+        const savedPlayers = localStorage.getItem('numPlayers');
+        const savedVoice = localStorage.getItem('voiceId');
+        const savedDecades = localStorage.getItem('selectedDecades');
+        const savedPubLogo = localStorage.getItem('pubLogo');
+        const savedSocialMedia = localStorage.getItem('socialMedia');
+        const savedIncludeQR = localStorage.getItem('includeQR');
+        const savedPrize4Corners = localStorage.getItem('prize4Corners');
+        const savedPrizeFirstLine = localStorage.getItem('prizeFirstLine');
+        const savedPrizeFullHouse = localStorage.getItem('prizeFullHouse');
+        
+        if (savedPlayers) setupNumPlayers.value = savedPlayers;
+        if (savedVoice) document.getElementById('setupVoice').value = savedVoice;
+        if (savedPubLogo) {
+            document.getElementById('setupPubLogo').value = savedPubLogo;
+            showLogoPreview(savedPubLogo);
+        }
+        if (savedSocialMedia) document.getElementById('setupSocialMedia').value = savedSocialMedia;
+        if (savedIncludeQR === 'true') {
+            document.getElementById('setupIncludeQR').checked = true;
+            toggleSocialMediaField();
+        }
+        if (savedPrize4Corners) document.getElementById('prize4Corners').value = savedPrize4Corners;
+        if (savedPrizeFirstLine) document.getElementById('prizeFirstLine').value = savedPrizeFirstLine;
+        if (savedPrizeFullHouse) document.getElementById('prizeFullHouse').value = savedPrizeFullHouse;
+        
+        // Restore decade checkbox selections
+        if (savedDecades) {
+            try {
+                const decades = JSON.parse(savedDecades);
+                document.querySelectorAll('input[name="decades"]').forEach(checkbox => {
+                    checkbox.checked = decades.includes(checkbox.value);
+                });
+            } catch (e) {
+                console.warn('Could not restore decade selection:', e);
+            }
         }
     }
     
@@ -266,10 +348,10 @@ function initializeSetupModal() {
     });
     
     // Load venue config when venue name changes (on blur/tab out)
-    setupVenueName.addEventListener('blur', () => {
+    setupVenueName.addEventListener('blur', async () => {
         const venueName = setupVenueName.value.trim();
         if (venueName && venueName !== 'this venue') {
-            const venueConfig = loadVenueConfig(venueName);
+            const venueConfig = await loadVenueConfig(venueName);
             if (venueConfig) {
                 // Auto-fill form with saved config
                 if (venueConfig.numPlayers) setupNumPlayers.value = venueConfig.numPlayers;
@@ -286,7 +368,8 @@ function initializeSetupModal() {
                     document.getElementById('setupPubLogo').value = venueConfig.pubLogo;
                     showLogoPreview(venueConfig.pubLogo);
                 }
-                if (venueConfig.socialMedia) document.getElementById('setupSocialMedia').value = venueConfig.socialMedia;
+                if (venueConfig.socialPlatform) document.getElementById('socialPlatform').value = venueConfig.socialPlatform;
+                if (venueConfig.socialUsername) document.getElementById('setupSocialMedia').value = venueConfig.socialUsername;
                 if (venueConfig.includeQR === 'true') {
                     document.getElementById('setupIncludeQR').checked = true;
                     toggleSocialMediaField();
@@ -463,7 +546,9 @@ async function completeSetup() {
         const pubLogo = document.getElementById('setupPubLogo').value.trim();
         const includeQR = document.getElementById('setupIncludeQR').checked;
         
-        // Get complete social media URL (platform + username)
+        // Get social media info (platform + username)
+        const socialPlatform = document.getElementById('socialPlatform').value;
+        const socialUsername = document.getElementById('setupSocialMedia').value.trim();
         const socialMediaURL = includeQR ? getSocialMediaURL() : '';
         
         // Get prizes (optional)
@@ -485,6 +570,8 @@ async function completeSetup() {
             voiceId: selectedVoice,
             selectedDecades: JSON.stringify(selectedDecades),
             pubLogo: pubLogo,
+            socialPlatform: socialPlatform,
+            socialUsername: socialUsername,
             socialMedia: socialMediaURL,
             includeQR: includeQR.toString(),
             prize4Corners: prize4Corners,
