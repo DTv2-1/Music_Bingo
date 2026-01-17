@@ -31,11 +31,21 @@ def index_view(request):
     from django.http import FileResponse
     return FileResponse(open(FRONTEND_DIR / 'game.html', 'rb'))
 
+def jingle_view(request):
+    from django.http import FileResponse
+    return FileResponse(open(FRONTEND_DIR / 'jingle.html', 'rb'))
+
+def jingle_manager_view(request):
+    from django.http import FileResponse
+    return FileResponse(open(FRONTEND_DIR / 'jingle-manager.html', 'rb'))
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
+    path("jingle-manager", jingle_manager_view, name="jingle-manager"),
+    path("jingle", jingle_view, name="jingle"),
     path("", index_view),
-    re_path(r'^(?P<path>game\.js|styles\.css|config\.js|env-loader\.js)$', lambda request, path: serve(request, path, document_root=str(FRONTEND_DIR))),
+    re_path(r'^(?P<path>game\.js|styles\.css|config\.js|env-loader\.js|jingle\.js|jingle-manager\.js)$', lambda request, path: serve(request, path, document_root=str(FRONTEND_DIR))),
     re_path(r'^assets/(?P<path>.*)$', lambda request, path: serve(request, path, document_root=str(FRONTEND_DIR / 'assets'))),
     re_path(r'^data/(?P<path>.*)$', lambda request, path: serve(request, path, document_root=str(DATA_DIR))),
 ]
