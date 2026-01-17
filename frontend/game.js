@@ -1448,54 +1448,22 @@ async function playCustomAnnouncement() {
  * Reset setup and show configuration modal
  */
 function resetSetup() {
-    if (!confirm('Reconfigure setup? This will clear all game progress and show the setup modal again.')) {
-        return;
-    }
-    
-    // Stop any playing audio
-    if (musicPlayer) {
-        musicPlayer.stop();
-        musicPlayer = null;
-    }
-    if (ttsPlayer) {
-        ttsPlayer.stop();
-        ttsPlayer = null;
-    }
-    if (backgroundMusic) {
-        backgroundMusic.stop();
-        backgroundMusic = null;
-    }
-    
-    // Clear all saved data
+    // Clear setup flag to show modal again
     localStorage.removeItem('setupCompleted');
-    localStorage.removeItem('venueName');
-    localStorage.removeItem('numPlayers');
-    localStorage.removeItem('voiceId');
-    localStorage.removeItem('selectedDecades');
-    localStorage.removeItem('pubLogo');
-    localStorage.removeItem('socialMedia');
-    localStorage.removeItem('includeQR');
-    clearGameState();
     
-    // Reset game state
-    gameState.remaining = [];
-    gameState.called = [];
-    gameState.currentTrack = null;
-    gameState.isPlaying = false;
-    gameState.welcomeAnnounced = false;
-    gameState.halfwayAnnounced = false;
-    gameInitialized = false;
-    
-    // Show setup modal and reload page
-    console.log('🔄 Resetting setup...');
-    location.reload();
+    // Show modal with current settings loaded
+    const modal = document.getElementById('setupModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        initializeSetupModal();
+    }
 }
 
 /**
  * Reset game to start over
  */
 function resetGame() {
-    if (!confirm('Reset game? This will clear all called songs.')) {
+    if (!confirm('⚠️ Reset game? This will clear all called songs and restart from the beginning.')) {
         return;
     }
     
