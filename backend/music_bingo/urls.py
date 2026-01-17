@@ -36,8 +36,26 @@ def jingle_view(request):
     return FileResponse(open(FRONTEND_DIR / 'jingle.html', 'rb'))
 
 def jingle_manager_view(request):
-    from django.http import FileResponse
-    return FileResponse(open(FRONTEND_DIR / 'jingle-manager.html', 'rb'))
+    from django.http import FileResponse, HttpResponse
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    file_path = FRONTEND_DIR / 'jingle-manager.html'
+    logger.info(f"🔍 Attempting to serve jingle-manager.html from: {file_path}")
+    logger.info(f"   FRONTEND_DIR: {FRONTEND_DIR}")
+    logger.info(f"   File exists: {file_path.exists()}")
+    
+    if not file_path.exists():
+        logger.error(f"❌ File not found: {file_path}")
+        # List files in FRONTEND_DIR
+        try:
+            files = list(FRONTEND_DIR.glob('*.html'))
+            logger.info(f"   Available HTML files: {[f.name for f in files]}")
+        except Exception as e:
+            logger.error(f"   Error listing files: {e}")
+        return HttpResponse(f"File not found: {file_path}", status=404)
+    
+    return FileResponse(open(file_path, 'rb'))
 
 urlpatterns = [
     path("admin/", admin.site.urls),
