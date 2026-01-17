@@ -128,12 +128,6 @@ function showGameNotification(message, type = 'info') {
 // INITIALIZATION
 // ============================================================================
 
-/**
- * Load song pool and announcements on page load
- */
-// Global flag to prevent game initialization
-let gameInitialized = false;
-
 // Howler instances
 let musicPlayer = null;
 let ttsPlayer = null;
