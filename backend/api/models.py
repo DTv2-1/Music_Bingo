@@ -264,3 +264,177 @@ class VenueConfiguration(models.Model):
     
     def __str__(self):
         return f"{self.venue_name} Configuration"
+
+
+# ============================================================
+# KARAOKE SYSTEM MODELS
+# ============================================================
+
+class KaraokeSession(models.Model):
+    """
+    Karaoke session for a venue
+    Manages the overall karaoke night with queue and settings
+    """
+    SESSION_STATUS = [
+        ('waiting', 'Waiting to Start'),
+        ('active', 'Active'),
+        ('paused', 'Paused'),
+        ('ended', 'Ended'),
+    ]
+    
+    venue_name = models.CharField(
+        max_length=200,
+        help_text="Venue hosting this karaoke session"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=SESSION_STATUS,
+        default='waiting',
+        help_text="Current session status"
+    )
+    
+    # Settings
+    avg_song_duration = models.IntegerField(
+        default=240,  # 4 minutes in seconds
+        help_text="Average song duration in seconds for time estimation"
+    )
+    auto_advance = models.BooleanField(
+        default=True,
+        help_text="Automatically advance to next singer when song completes"
+    )
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Karaoke Session"
+        verbose_name_plural = "Karaoke Sessions"
+    
+    def __str__(self):
+        return f"Karaoke @ {self.venue_name} ({self.status})"
+    
+    def get_active_queue(self):
+        """Get all pending entries in queue order"""
+        return self.queue_entries.filter(
+            status='pending'
+        ).order_by('position')
+    
+    def get_current_singer(self):
+        """Get currently singing entry"""
+        return self.queue_entries.filter(status='singing').first()
+    
+    def get_queue_count(self):
+        """Get number of people waiting"""
+        return self.queue_entries.filter(status='pending').count()
+
+
+class KaraokeQueue(models.Model):
+    """
+    Queue entry for a singer in a karaoke session
+    Represents one person's song request
+    """
+    QUEUE_STATUS = [
+        ('pending', 'Waiting in Queue'),
+        ('singing', 'Currently Singing'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    session = models.ForeignKey(
+        KaraokeSession,
+        on_delete=models.CASCADE,
+        related_name='queue_entries',
+        help_text="Session this queue entry belongs to"
+    )
+    
+    # Singer Info
+    name = models.CharField(
+        max_length=200,
+        help_text="Singer's name"
+    )
+    message = models.TextField(
+        blank=True,
+        help_text="Optional message to the crowd (e.g., 'Dedicated to my friends')"
+    )
+    
+    # Song Info (from Karafun API or manual entry)
+    song_id = models.CharField(
+        max_length=100,
+        help_text="Karafun song ID or custom identifier"
+    )
+    song_title = models.CharField(
+        max_length=300,
+        help_text="Song title"
+    )
+    artist = models.CharField(
+        max_length=200,
+        help_text="Artist name"
+    )
+    duration = models.IntegerField(
+        default=240,
+        help_text="Song duration in seconds"
+    )
+    
+    # URLs (from Karafun API)
+    audio_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text="URL to instrumental audio track"
+    )
+    lyrics_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text="URL to synchronized lyrics (LRC format)"
+    )
+    
+    # Queue Management
+    position = models.IntegerField(
+        help_text="Position in queue (1 = next up)"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=QUEUE_STATUS,
+        default='pending',
+        help_text="Current status in queue"
+    )
+    
+    # Timestamps
+    requested_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['session', 'position']
+        verbose_name = "Karaoke Queue Entry"
+        verbose_name_plural = "Karaoke Queue Entries"
+    
+    def __str__(self):
+        return f"{self.name} - {self.song_title} ({self.status})"
+    
+    def estimated_wait_time(self):
+        """
+        Calculate estimated wait time in minutes
+        Based on position and average song duration
+        """
+        if self.status != 'pending':
+            return 0
+        
+        # Count entries ahead in queue
+        ahead = KaraokeQueue.objects.filter(
+            session=self.session,
+            status='pending',
+            position__lt=self.position
+        ).count()
+        
+        # Add current singer if any
+        current = self.session.get_current_singer()
+        if current:
+            ahead += 1
+        
+        # Calculate time (in minutes)
+        avg_duration = self.session.avg_song_duration
+        wait_seconds = ahead * avg_duration
+        return round(wait_seconds / 60)

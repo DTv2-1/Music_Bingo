@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import karaoke_views
 
 urlpatterns = [
     path('health', views.health_check, name='health'),
@@ -27,4 +28,17 @@ urlpatterns = [
     path('jingle-schedules', views.create_jingle_schedule, name='jingle-schedules'),  # POST: Create, GET: List all
     # Venue Configuration
     path('venue-config/<str:venue_name>', views.venue_config, name='venue-config'),  # GET/POST: Load/save config
+    
+    # ============================================================
+    # KARAOKE ENDPOINTS
+    # ============================================================
+    # Session Management
+    path('karaoke/session', karaoke_views.create_session, name='karaoke-create-session'),  # POST: Create session
+    path('karaoke/session/<str:venue_name>', karaoke_views.get_session, name='karaoke-get-session'),  # GET: Get session
+    
+    # Queue Management
+    path('karaoke/queue', karaoke_views.add_to_queue, name='karaoke-add-queue'),  # POST: Add to queue
+    path('karaoke/queue/<int:session_id>', karaoke_views.get_queue, name='karaoke-get-queue'),  # GET: Get queue
+    path('karaoke/queue/<int:entry_id>', karaoke_views.cancel_entry, name='karaoke-cancel'),  # DELETE: Cancel
+    path('karaoke/queue/<int:entry_id>/complete', karaoke_views.complete_entry, name='karaoke-complete'),  # PATCH: Complete
 ]
