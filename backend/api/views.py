@@ -737,17 +737,17 @@ def list_jingles(request):
     Returns: [{"filename": "...", "created": "...", "size": 12345, "metadata": {...}}, ...]
     """
     try:
-        logger.info(f"\n{'='*60}")
-        logger.info("📥 GET /api/jingles - List jingles endpoint called")
-        logger.info(f"Request method: {request.method}")
-        logger.info(f"Request path: {request.path}")
+        logger.info(f'\n{"="*60}')
+        logger.info('📥 GET /api/jingles - List jingles endpoint called')
+        logger.info(f'Request method: {request.method}')
+        logger.info(f'Request path: {request.path}')
         
         jingles_dir = DATA_DIR / 'jingles'
-        logger.info(f"Looking for jingles in: {jingles_dir}")
-        logger.info(f"Directory exists: {jingles_dir.exists()}")
+        logger.info(f'Looking for jingles in: {jingles_dir}')
+        logger.info(f'Directory exists: {jingles_dir.exists()}')
         
         if not jingles_dir.exists():
-            logger.warning(f"Jingles directory does not exist")
+            logger.warning('Jingles directory does not exist')
             return Response([])
         
         jingles = []
@@ -775,12 +775,12 @@ def list_jingles(request):
         # Sort by creation time (newest first)
         jingles.sort(key=lambda x: x['created'], reverse=True)
         
-        logger.info(f\"✅ Found {len(jingles)} jingles\")
+        logger.info(f'✅ Found {len(jingles)} jingles')
         for jingle in jingles:
-            logger.info(f\"  - {jingle['filename']}\")
+            logger.info(f"  - {jingle['filename']}")
         
         response = Response({'jingles': jingles})
-        logger.info(f\"Returning jingles response: {response.status_code}\")
+        logger.info(f'Returning jingles response: {response.status_code}')
         return response
         
     except Exception as e:
@@ -886,10 +886,10 @@ def create_jingle_schedule(request):
         "message": "Schedule created successfully"
     }
     """
-    logger.info(f"\n{'='*60}")
-    logger.info(f"📥 {request.method} /api/jingle-schedules endpoint called")
-    logger.info(f"Request method: {request.method}")
-    logger.info(f"Request content-type: {request.content_type}")
+    logger.info(f'\n{"="*60}')
+    logger.info(f'{request.method} /api/jingle-schedules endpoint called')
+    logger.info(f'Request method: {request.method}')
+    logger.info(f'Request content-type: {request.content_type}')
     if request.method == 'GET':
         # List all schedules
         try:
@@ -926,9 +926,9 @@ def create_jingle_schedule(request):
                     'updated_at': schedule.updated_at.isoformat()
                 })
             
-            logger.info(f\"✅ Listed {len(schedules_list)} jingle schedules\")
+            logger.info(f'✅ Listed {len(schedules_list)} jingle schedules')
             for schedule in schedules_list:
-                logger.info(f\"  - {schedule['jingle_name']} (enabled: {schedule['enabled']}, priority: {schedule['priority']})\")
+                logger.info(f"  - {schedule['jingle_name']} (enabled: {schedule['enabled']}, priority: {schedule['priority']})")
             
             return Response({
                 'schedules': schedules_list
@@ -1111,10 +1111,10 @@ def get_active_jingles(request):
         ]
     }
     """
-    logger.info(f"\n{'='*60}")
-    logger.info("📥 GET /api/jingle-schedules/active - Get active jingles endpoint called")
-    logger.info(f"Request method: {request.method}")
-    logger.info(f"Request path: {request.path}")
+    logger.info(f'\n{"="*60}')
+    logger.info('📥 GET /api/jingle-schedules/active - Get active jingles endpoint called')
+    logger.info(f'Request method: {request.method}')
+    logger.info(f'Request path: {request.path}')
     try:
         from .models import JingleSchedule
         
@@ -1133,9 +1133,9 @@ def get_active_jingles(request):
                     'priority': schedule.priority
                 })
         
-        logger.info(f\"✅ Found {len(active_schedules)} active jingle schedules out of {len(all_schedules)} total\")
+        logger.info(f'✅ Found {len(active_schedules)} active jingle schedules out of {len(all_schedules)} total')
         for schedule in active_schedules:
-            logger.info(f\"  - {schedule['jingle_name']} (interval: {schedule['interval']}, priority: {schedule['priority']})\")
+            logger.info(f"  - {schedule['jingle_name']} (interval: {schedule['interval']}, priority: {schedule['priority']})")
         
         return Response({
             'active_jingles': active_schedules
