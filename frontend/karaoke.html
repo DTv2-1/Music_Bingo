@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Karaoke | Music Bingo</title>
+    <link rel="icon" type="image/png" href="assets/perfect-dj-logo.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #764ba2;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            margin-top: 60px;
+        }
+
+        header img {
+            max-width: 150px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .queue-status {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .queue-status .position {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .queue-status .label {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .queue-status .wait-time {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #dee2e6;
+            color: #999;
+            font-size: 0.95em;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .success-message h3 {
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .venue-input-section {
+            margin-bottom: 30px;
+        }
+
+        .song-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .song-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .song-item:hover {
+            background: #f8f9fa;
+        }
+
+        .song-item.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .song-item:last-child {
+            border-bottom: none;
+        }
+
+        .song-title {
+            font-weight: 600;
+        }
+
+        .song-artist {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Home</a>
+
+    <div class="container">
+        <header>
+            <img src="assets/perfect-dj-logo.png" alt="Perfect DJ">
+            <h1>🎤 Join Karaoke</h1>
+            <p class="tagline">Select your song and get in the queue!</p>
+        </header>
+
+        <!-- Venue Selection -->
+        <div id="venueSection" class="card venue-input-section">
+            <h2 style="color: #764ba2; margin-bottom: 20px;">Enter Venue Code</h2>
+            <div class="form-group">
+                <label for="venueInput">Venue Name</label>
+                <input type="text" id="venueInput" placeholder="e.g., JuanPub" required>
+                <small>Ask the host for the venue name</small>
+            </div>
+            <button class="btn btn-primary" onclick="connectToVenue()">Connect to Venue</button>
+        </div>
+
+        <!-- Join Queue Form (hidden initially) -->
+        <div id="joinForm" class="card hidden">
+            <h2 style="color: #764ba2; margin-bottom: 20px;">Add Your Song</h2>
+            
+            <div id="errorMessage" class="error-message hidden"></div>
+
+            <form onsubmit="joinQueue(event)">
+                <div class="form-group">
+                    <label for="singerName">Your Name *</label>
+                    <input type="text" id="singerName" required placeholder="e.g., John Smith">
+                </div>
+
+                <div class="form-group">
+                    <label for="songTitle">Song Title *</label>
+                    <input type="text" id="songTitle" required placeholder="e.g., I Want to Break Free">
+                    <small>Type the song you want to sing</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="artistName">Artist *</label>
+                    <input type="text" id="artistName" required placeholder="e.g., Queen">
+                </div>
+
+                <div class="form-group">
+                    <label for="messageToAudience">Message (Optional)</label>
+                    <textarea id="messageToAudience" placeholder="e.g., Dedicated to my friends!"></textarea>
+                    <small>A message that will be announced before your song</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    🎤 Join Queue
+                </button>
+            </form>
+        </div>
+
+        <!-- Success/Queue Status -->
+        <div id="successSection" class="hidden">
+            <div class="success-message">
+                <h3>✅ You're in the queue!</h3>
+                <p>The host will call you when it's your turn</p>
+            </div>
+
+            <div class="card">
+                <div class="queue-status">
+                    <div class="position" id="queuePosition">-</div>
+                    <div class="label">Your Position in Queue</div>
+                    <div class="wait-time" id="waitTime">Calculating wait time...</div>
+                </div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <h3 style="color: #764ba2; margin-bottom: 15px;">Your Song</h3>
+                <div id="yourSong" style="font-size: 1.2em; color: #333;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        let sessionId = null;
+        let venueName = null;
+        let myEntryId = null;
+        let pollInterval = null;
+
+        async function connectToVenue() {
+            const input = document.getElementById('venueInput');
+            venueName = input.value.trim();
+
+            if (!venueName) {
+                showError('Please enter a venue name');
+                return;
+            }
+
+            try {
+                // Check if session exists
+                const response = await fetch(`${CONFIG.API_URL}/api/karaoke/session/${encodeURIComponent(venueName)}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    sessionId = data.session.id;
+                    
+                    // Show join form
+                    document.getElementById('venueSection').classList.add('hidden');
+                    document.getElementById('joinForm').classList.remove('hidden');
+                    
+                    console.log('✅ Connected to venue:', venueName);
+                } else {
+                    showError('Venue not found. Make sure the host has started a karaoke session.');
+                }
+            } catch (error) {
+                console.error('Error connecting to venue:', error);
+                showError('Error connecting to venue. Please try again.');
+            }
+        }
+
+        async function joinQueue(event) {
+            event.preventDefault();
+
+            const singerName = document.getElementById('singerName').value.trim();
+            const songTitle = document.getElementById('songTitle').value.trim();
+            const artistName = document.getElementById('artistName').value.trim();
+            const message = document.getElementById('messageToAudience').value.trim();
+
+            if (!singerName || !songTitle || !artistName) {
+                showError('Please fill in all required fields');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Joining...';
+
+            try {
+                const response = await fetch(`${CONFIG.API_URL}/api/karaoke/queue`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        name: singerName,
+                        song_id: `manual_${Date.now()}`,
+                        song_title: songTitle,
+                        artist: artistName,
+                        message: message,
+                        duration: 240 // Default 4 minutes
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    myEntryId = data.id;
+                    
+                    // Show success section
+                    document.getElementById('joinForm').classList.add('hidden');
+                    document.getElementById('successSection').classList.remove('hidden');
+                    
+                    // Display song info
+                    document.getElementById('yourSong').innerHTML = `
+                        <strong>${songTitle}</strong><br>
+                        <span style="color: #666;">${artistName}</span>
+                    `;
+                    
+                    // Update position
+                    updateMyPosition(data.position, data.estimated_wait);
+                    
+                    // Start polling for updates
+                    pollInterval = setInterval(checkMyPosition, 5000);
+                    
+                    console.log('✅ Joined queue:', data);
+                } else {
+                    throw new Error(data.error || 'Failed to join queue');
+                }
+            } catch (error) {
+                console.error('Error joining queue:', error);
+                showError('Error joining queue: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🎤 Join Queue';
+            }
+        }
+
+        async function checkMyPosition() {
+            try {
+                const response = await fetch(`${CONFIG.API_URL}/api/karaoke/session/${encodeURIComponent(venueName)}`);
+                const data = await response.json();
+                
+                // Find my entry in the queue
+                const myEntry = data.queue.find(entry => entry.id === myEntryId);
+                
+                if (myEntry) {
+                    updateMyPosition(myEntry.position, myEntry.estimated_wait);
+                } else {
+                    // I'm not in the queue anymore - might be singing or completed
+                    if (data.current_singer && data.current_singer.id === myEntryId) {
+                        showNowSinging();
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking position:', error);
+            }
+        }
+
+        function updateMyPosition(position, waitTime) {
+            document.getElementById('queuePosition').textContent = position;
+            document.getElementById('waitTime').textContent = 
+                `⏱ Estimated wait: ~${waitTime} minutes`;
+        }
+
+        function showNowSinging() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+            
+            document.getElementById('successSection').innerHTML = `
+                <div class="success-message" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none;">
+                    <h2 style="font-size: 2.5em; margin-bottom: 15px;">🎤</h2>
+                    <h3>It's Your Turn!</h3>
+                    <p style="font-size: 1.2em; margin-top: 10px;">Get ready to sing!</p>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            
+            setTimeout(() => {
+                errorDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+        });
+    </script>
+</body>
+</html>
