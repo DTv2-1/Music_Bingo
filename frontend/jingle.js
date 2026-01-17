@@ -858,7 +858,8 @@ async function loadJinglesLibrary() {
         const url = apiUrl.endsWith('/api') ? `${apiUrl}/jingles` : `${apiUrl}/api/jingles`;
         
         const response = await fetch(url);
-        const jingles = await response.json();
+        const data = await response.json();
+        const jingles = data.jingles || data; // Handle both {jingles: [...]} and [...]
         
         displayJingles(jingles);
     } catch (error) {
