@@ -52,4 +52,8 @@ urlpatterns = [
     path('karaoke/queue/<int:session_id>', karaoke_views.get_queue, name='karaoke-get-queue'),  # GET: Get queue
     path('karaoke/queue/<int:entry_id>', karaoke_views.cancel_entry, name='karaoke-cancel'),  # DELETE: Cancel
     path('karaoke/queue/<int:entry_id>/complete', karaoke_views.complete_entry, name='karaoke-complete'),  # PATCH: Complete
+    
+    # Karafun API Integration
+    path('karaoke/karafun/devices', karaoke_views.list_karafun_devices, name='karafun-devices'),  # GET: List devices
+    path('karaoke/karafun/session', karaoke_views.create_karafun_session, name='karafun-create-session'),  # POST: Create Karafun session
 ]

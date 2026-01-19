@@ -267,3 +267,83 @@ def complete_entry(request, entry_id):
     except Exception as e:
         logger.error(f"Error completing entry: {e}", exc_info=True)
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ============================================================
+# KARAFUN API INTEGRATION
+# ============================================================
+
+@api_view(['GET'])
+def list_karafun_devices(request):
+    """
+    GET /api/karaoke/karafun/devices
+    List all Karafun devices available in the account
+    """
+    try:
+        from .karafun_client import get_karafun_client
+        
+        client = get_karafun_client()
+        if not client:
+            return Response(
+                {'error': 'Karafun API not configured'}, 
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+        
+        devices = client.list_devices()
+        return Response({'devices': devices})
+        
+    except Exception as e:
+        logger.error(f"Error fetching Karafun devices: {e}", exc_info=True)
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def create_karafun_session(request):
+    """
+    POST /api/karaoke/karafun/session
+    Create a Karafun Business session for a device
+    
+    Body:
+    {
+        "device_id": 1080,
+        "start_at_timestamp": "2026-01-19T18:00:00+00:00",
+        "end_at_timestamp": "2026-01-19T23:00:00+00:00",
+        "customer_firstname": "John",
+        "comment": "Saturday night karaoke"
+    }
+    """
+    try:
+        from .karafun_client import get_karafun_client
+        
+        client = get_karafun_client()
+        if not client:
+            return Response(
+                {'error': 'Karafun API not configured'}, 
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+        
+        device_id = request.data.get('device_id')
+        start_at = request.data.get('start_at_timestamp')
+        end_at = request.data.get('end_at_timestamp')
+        
+        if not all([device_id, start_at, end_at]):
+            return Response(
+                {'error': 'device_id, start_at_timestamp, and end_at_timestamp are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        karafun_session = client.create_session(
+            device_id=device_id,
+            start_at_timestamp=start_at,
+            end_at_timestamp=end_at,
+            customer_firstname=request.data.get('customer_firstname'),
+            comment=request.data.get('comment'),
+            locale=request.data.get('locale', 'en')
+        )
+        
+        return Response(karafun_session, status=status.HTTP_201_CREATED)
+        
+    except Exception as e:
+        logger.error(f"Error creating Karafun session: {e}", exc_info=True)
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
