@@ -62,6 +62,16 @@ app.get('/index', (req, res) => {
   serveHtmlFile(res, 'index.html');
 });
 
+app.get('/pub-quiz/register/:id', (req, res) => {
+  console.log(`📄 Request for /pub-quiz/register/${req.params.id} - serving pub-quiz-register.html`);
+  serveHtmlFile(res, 'pub-quiz-register.html');
+});
+
+app.get('/pub-quiz/host/:id', (req, res) => {
+  console.log(`📄 Request for /pub-quiz/host/${req.params.id} - serving pub-quiz-host.html`);
+  serveHtmlFile(res, 'pub-quiz-host.html');
+});
+
 // Legacy .html routes (redirect to clean URLs)
 app.get('/game.html', (req, res) => {
   console.log('📄 Redirecting /game.html -> /game');
