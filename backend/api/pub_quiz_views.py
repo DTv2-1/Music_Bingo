@@ -2,12 +2,15 @@
 Vistas y API para el sistema Pub Quiz
 """
 
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.db.models import Count, Q
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 import json
 import qrcode
 from io import BytesIO
@@ -24,20 +27,25 @@ from .pub_quiz_generator import PubQuizGenerator, initialize_genres_in_db
 # VISTAS DE ADMINISTRACIÓN
 # ============================================================================
 
-def pub_quiz_admin(request):
-    """Vista principal de administración del Pub Quiz"""
+@api_view(['GET'])
+def get_sessions(request):
+    """Obtiene las sesiones de Pub Quiz más recientes"""
     sessions = PubQuizSession.objects.all().order_by('-date')[:10]
-    return render(request, 'pub_quiz_admin.html', {
-        'sessions': sessions
-    })
+    data = [{
+        'id': s.id,
+        'venue_name': s.venue_name,
+        'date': s.date,
+        'status': s.status,
+        'team_count': s.teams.count()
+    } for s in sessions]
+    return Response(data)
 
 
-@csrf_exempt
-@require_http_methods(["POST"])
+@api_view(['POST'])
 def create_quiz_session(request):
     """Crea una nueva sesión de Pub Quiz"""
     try:
-        data = json.loads(request.body)
+        data = request.data
         
         session = PubQuizSession.objects.create(
             venue_name=data.get('venue_name', 'The Pub'),
@@ -48,13 +56,9 @@ def create_quiz_session(request):
             status='registration',
         )
         
-        # Generar URL de registro con QR
-        registration_url = f"{request.scheme}://{request.get_host()}/pub-quiz/register/{session.id}"
-        
-        return JsonResponse({
+        return Response({
             'success': True,
             'session_id': session.id,
-            'registration_url': registration_url,
             'session': {
                 'id': session.id,
                 'venue_name': session.venue_name,
@@ -62,34 +66,44 @@ def create_quiz_session(request):
                 'total_rounds': session.total_rounds,
                 'questions_per_round': session.questions_per_round,
             }
-        })
+        }, status=status.HTTP_201_CREATED)
     
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # ============================================================================
 # REGISTRO DE EQUIPOS Y QR
 # ============================================================================
 
-def team_registration_page(request, session_id):
+@api_view(['GET'])
+def get_session_details(request, session_id):
     """Página de registro para equipos (acceso vía QR)"""
     session = get_object_or_404(PubQuizSession, id=session_id)
     genres = QuizGenre.objects.filter(is_active=True).order_by('order')
     
-    return render(request, 'team_registration.html', {
-        'session': session,
-        'genres': genres,
+    return Response({
+        'session': {
+            'id': session.id,
+            'venue_name': session.venue_name,
+            'host_name': session.host_name,
+            'status': session.status
+        },
+        'genres': [{
+            'id': g.id,
+            'name': g.name,
+            'icon': g.icon,
+            'description': g.description
+        } for g in genres]
     })
 
 
-@csrf_exempt
-@require_http_methods(["POST"])
+@api_view(['POST'])
 def register_team(request, session_id):
     """Registra un nuevo equipo en la sesión"""
     try:
         session = get_object_or_404(PubQuizSession, id=session_id)
-        data = json.loads(request.body)
+        data = request.data
         
         # Crear equipo
         team = QuizTeam.objects.create(
@@ -121,22 +135,24 @@ def register_team(request, session_id):
             except QuizGenre.DoesNotExist:
                 pass
         
-        return JsonResponse({
+        return Response({
             'success': True,
             'team_id': team.id,
             'team_name': team.team_name,
             'bonus_points': team.bonus_points,
             'message': '¡Equipo registrado! Sigan @PerfectDJ para más diversión!'
-        })
+        }, status=status.HTTP_201_CREATED)
     
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
 def generate_qr_code(request, session_id):
     """Genera código QR para registro del equipo"""
     session = get_object_or_404(PubQuizSession, id=session_id)
-    registration_url = f"{request.scheme}://{request.get_host()}/pub-quiz/register/{session_id}"
+    # Registration URL should point to the frontend
+    registration_url = f"/pub-quiz/register/{session_id}"
     
     # Generar QR
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
@@ -160,8 +176,7 @@ def generate_qr_code(request, session_id):
 # GESTIÓN DE PREGUNTAS Y RONDAS
 # ============================================================================
 
-@csrf_exempt
-@require_http_methods(["POST"])
+@api_view(['POST'])
 def generate_quiz_questions(request, session_id):
     """Genera preguntas para el quiz basado en votación de géneros"""
     try:
@@ -229,7 +244,7 @@ def generate_quiz_questions(request, session_id):
             genre = QuizGenre.objects.get(name=genre_data['name'])
             session.selected_genres.add(genre)
         
-        return JsonResponse({
+        return Response({
             'success': True,
             'message': 'Quiz generado exitosamente',
             'structure': structure,
@@ -237,28 +252,43 @@ def generate_quiz_questions(request, session_id):
         })
     
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # ============================================================================
 # CONTROL DEL QUIZ EN VIVO
 # ============================================================================
 
-def quiz_host_view(request, session_id):
-    """Vista del host para controlar el quiz"""
+@api_view(['GET'])
+def quiz_host_data(request, session_id):
+    """Obtiene datos para la vista del host"""
     session = get_object_or_404(PubQuizSession, id=session_id)
     teams = session.teams.all().order_by('-total_score')
     rounds = session.rounds.all()
     
-    return render(request, 'quiz_host.html', {
-        'session': session,
-        'teams': teams,
-        'rounds': rounds,
+    return Response({
+        'session': {
+            'id': session.id,
+            'venue_name': session.venue_name,
+            'status': session.status,
+            'current_round': session.current_round,
+            'current_question': session.current_question,
+        },
+        'teams': [{
+            'id': t.id,
+            'team_name': t.team_name,
+            'total_score': t.total_score,
+            'bonus_points': t.bonus_points
+        } for t in teams],
+        'rounds': [{
+            'round_number': r.round_number,
+            'round_name': r.round_name,
+            'is_completed': r.is_completed
+        } for r in rounds],
     })
 
 
-@csrf_exempt
-@require_http_methods(["POST"])
+@api_view(['POST'])
 def start_quiz(request, session_id):
     """Inicia el quiz"""
     session = get_object_or_404(PubQuizSession, id=session_id)
@@ -273,11 +303,10 @@ def start_quiz(request, session_id):
         first_round.started_at = timezone.now()
         first_round.save()
     
-    return JsonResponse({'success': True, 'status': 'in_progress'})
+    return Response({'success': True, 'status': 'in_progress'})
 
 
-@csrf_exempt
-@require_http_methods(["POST"])
+@api_view(['POST'])
 def next_question(request, session_id):
     """Avanza a la siguiente pregunta"""
     session = get_object_or_404(PubQuizSession, id=session_id)
@@ -311,7 +340,7 @@ def next_question(request, session_id):
     
     session.save()
     
-    return JsonResponse({
+    return Response({
         'success': True,
         'current_round': session.current_round,
         'current_question': session.current_question,
@@ -319,6 +348,7 @@ def next_question(request, session_id):
     })
 
 
+@api_view(['GET'])
 def get_current_question(request, session_id):
     """Obtiene la pregunta actual"""
     session = get_object_or_404(PubQuizSession, id=session_id)
@@ -330,29 +360,122 @@ def get_current_question(request, session_id):
     ).first()
     
     if not question:
-        return JsonResponse({'success': False, 'error': 'No question found'})
+        return Response({'success': False, 'error': 'No question found'}, status=status.HTTP_404_NOT_FOUND)
     
-    return JsonResponse({
+    # Obtener respuestas/buzzes para esta pregunta
+    answers = []
+    team_answers = TeamAnswer.objects.filter(question=question).select_related('team').order_by('buzz_order', 'submitted_at')
+    
+    for ans in team_answers:
+        answers.append({
+            'team_id': ans.team.id,
+            'team_name': ans.team.team_name,
+            'is_correct': ans.is_correct,
+            'buzz_order': ans.buzz_order,
+            'buzz_time': ans.buzz_timestamp.isoformat() if ans.buzz_timestamp else None,
+            'points': ans.points_awarded
+        })
+
+    return Response({
         'success': True,
         'question': {
             'id': question.id,
-            'round_number': question.round_number,
-            'question_number': question.question_number,
-            'genre': question.genre.name if question.genre else 'General',
-            'question_text': question.question_text,
-            'difficulty': question.difficulty,
-            'question_type': question.question_type,
-            'media_url': question.media_url,
-            'hints': question.hints,
+            'text': question.question_text,
+            'answer': question.correct_answer if session.status == 'revealing_answer' else None,
+            'fun_fact': question.fun_fact if session.status == 'revealing_answer' else None,
+            'round': question.round_number,
+            'number': question.question_number,
             'points': question.points,
-        }
+            'type': question.question_type,
+            'hints': question.hints,
+            'is_last': (question.question_number == session.questions_per_round) # Assuming total_questions means questions_per_round for the current round
+        },
+        'session_status': session.status,
+        'answers': answers, # Lista de equipos que han respondido/buzzado
+        'team_count': session.teams.count(),
+        'answers_count': team_answers.count()
     })
+
+
+@api_view(['GET'])
+def get_question_answer(request, question_id):
+    """Obtiene la respuesta de una pregunta"""
+    question = get_object_or_404(QuizQuestion, id=question_id)
+    
+    return Response({
+        'success': True,
+        'answer': question.correct_answer,
+        'fun_fact': question.fun_fact
+    })
+
+
+from django.db import transaction
+from django.utils import timezone
+
+@api_view(['POST'])
+def submit_answer(request, question_id):
+    """Registra la respuesta de un equipo"""
+    question = get_object_or_404(QuizQuestion, id=question_id)
+    team_id = request.data.get('team_id')
+    team = get_object_or_404(QuizTeam, id=team_id)
+    answer_text = request.data.get('answer', '')
+    
+    # Verificar si ya respondió (para evitar duplicados)
+    ans, created = TeamAnswer.objects.get_or_create(
+        team=team,
+        question=question,
+        defaults={'answer_text': answer_text}
+    )
+    
+    if not created:
+        ans.answer_text = answer_text
+        ans.save()
+        
+    return Response({
+        'success': True,
+        'message': 'Answer submitted successfully'
+    })
+
+
+@api_view(['POST'])
+def record_buzz(request, question_id):
+    """Registra un 'buzz' (primero en presionar)"""
+    question = get_object_or_404(QuizQuestion, id=question_id)
+    team_id = request.data.get('team_id')
+    team = get_object_or_404(QuizTeam, id=team_id)
+    
+    with transaction.atomic():
+        # Ver si ya buzzó
+        ans, created = TeamAnswer.objects.get_or_create(
+            team=team,
+            question=question
+        )
+        
+        if ans.buzz_timestamp is None:
+            # Calcular orden
+            order = TeamAnswer.objects.filter(question=question).exclude(buzz_timestamp=None).count() + 1
+            ans.buzz_timestamp = timezone.now()
+            ans.buzz_order = order
+            ans.save()
+            
+            return Response({
+                'success': True,
+                'order': order,
+                'message': f'Buzzed! You are #{order}'
+            })
+        else:
+            return Response({
+                'success': True,
+                'order': ans.buzz_order,
+                'message': 'Already buzzed'
+            })
 
 
 # ============================================================================
 # LEADERBOARD Y ESTADÍSTICAS
 # ============================================================================
 
+@api_view(['GET'])
 def get_leaderboard(request, session_id):
     """Obtiene el ranking actual de equipos"""
     session = get_object_or_404(PubQuizSession, id=session_id)
@@ -370,17 +493,22 @@ def get_leaderboard(request, session_id):
             'social_handle': team.social_handle,
         })
     
-    return JsonResponse({
+    return Response({
         'success': True,
         'leaderboard': leaderboard,
         'total_teams': len(leaderboard)
     })
 
 
+@api_view(['GET'])
 def get_session_stats(request, session_id):
     """Estadísticas de la sesión"""
     session = get_object_or_404(PubQuizSession, id=session_id)
     
+    # Resumen de votos por género
+    votes = GenreVote.objects.filter(team__session=session).values('genre__name').annotate(count=Count('id')).order_by('-count')
+    genre_votes_summary = {item['genre__name']: item['count'] for item in votes}
+
     stats = {
         'total_teams': session.teams.count(),
         'total_players': sum(team.num_players for team in session.teams.all()),
@@ -390,23 +518,44 @@ def get_session_stats(request, session_id):
         'progress_percent': (session.current_round / session.total_rounds * 100) if session.total_rounds > 0 else 0,
         'status': session.status,
         'selected_genres': [g.name for g in session.selected_genres.all()],
+        'genre_votes_summary': genre_votes_summary,
     }
     
-    return JsonResponse({'success': True, 'stats': stats})
+    return Response({'success': True, 'stats': stats})
 
 
 # ============================================================================
 # INICIALIZACIÓN
 # ============================================================================
 
+@api_view(['POST'])
+def award_points(request, team_id):
+    """Otorga o resta puntos a un equipo"""
+    try:
+        team = get_object_or_404(QuizTeam, id=team_id)
+        points = request.data.get('points', 1)
+        
+        team.total_score += points
+        team.save()
+        
+        return Response({
+            'success': True,
+            'new_score': team.total_score,
+            'message': f'Points updated for {team.team_name}'
+        })
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'POST'])
 def initialize_quiz_genres(request):
     """Endpoint para inicializar los 50 géneros"""
     try:
         initialize_genres_in_db()
         count = QuizGenre.objects.count()
-        return JsonResponse({
+        return Response({
             'success': True,
             'message': f'{count} géneros inicializados correctamente'
         })
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
