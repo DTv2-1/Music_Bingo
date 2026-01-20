@@ -467,8 +467,33 @@
     </div>
 
     <script>
+        // Get SESSION_ID from URL query parameter or pathname
+        function getSessionId() {
+            // Try query parameter first: ?session=123
+            const urlParams = new URLSearchParams(window.location.search);
+            const querySession = urlParams.get('session');
+            if (querySession) return querySession;
+            
+            // Try from pathname: /pub-quiz/123 or /123
+            const pathParts = window.location.pathname.split('/').filter(p => p);
+            const lastPart = pathParts[pathParts.length - 1];
+            
+            // If last part is a number, use it
+            if (!isNaN(lastPart) && lastPart !== '') return lastPart;
+            
+            // If there's a part before .html that's a number
+            for (let i = pathParts.length - 1; i >= 0; i--) {
+                if (!isNaN(pathParts[i]) && pathParts[i] !== '') {
+                    return pathParts[i];
+                }
+            }
+            
+            // Fallback: use default session
+            return '1';
+        }
+
         // Global variables
-        const SESSION_ID = window.location.pathname.split('/').pop() || 'default-session';
+        const SESSION_ID = getSessionId();
         const BASE_URL = '/backend' || 'http://localhost:8000';
         let allGenres = [];
         let selectedGenres = [];

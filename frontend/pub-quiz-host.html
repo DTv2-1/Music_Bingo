@@ -502,7 +502,39 @@
     </div>
 
     <script>
-        const SESSION_ID = window.location.pathname.split('/').pop();
+        // Get SESSION_ID from URL query parameter or pathname
+        function getSessionId() {
+            // Try query parameter first: ?session=123
+            const urlParams = new URLSearchParams(window.location.search);
+            const querySession = urlParams.get('session');
+            if (querySession) return querySession;
+            
+            // Try from pathname: /pub-quiz/123/host or /123
+            const pathParts = window.location.pathname.split('/').filter(p => p);
+            const lastPart = pathParts[pathParts.length - 1];
+            
+            // If last part is a number, use it
+            if (!isNaN(lastPart) && lastPart !== '') return lastPart;
+            
+            // If second-to-last part is a number (e.g., /pub-quiz/123/host)
+            if (pathParts.length >= 2 && !isNaN(pathParts[pathParts.length - 2])) {
+                return pathParts[pathParts.length - 2];
+            }
+            
+            // Fallback: ask user or use localStorage
+            let stored = localStorage.getItem('pub_quiz_host_session');
+            if (stored) return stored;
+            
+            stored = prompt('Enter Quiz Session ID:');
+            if (stored) {
+                localStorage.setItem('pub_quiz_host_session', stored);
+                return stored;
+            }
+            
+            return null;
+        }
+
+        const SESSION_ID = getSessionId();
         const BASE_URL = window.BACKEND_URL || '';
         let currentQuestion = null;
         let showingAnswer = false;
@@ -510,6 +542,11 @@
 
         // Fetch initial data
         async function init() {
+            if (!SESSION_ID) {
+                alert('No Session ID provided. Please use ?session=ID in the URL or enter when prompted.');
+                return;
+            }
+            
             try {
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-data`);
                 const data = await response.json();
