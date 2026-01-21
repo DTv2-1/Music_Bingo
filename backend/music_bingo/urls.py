@@ -27,6 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent  # /app
 FRONTEND_DIR = BASE_DIR / 'frontend'  # /app/frontend
 DATA_DIR = BASE_DIR / 'data'  # /app/data
 
+# Serve home page at root URL
 def index_view(request):
     from django.http import FileResponse
     return FileResponse(open(FRONTEND_DIR / 'index.html', 'rb'))
