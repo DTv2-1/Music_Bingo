@@ -5,7 +5,9 @@ Basado en los 50 géneros extraídos de los PDFs
 
 import json
 import random
+import os
 from typing import List, Dict, Any
+import openai
 
 
 # 50 géneros extraídos del PDF 4
@@ -213,16 +215,143 @@ Generate exactly {num_questions} questions now.
     
     def generate_sample_questions(self, genre_name: str, count: int = 10, question_types: dict = None) -> List[Dict]:
         """
-        Genera preguntas de muestra (placeholder - reemplazar con IA real)
+        Genera preguntas usando OpenAI GPT-4
         question_types: {'multiple_choice': 0.7, 'written': 0.3}
         """
-        import random
-        
         # Default to 70% multiple choice, 30% written
         if question_types is None:
             question_types = {'multiple_choice': 0.7, 'written': 0.3}
         
-        # Esto es solo un placeholder - en producción usar IA real
+        # Calculate how many of each type
+        num_mc = int(count * question_types.get('multiple_choice', 0.7))
+        num_written = count - num_mc
+        
+        questions = []
+        
+        # Generate multiple choice questions
+        if num_mc > 0:
+            mc_questions = self._generate_openai_questions(
+                genre_name, 
+                num_mc, 
+                'multiple_choice'
+            )
+            questions.extend(mc_questions)
+        
+        # Generate written questions
+        if num_written > 0:
+            written_questions = self._generate_openai_questions(
+                genre_name, 
+                num_written, 
+                'written'
+            )
+            questions.extend(written_questions)
+        
+        # Shuffle and assign question numbers
+        random.shuffle(questions)
+        for i, q in enumerate(questions, 1):
+            q['question_number'] = i
+        
+        return questions
+    
+    def _generate_openai_questions(self, genre_name: str, count: int, question_type: str) -> List[Dict]:
+        """
+        Generate questions using OpenAI API
+        """
+        openai.api_key = os.getenv('OPENAI_API_KEY', '')
+        
+        if not openai.api_key:
+            # Fallback to sample questions if no API key
+            return self._get_fallback_questions(genre_name, count, question_type)
+        
+        try:
+            if question_type == 'multiple_choice':
+                prompt = f"""Generate {count} multiple choice trivia questions about {genre_name}.
+
+For each question, provide:
+- A clear, engaging question
+- 4 answer options (A, B, C, D)
+- The correct answer letter
+- A fun fact related to the answer
+- Difficulty level (easy, medium, or hard)
+
+Make questions diverse, interesting, and appropriate for a pub quiz audience.
+Mix difficulty levels naturally.
+
+Return ONLY a valid JSON array with this exact structure:
+[
+  {{
+    "question": "Question text here?",
+    "options": {{"A": "Option 1", "B": "Option 2", "C": "Option 3", "D": "Option 4"}},
+    "correct_option": "A",
+    "answer": "Correct answer text",
+    "difficulty": "easy",
+    "fun_fact": "Interesting fact about the answer"
+  }}
+]"""
+            else:  # written
+                prompt = f"""Generate {count} written answer trivia questions about {genre_name}.
+
+For each question, provide:
+- A clear, engaging question that requires a specific written answer
+- The correct answer
+- 2-4 alternative acceptable answers (variations, abbreviations, etc.)
+- A fun fact related to the answer
+- Difficulty level (easy, medium, or hard)
+
+Make questions diverse, interesting, and appropriate for a pub quiz audience.
+Mix difficulty levels naturally.
+
+Return ONLY a valid JSON array with this exact structure:
+[
+  {{
+    "question": "Question text here?",
+    "answer": "Correct answer",
+    "alternative_answers": ["Alt 1", "Alt 2"],
+    "difficulty": "easy",
+    "fun_fact": "Interesting fact about the answer"
+  }}
+]"""
+
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are a professional pub quiz question writer. Generate only valid JSON. No markdown, no code blocks, just pure JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.8,
+                max_tokens=2000
+            )
+            
+            # Parse response
+            content = response.choices[0].message.content.strip()
+            
+            # Remove markdown code blocks if present
+            if content.startswith('```'):
+                content = content.split('```')[1]
+                if content.startswith('json'):
+                    content = content[4:]
+                content = content.strip()
+            
+            questions = json.loads(content)
+            
+            # Add question_type to each question
+            for q in questions:
+                q['question_type'] = question_type
+                if question_type == 'written':
+                    q['options'] = {}
+                    q['correct_option'] = ''
+            
+            return questions
+            
+        except Exception as e:
+            print(f"Error generating OpenAI questions: {e}")
+            # Fallback to sample questions
+            return self._get_fallback_questions(genre_name, count, question_type)
+    
+    def _get_fallback_questions(self, genre_name: str, count: int, question_type: str) -> List[Dict]:
+        """
+        Fallback sample questions if OpenAI fails
+        """
         samples_mc = {
             "General Knowledge": [
                 {
@@ -290,17 +419,17 @@ Generate exactly {num_questions} questions now.
         base_questions_mc = samples_mc.get(genre_name, samples_mc["General Knowledge"])
         base_questions_written = samples_written.get(genre_name, samples_written["General Knowledge"])
         
-        # Generate questions based on type ratios
-        questions = []
-        for i in range(count):
-            rand = random.random()
-            if rand < question_types.get('multiple_choice', 0.7):
+        # Return questions of the requested type
+        if question_type == 'multiple_choice':
+            questions = []
+            for i in range(count):
                 q = base_questions_mc[i % len(base_questions_mc)].copy()
-            else:
+                questions.append(q)
+        else:  # written
+            questions = []
+            for i in range(count):
                 q = base_questions_written[i % len(base_questions_written)].copy()
-            
-            q["question_number"] = i + 1
-            questions.append(q)
+                questions.append(q)
         
         return questions
 
