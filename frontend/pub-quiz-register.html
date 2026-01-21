@@ -618,7 +618,8 @@
 
         // Global variables
         const SESSION_ID = getSessionId();
-        const BASE_URL = window.BACKEND_URL || '';
+        // Use same fallback as game.js - ingress rules will route to backend
+        const BASE_URL = window.BACKEND_URL || window.location.origin;
         
         console.log('🌐 Global variables initialized:');
         console.log('   SESSION_ID:', SESSION_ID);

@@ -6,6 +6,11 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const BACKEND_URL = process.env.BACKEND_URL || '';
 
+console.log('🚀 Server starting...');
+console.log('   PORT:', PORT);
+console.log('   BACKEND_URL from env:', process.env.BACKEND_URL);
+console.log('   BACKEND_URL final:', BACKEND_URL);
+
 // Inject BACKEND_URL into HTML
 function injectBackendUrl(html) {
   return html.replace(
