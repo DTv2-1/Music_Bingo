@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pub Quiz Host - Perfect DJ</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         :root {
             --primary: #4facfe;
@@ -414,6 +415,9 @@
                 <button onclick="startQuiz()" class="btn btn-primary" id="btnStart">
                     <span>▶️ Start Quiz</span>
                 </button>
+                <button onclick="showQR()" class="btn btn-primary" style="grid-column: span 2;">
+                    <span>📱 Show QR Code for Teams</span>
+                </button>
                 <button onclick="generateQuestions()" class="btn btn-secondary">
                     <span>🔄 Generate</span>
                 </button>
@@ -425,9 +429,6 @@
                 </button>
                 <button onclick="playTTS()" class="btn btn-secondary">
                     <span>🔊 Speak Q</span>
-                </button>
-                <button onclick="showQR()" class="btn btn-secondary">
-                    <span>📱 Team QR</span>
                 </button>
                 <button onclick="endQuiz()" class="btn btn-danger">
                     <span>⏹️ End Quiz</span>
@@ -494,10 +495,14 @@
     <!-- QR Modal -->
     <div id="qrModal" class="modal" onclick="hideQR()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h2 style="margin-bottom: 20px;">Join the Pub Quiz!</h2>
-            <img id="qrImage" src="" alt="QR Code" style="width: 100%; border-radius: 12px; margin-bottom: 20px;">
-            <p id="qrUrl" style="font-size: 0.8em; opacity: 0.7;"></p>
-            <button onclick="hideQR()" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Close</button>
+            <h2 style="margin-bottom: 10px;">📱 Scan to Join the Quiz!</h2>
+            <p style="opacity: 0.8; margin-bottom: 20px;">Teams scan this QR code to register</p>
+            <div id="qrcode" style="display: flex; justify-content: center; margin: 20px 0;"></div>
+            <div style="background: rgba(0, 242, 254, 0.1); padding: 15px; border-radius: 12px; margin: 20px 0;">
+                <p style="font-size: 0.9em; opacity: 0.9; margin-bottom: 5px;">Or visit:</p>
+                <p id="qrUrl" style="font-size: 1.1em; font-weight: 600; word-break: break-all;"></p>
+            </div>
+            <button onclick="hideQR()" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Close</button>
         </div>
     </div>
 
@@ -836,10 +841,29 @@
         }
 
         function showQR() {
-            const img = document.getElementById('qrImage');
-            const url = document.getElementById('qrUrl');
-            img.src = `${BASE_URL}/api/pub-quiz/${SESSION_ID}/qr-code`;
-            url.textContent = window.location.origin + `/pub-quiz/register/${SESSION_ID}`;
+            const qrContainer = document.getElementById('qrcode');
+            const urlDisplay = document.getElementById('qrUrl');
+            
+            // Build the registration URL with session parameter
+            const registrationUrl = `${window.location.origin}/pub-quiz-register.html?session=${SESSION_ID}`;
+            
+            // Clear previous QR code
+            qrContainer.innerHTML = '';
+            
+            // Generate new QR code
+            new QRCode(qrContainer, {
+                text: registrationUrl,
+                width: 300,
+                height: 300,
+                colorDark: "#0b0e14",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // Display URL
+            urlDisplay.textContent = registrationUrl;
+            
+            // Show modal
             document.getElementById('qrModal').style.display = 'flex';
         }
 
