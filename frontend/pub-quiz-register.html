@@ -611,9 +611,18 @@
                 try {
                     const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
                     const data = await response.json();
+                    console.log('📊 Session data loaded:', data);
+                    console.log('🎭 Genres received:', data.genres);
+                    
                     document.getElementById('venueName').innerHTML = `📍 <span class="venue-badge">${data.session.venue_name}</span>`;
                     allGenres = data.genres;
-                    renderGenres(allGenres);
+                    
+                    if (!allGenres || allGenres.length === 0) {
+                        console.error('❌ No genres loaded!');
+                    } else {
+                        console.log(`✅ Loaded ${allGenres.length} genres`);
+                        renderGenres(allGenres);
+                    }
                     
                     // Detectar si hay un equipo previo guardado (por nombre, no por teamId)
                     const savedTeamName = localStorage.getItem(`pub_quiz_team_name_${SESSION_ID}`);
@@ -660,12 +669,21 @@
 
         function renderGenres(genresList) {
             const genreGrid = document.getElementById('genreGrid');
+            console.log(`🎨 Rendering ${genresList.length} genres`);
+            
+            if (!genreGrid) {
+                console.error('❌ genreGrid element not found!');
+                return;
+            }
+            
             genreGrid.innerHTML = genresList.map(genre => `
                 <div class="genre-item ${selectedGenres.includes(genre.id) ? 'selected' : ''}" onclick="toggleGenre(this, ${genre.id})">
                     <input type="checkbox" name="genre_vote" value="${genre.id}" id="genre${genre.id}" ${selectedGenres.includes(genre.id) ? 'checked' : ''}>
                     ${genre.icon || '❓'} ${genre.name}
                 </div>
             `).join('');
+            
+            console.log('✅ Genres rendered to DOM');
         }
 
         function filterGenres() {
