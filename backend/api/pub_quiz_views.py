@@ -498,6 +498,7 @@ def get_current_question(request, session_id):
             'points': question.points,
             'type': question.question_type,
             'hints': question.hints,
+            'options': question.options if question.question_type == 'multiple_choice' else None,
             'is_last': (question.question_number == session.questions_per_round) # Assuming total_questions means questions_per_round for the current round
         },
         'session_status': session.status,
@@ -529,21 +530,32 @@ def submit_answer(request, question_id):
     team_id = request.data.get('team_id')
     team = get_object_or_404(QuizTeam, id=team_id)
     answer_text = request.data.get('answer', '')
+    is_multiple_choice = request.data.get('is_multiple_choice', False)
+    
+    # For multiple choice, check if answer matches correct option
+    is_correct = False
+    if is_multiple_choice and question.question_type == 'multiple_choice':
+        is_correct = (answer_text.upper() == question.correct_option.upper())
     
     # Verificar si ya respondió (para evitar duplicados)
     ans, created = TeamAnswer.objects.get_or_create(
         team=team,
         question=question,
-        defaults={'answer_text': answer_text}
+        defaults={
+            'answer_text': answer_text,
+            'is_correct': is_correct
+        }
     )
     
     if not created:
         ans.answer_text = answer_text
+        ans.is_correct = is_correct
         ans.save()
         
     return Response({
         'success': True,
-        'message': 'Answer submitted successfully'
+        'message': 'Answer submitted successfully',
+        'is_correct': is_correct
     })
 
 

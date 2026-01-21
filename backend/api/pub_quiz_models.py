@@ -149,15 +149,28 @@ class QuizQuestion(models.Model):
     ]
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default='medium')
     
-    # Para rondas especiales
+    # Para rondas especiales y tipos de respuesta
     QUESTION_TYPE_CHOICES = [
-        ('standard', 'Standard'),
+        ('multiple_choice', 'Multiple Choice'),
+        ('written', 'Written Answer'),
         ('picture', 'Picture Round'),
         ('music', 'Music/Audio'),
         ('buzzer', 'Buzzer Question'),
         ('bonus', 'Bonus'),
     ]
-    question_type = models.CharField(max_length=20, choices=QUESTION_TYPE_CHOICES, default='standard')
+    question_type = models.CharField(max_length=20, choices=QUESTION_TYPE_CHOICES, default='multiple_choice')
+    
+    # Opciones para preguntas de opción múltiple (4 opciones: A, B, C, D)
+    options = models.JSONField(
+        default=dict, 
+        blank=True,
+        help_text="For multiple choice: {'A': 'Paris', 'B': 'London', 'C': 'Berlin', 'D': 'Madrid'}"
+    )
+    correct_option = models.CharField(
+        max_length=1, 
+        blank=True,
+        help_text="For multiple choice: A, B, C, or D"
+    )
     
     # Media adjunto (imágenes, audio)
     media_url = models.URLField(blank=True)

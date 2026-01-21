@@ -306,6 +306,62 @@
             color: white;
         }
 
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            box-shadow: 0 8px 15px rgba(118, 75, 162, 0.4);
+        }
+
+        .option-letter {
+            font-size: 1.5em;
+            font-weight: 900;
+            background: rgba(255, 255, 255, 0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            font-size: 1.1em;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .btn-buzz {
             width: 100%;
             padding: 30px;
@@ -458,11 +514,40 @@
             <div id="questionScreen" style="display: none;">
                 <div class="question-card">
                     <h3 id="currentQuestionText">Loading question...</h3>
+                    <div id="questionTypeLabel" style="font-size: 0.8em; opacity: 0.7; margin-top: 10px;"></div>
                 </div>
+                
+                <!-- Multiple Choice Options -->
+                <div id="multipleChoiceContainer" style="display: none; margin: 20px 0;">
+                    <div class="options-grid">
+                        <button class="option-btn" data-option="A" onclick="selectOption('A')">
+                            <span class="option-letter">A</span>
+                            <span class="option-text" id="optionA"></span>
+                        </button>
+                        <button class="option-btn" data-option="B" onclick="selectOption('B')">
+                            <span class="option-letter">B</span>
+                            <span class="option-text" id="optionB"></span>
+                        </button>
+                        <button class="option-btn" data-option="C" onclick="selectOption('C')">
+                            <span class="option-letter">C</span>
+                            <span class="option-text" id="optionC"></span>
+                        </button>
+                        <button class="option-btn" data-option="D" onclick="selectOption('D')">
+                            <span class="option-letter">D</span>
+                            <span class="option-text" id="optionD"></span>
+                        </button>
+                    </div>
+                    <button class="btn-register" onclick="submitMultipleChoice()" id="submitMCBtn" disabled>
+                        Submit Answer
+                    </button>
+                </div>
+                
+                <!-- Written Answer -->
                 <div id="answerFormContainer">
                     <input type="text" id="playerAnswer" class="answer-input" placeholder="Your answer here...">
                     <button class="btn-register" onclick="sendAnswer()">Submit Answer</button>
                 </div>
+                
                 <div id="answerStatus" class="buzzed-at" style="display: none;">Answer Submitted! ✅</div>
             </div>
 
@@ -516,6 +601,7 @@
         let lastKnownStatus = null;
         let lastKnownQuestionNum = 0;
         let pollInterval = null;
+        let selectedOption = null; // For multiple choice questions
 
         async function init() {
             if (teamId) {
@@ -693,10 +779,46 @@
                     if (document.getElementById('currentQuestionText')) {
                         document.getElementById('currentQuestionText').textContent = question.text;
                     }
-                    if (lastKnownStatus !== 'in_progress' || question.number !== lastKnownQuestionNum) {
-                        document.getElementById('playerAnswer').value = '';
+                    
+                    // Show question type label
+                    const typeLabel = document.getElementById('questionTypeLabel');
+                    if (typeLabel) {
+                        typeLabel.textContent = question.type === 'multiple_choice' ? 
+                            '📝 Multiple Choice - Select the correct answer' : 
+                            '✍️ Written Answer - Type your answer';
+                    }
+                    
+                    // Handle multiple choice vs written answer
+                    if (question.type === 'multiple_choice' && question.options) {
+                        // Show multiple choice options
+                        document.getElementById('multipleChoiceContainer').style.display = 'block';
+                        document.getElementById('answerFormContainer').style.display = 'none';
+                        
+                        // Populate options
+                        ['A', 'B', 'C', 'D'].forEach(letter => {
+                            const optionText = document.getElementById('option' + letter);
+                            if (optionText && question.options[letter]) {
+                                optionText.textContent = question.options[letter];
+                            }
+                        });
+                        
+                        // Reset selection if new question
+                        if (lastKnownStatus !== 'in_progress' || question.number !== lastKnownQuestionNum) {
+                            document.querySelectorAll('.option-btn').forEach(btn => {
+                                btn.classList.remove('selected');
+                            });
+                            document.getElementById('submitMCBtn').disabled = true;
+                            selectedOption = null;
+                        }
+                    } else {
+                        // Show written answer input
+                        document.getElementById('multipleChoiceContainer').style.display = 'none';
                         document.getElementById('answerFormContainer').style.display = 'block';
-                        document.getElementById('answerStatus').style.display = 'none';
+                        
+                        if (lastKnownStatus !== 'in_progress' || question.number !== lastKnownQuestionNum) {
+                            document.getElementById('playerAnswer').value = '';
+                            document.getElementById('answerStatus').style.display = 'none';
+                        }
                     }
                 }
             } else if (status === 'revealing_answer') {
@@ -751,6 +873,45 @@
                     document.getElementById('answerStatus').style.display = 'block';
                 }
             } catch (e) { console.error('Error submitting answer:', e); }
+        }
+
+        // Multiple Choice Functions
+        function selectOption(letter) {
+            // Deselect all options
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Select clicked option
+            const selectedBtn = document.querySelector(`.option-btn[data-option="${letter}"]`);
+            if (selectedBtn) {
+                selectedBtn.classList.add('selected');
+                selectedOption = letter;
+                document.getElementById('submitMCBtn').disabled = false;
+            }
+        }
+
+        async function submitMultipleChoice() {
+            if (!selectedOption) return;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/question/${currentQuestionId}/submit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        team_id: teamId, 
+                        answer: selectedOption,
+                        is_multiple_choice: true
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('multipleChoiceContainer').style.display = 'none';
+                    document.getElementById('answerStatus').style.display = 'block';
+                }
+            } catch (e) { 
+                console.error('Error submitting multiple choice answer:', e); 
+            }
         }
 
         document.getElementById('registrationForm').addEventListener('submit', async (e) => {
