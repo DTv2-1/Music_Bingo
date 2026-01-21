@@ -755,15 +755,23 @@
         }
 
         async function loadCurrentQuestion() {
-            console.log(`[LOAD_QUESTION] Starting request to /api/pub-quiz/${SESSION_ID}/current-question`);
+            console.log(`[LOAD_QUESTION] Loading current question from session data`);
             
             try {
-                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/current-question`);
+                // Get session data instead of current-question endpoint
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-data`);
                 console.log(`[LOAD_QUESTION] Response status: ${response.status}`);
                 
-                // Si es 404, probablemente no hay preguntas generadas (es normal en fase de registro)
-                if (response.status === 404) {
-                    console.log('[LOAD_QUESTION] 📝 404 received - showing registration phase message');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const session = data.session;
+
+                // Check if there are questions
+                if (!data.questions || data.questions.length === 0) {
+                    console.log('[LOAD_QUESTION] 📝 No questions yet - showing registration phase message');
                     document.getElementById('questionText').innerHTML = 
                         '📝 Registration Phase<br><br>' +
                         '<small style="font-size: 0.5em; opacity: 0.8; line-height: 1.6;">' +
@@ -772,27 +780,27 @@
                         '3️⃣ Click "▶️ Start Quiz" to begin' +
                         '</small>';
                     document.getElementById('currentGenre').textContent = 'Waiting for Teams';
-                    return; // No es un error, simplemente no hay preguntas aún
+                    return;
                 }
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                
-                const data = await response.json();
 
-                if (data.success) {
-                    currentQuestion = data.question;
-                    document.getElementById('questionText').textContent = currentQuestion.text;
+                // Find current question based on session.current_round and session.current_question
+                const question = data.questions.find(q => 
+                    q.round_number === session.current_round && 
+                    q.question_number === session.current_question
+                );
+
+                if (question) {
+                    currentQuestion = question;
+                    document.getElementById('questionText').textContent = question.question_text;
                     document.getElementById('currentGenre').textContent =
-                        `${currentQuestion.type === 'buzzer' ? '🚨 BUZZER ROUND' : (currentQuestion.genre || 'General')} (${currentQuestion.difficulty ? currentQuestion.difficulty.toUpperCase() : 'MEDIUM'})`;
+                        `${question.question_type === 'buzzer' ? '🚨 BUZZER ROUND' : 'Question'} (${question.difficulty ? question.difficulty.toUpperCase() : 'MEDIUM'})`;
 
                     if (!showingAnswer) {
                         document.getElementById('answerDisplay').style.display = 'none';
                         document.getElementById('btnShowAnswer').innerHTML = '<span>👁️ Show Answer</span>';
-                    } else if (data.session_status === 'revealing_answer') {
-                        document.getElementById('correctAnswer').textContent = currentQuestion.answer;
-                        document.getElementById('funFact').textContent = currentQuestion.fun_fact || '';
+                    } else if (session.status === 'revealing_answer') {
+                        document.getElementById('correctAnswer').textContent = question.correct_answer;
+                        document.getElementById('funFact').textContent = question.fun_fact || '';
                         document.getElementById('answerDisplay').style.display = 'block';
                         document.getElementById('btnShowAnswer').innerHTML = '<span>🙈 Hide Answer</span>';
                     }

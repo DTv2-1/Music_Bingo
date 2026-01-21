@@ -3,7 +3,7 @@ Vistas y API para el sistema Pub Quiz
 """
 
 from django.shortcuts import get_object_or_404
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
@@ -16,12 +16,16 @@ import json
 import qrcode
 from io import BytesIO
 import base64
+import time
+import logging
 
 from .pub_quiz_models import (
     PubQuizSession, QuizTeam, QuizGenre, QuizQuestion,
     QuizRound, TeamAnswer, BuzzerDevice, GenreVote
 )
 from .pub_quiz_generator import PubQuizGenerator, initialize_genres_in_db
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
@@ -453,77 +457,110 @@ def next_question(request, session_id):
     })
 
 
-@api_view(['GET'])
-def get_current_question(request, session_id):
-    """Obtiene la pregunta actual"""
-    import logging
-    logger = logging.getLogger(__name__)
+def quiz_stream(request, session_id):
+    """
+    Server-Sent Events endpoint for real-time quiz updates
+    Replaces polling with efficient push-based updates
+    """
+    def event_generator():
+        """Generator that yields SSE-formatted messages"""
+        session = get_object_or_404(PubQuizSession, id=session_id)
+        last_round = session.current_round
+        last_question = session.current_question
+        last_status = session.status
+        
+        # Send initial connection message
+        yield f"data: {json.dumps({'type': 'connected', 'session_id': session_id})}\n\n"
+        
+        while True:
+            try:
+                # Refresh session from database
+                session.refresh_from_db()
+                
+                # Check if session ended
+                if session.status == 'completed':
+                    yield f"data: {json.dumps({'type': 'ended', 'message': 'Quiz completed'})}\n\n"
+                    break
+                
+                # Detect changes
+                status_changed = session.status != last_status
+                question_changed = (session.current_round != last_round or 
+                                  session.current_question != last_question)
+                
+                if status_changed or question_changed:
+                    # Status changed or new question
+                    if session.status in ['in_progress', 'halftime', 'revealing_answer']:
+                        question = QuizQuestion.objects.filter(
+                            session=session,
+                            round_number=session.current_round,
+                            question_number=session.current_question
+                        ).first()
+                        
+                        if question:
+                            # Get team answers for this question
+                            answers = []
+                            team_answers = TeamAnswer.objects.filter(question=question).select_related('team').order_by('buzz_order', 'submitted_at')
+                            
+                            for ans in team_answers:
+                                answers.append({
+                                    'team_id': ans.team.id,
+                                    'team_name': ans.team.team_name,
+                                    'is_correct': ans.is_correct,
+                                    'buzz_order': ans.buzz_order,
+                                    'buzz_time': ans.buzz_timestamp.isoformat() if ans.buzz_timestamp else None,
+                                    'points': ans.points_awarded
+                                })
+                            
+                            data = {
+                                'type': 'question_update',
+                                'question': {
+                                    'id': question.id,
+                                    'text': question.question_text,
+                                    'answer': question.correct_answer if session.status == 'revealing_answer' else None,
+                                    'fun_fact': question.fun_fact if session.status == 'revealing_answer' else None,
+                                    'round': question.round_number,
+                                    'number': question.question_number,
+                                    'points': question.points,
+                                    'type': question.question_type,
+                                    'hints': question.hints,
+                                    'options': question.options if question.question_type == 'multiple_choice' else None,
+                                    'is_last': (question.question_number == session.questions_per_round)
+                                },
+                                'session_status': session.status,
+                                'answers': answers,
+                                'team_count': session.teams.count(),
+                                'answers_count': len(answers)
+                            }
+                            
+                            yield f"data: {json.dumps(data)}\n\n"
+                            
+                            # Update tracking variables
+                            last_round = session.current_round
+                            last_question = session.current_question
+                            last_status = session.status
+                    else:
+                        # Status changed but quiz not active
+                        yield f"data: {json.dumps({'type': 'status_change', 'status': session.status})}\n\n"
+                        last_status = session.status
+                
+                # Send heartbeat every 15 seconds to keep connection alive
+                yield f": heartbeat\n\n"
+                
+                # Wait before checking again (1 second)
+                time.sleep(1)
+                
+            except Exception as e:
+                logger.error(f"SSE error for session {session_id}: {e}")
+                yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+                break
     
-    logger.info(f"\n{'='*80}")
-    logger.info(f"GET_CURRENT_QUESTION - Session ID: {session_id}")
-    
-    session = get_object_or_404(PubQuizSession, id=session_id)
-    logger.info(f"Session found: {session.venue_name}")
-    logger.info(f"Session status: {session.status}")
-    logger.info(f"Current round: {session.current_round}")
-    logger.info(f"Current question: {session.current_question}")
-    
-    # Contar preguntas totales
-    total_questions = QuizQuestion.objects.filter(session=session).count()
-    logger.info(f"Total questions in session: {total_questions}")
-    
-    question = QuizQuestion.objects.filter(
-        session=session,
-        round_number=session.current_round,
-        question_number=session.current_question
-    ).first()
-    
-    if not question:
-        logger.warning(f"\u274c NO QUESTION FOUND for round={session.current_round}, question={session.current_question}")
-        logger.info(f"Available questions:")
-        questions = QuizQuestion.objects.filter(session=session).values('round_number', 'question_number', 'question_text')
-        for q in questions[:5]:
-            logger.info(f"  - Round {q['round_number']}, Q{q['question_number']}: {q['question_text'][:50]}...")
-        logger.info(f"{'='*80}\n")
-        return Response({'success': False, 'error': 'No question found'}, status=status.HTTP_404_NOT_FOUND)
-    
-    logger.info(f"\u2705 Question found: {question.question_text[:50]}...")
-    logger.info(f"{'='*80}\n")
-    
-    # Obtener respuestas/buzzes para esta pregunta
-    answers = []
-    team_answers = TeamAnswer.objects.filter(question=question).select_related('team').order_by('buzz_order', 'submitted_at')
-    
-    for ans in team_answers:
-        answers.append({
-            'team_id': ans.team.id,
-            'team_name': ans.team.team_name,
-            'is_correct': ans.is_correct,
-            'buzz_order': ans.buzz_order,
-            'buzz_time': ans.buzz_timestamp.isoformat() if ans.buzz_timestamp else None,
-            'points': ans.points_awarded
-        })
-
-    return Response({
-        'success': True,
-        'question': {
-            'id': question.id,
-            'text': question.question_text,
-            'answer': question.correct_answer if session.status == 'revealing_answer' else None,
-            'fun_fact': question.fun_fact if session.status == 'revealing_answer' else None,
-            'round': question.round_number,
-            'number': question.question_number,
-            'points': question.points,
-            'type': question.question_type,
-            'hints': question.hints,
-            'options': question.options if question.question_type == 'multiple_choice' else None,
-            'is_last': (question.question_number == session.questions_per_round) # Assuming total_questions means questions_per_round for the current round
-        },
-        'session_status': session.status,
-        'answers': answers, # Lista de equipos que han respondido/buzzado
-        'team_count': session.teams.count(),
-        'answers_count': team_answers.count()
-    })
+    response = StreamingHttpResponse(
+        event_generator(),
+        content_type='text/event-stream'
+    )
+    response['Cache-Control'] = 'no-cache'
+    response['X-Accel-Buffering'] = 'no'  # Disable nginx buffering
+    return response
 
 
 @api_view(['GET'])

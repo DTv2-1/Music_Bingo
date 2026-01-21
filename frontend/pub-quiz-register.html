@@ -600,7 +600,8 @@
         let currentQuestionId = null;
         let lastKnownStatus = null;
         let lastKnownQuestionNum = 0;
-        let pollInterval = null;
+        let eventSource = null; // SSE connection
+        let statusPollInterval = null; // Only for waiting status (checking if quiz started)
         let selectedOption = null; // For multiple choice questions
 
         async function init() {
@@ -700,14 +701,65 @@
             document.getElementById('formContainer').style.display = 'none';
             document.getElementById('successMessage').style.display = 'none';
             document.getElementById('gameContainer').style.display = 'block';
-            startPolling();
+            
+            // Check session status first
+            checkSessionStatus();
+        }
+        
+        async function checkSessionStatus() {
+            try {
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
+                const data = await response.json();
+                const status = data.session.status;
+                
+                console.log(`Session status: ${status}`);
+                
+                if (status === 'in_progress' || status === 'halftime' || status === 'revealing_answer') {
+                    // Quiz is active - connect to SSE
+                    connectSSE();
+                } else if (status === 'ready' || status === 'registration') {
+                    // Quiz hasn't started - show waiting screen and poll status
+                    showScreen('waitingScreen');
+                    startStatusPolling();
+                } else if (status === 'completed') {
+                    showScreen('waitingScreen');
+                    alert('This quiz has ended. Thank you for playing!');
+                }
+            } catch (error) {
+                console.error('Error checking session status:', error);
+            }
+        }
+        
+        function startStatusPolling() {
+            // Poll session status every 5 seconds when waiting for quiz to start
+            if (statusPollInterval) clearInterval(statusPollInterval);
+            statusPollInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
+                    const data = await response.json();
+                    const status = data.session.status;
+                    
+                    if (status === 'in_progress' || status === 'halftime') {
+                        // Quiz started! Stop status polling and connect to SSE
+                        clearInterval(statusPollInterval);
+                        statusPollInterval = null;
+                        connectSSE();
+                    }
+                } catch (error) {
+                    console.error('Status poll error:', error);
+                }
+            }, 5000); // Check every 5 seconds
         }
 
         async function editRegistration() {
-            // Detener polling si está activo
-            if (pollInterval) {
-                clearInterval(pollInterval);
-                pollInterval = null;
+            // Detener SSE si está activo
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            if (statusPollInterval) {
+                clearInterval(statusPollInterval);
+                statusPollInterval = null;
             }
             
             // Volver a mostrar el formulario
@@ -734,30 +786,78 @@
             }
         }
 
-        function startPolling() {
-            if (pollInterval) clearInterval(pollInterval);
-            pollInterval = setInterval(pollGameState, 2000);
-            pollGameState();
-        }
-
-        async function pollGameState() {
-            try {
-                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/current-question`);
-                const data = await response.json();
-                if (!data.success) return;
-                const status = data.session_status;
-                const question = data.question;
-                if (question) {
-                    currentQuestionId = question.id;
-                    updateUI(status, question);
-                } else if (status === 'registration' || status === 'waiting') {
-                    showScreen('waitingScreen');
+        function connectSSE() {
+            // Close existing connection if any
+            if (eventSource) {
+                eventSource.close();
+            }
+            
+            console.log('🔌 Connecting to SSE stream...');
+            eventSource = new EventSource(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/stream`);
+            
+            eventSource.onopen = () => {
+                console.log('✅ SSE Connected');
+                sseRetryCount = 0; // Reset retry counter on successful connection
+            };
+            
+            eventSource.onopen = () => {
+                console.log('✅ SSE Connected');
+            };      console.log('📨 SSE Message:', data.type);
+                    
+                    switch(data.type) {
+                        case 'connected':
+                            console.log(`Connected to session ${data.session_id}`);
+                            break;
+                            
+                        case 'question_update':
+                            // New question or question update
+                            const question = data.question;
+                            currentQuestionId = question.id;
+                            updateUI(data.session_status, question);
+                            break;
+                            
+                        case 'status_change':
+                            // Status changed (registration, ready, etc.)
+                            console.log(`Status changed to: ${data.status}`);
+                            if (data.status === 'ready' || data.status === 'registration') {
+                                showScreen('waitingScreen');
+                            }
+                            break;
+                            
+                        case 'ended':
+                            // Quiz completed
+                            showScreen('waitingScreen');
+                            alert('Quiz completed! Thank you for playing!');
+                            eventSource.close();
+                            eventSource = null;
+                            break;
+                            
+                        case 'error':
+                            console.error('SSE Error:', data.message);
+                            break;
+                    }
+                } catch (error) {
+                    console.error('Error parsing SSE message:', error);
                 }
-            } catch (e) { console.error('Poll error:', e); }
+            };
+            
+            eventSource.onerror = (error) => {
+            eventSource.onerror = (error) => {
+                console.error('❌ SSE Connection error:', error);
+                eventSource.close();
+                eventSource = null;
+                
+                // Retry connection after 5 seconds
+                console.log('Retrying SSE connection in 5 seconds...');
+                setTimeout(() => {
+                    if (!eventSource) { // Only reconnect if not already connected
+                        connectSSE();
+                    }
+                }, 5000);
+            };
         }
 
-        function showScreen(id) {
-            ['waitingScreen', 'buzzScreen', 'questionScreen', 'revealScreen'].forEach(s => {
+        function showScreen(id) {zzScreen', 'questionScreen', 'revealScreen'].forEach(s => {
                 const el = document.getElementById(s);
                 if (el) el.style.display = (s === id) ? 'block' : 'none';
             });
