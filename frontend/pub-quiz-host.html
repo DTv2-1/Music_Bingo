@@ -569,15 +569,22 @@
                 const data = await response.json();
 
                 document.getElementById('venueName').textContent = data.session.venue_name;
-                // Update other initial stats if needed
+                
+                // Update stats
                 updateStats();
                 updateLeaderboard();
 
-                // Auto-refresh cada 3 segundos (más rápido para buzzers)
+                // Auto-refresh - solo stats y leaderboard siempre
+                // loadCurrentQuestion se llama solo cuando hay quiz activo
                 updateInterval = setInterval(() => {
                     updateStats();
                     updateLeaderboard();
-                    loadCurrentQuestion();
+                    
+                    // Solo hacer polling de preguntas si el status NO es 'registration'
+                    const statusBadge = document.getElementById('statusBadge').textContent;
+                    if (!statusBadge.includes('REGISTRATION')) {
+                        loadCurrentQuestion();
+                    }
                 }, 3000);
             } catch (error) {
                 console.error('Error initializing host view:', error);
@@ -602,7 +609,11 @@
                     document.getElementById('btnStart').disabled = true;
                     document.getElementById('btnShowAnswer').disabled = false;
                     document.getElementById('btnNext').disabled = false;
-                    await loadCurrentQuestion();
+                    // Solo cargar pregunta si ya no estamos en registration
+                    const statusBadge = document.getElementById('statusBadge').textContent;
+                    if (!statusBadge.includes('REGISTRATION')) {
+                        await loadCurrentQuestion();
+                    }
                 }
             } catch (error) {
                 console.error('Error starting quiz:', error);
@@ -762,7 +773,11 @@
                         document.getElementById('currentGenre').textContent = 'FINISH';
                         clearInterval(updateInterval);
                     } else {
-                        await loadCurrentQuestion();
+                        // Solo cargar pregunta si ya no estamos en registration
+                        const statusBadge = document.getElementById('statusBadge').textContent;
+                        if (!statusBadge.includes('REGISTRATION')) {
+                            await loadCurrentQuestion();
+                        }
                     }
                     updateStats();
                 }
