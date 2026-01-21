@@ -417,10 +417,24 @@
             }
         }
     </style>
-    <script src="/config.js"></script>
 </head>
 
 <body>
+    <script>
+        // Debug: Check if BACKEND_URL was injected by server.js
+        console.log('🔧 window.BACKEND_URL at page load:', window.BACKEND_URL);
+        console.log('🔧 CONFIG available:', typeof CONFIG !== 'undefined');
+        if (typeof CONFIG !== 'undefined') {
+            console.log('🔧 CONFIG.BACKEND_URL:', CONFIG.BACKEND_URL);
+        }
+    </script>
+    <script src="/config.js"></script>
+    <script>
+        // Debug: Check CONFIG after loading config.js
+        console.log('🔧 After config.js - window.BACKEND_URL:', window.BACKEND_URL);
+        console.log('🔧 After config.js - CONFIG.BACKEND_URL:', CONFIG?.BACKEND_URL);
+    </script>
+    
     <a href="/" class="back-btn">← Back</a>
 
     <div class="container">
