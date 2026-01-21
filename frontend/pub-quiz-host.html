@@ -582,8 +582,13 @@
                     
                     // Solo hacer polling de preguntas si el status NO es 'registration'
                     const statusBadge = document.getElementById('statusBadge').textContent;
+                    console.log(`[POLLING] Status badge text: "${statusBadge}"`);
+                    
                     if (!statusBadge.includes('REGISTRATION')) {
+                        console.log('[POLLING] ✅ Status is NOT registration - calling loadCurrentQuestion()');
                         loadCurrentQuestion();
+                    } else {
+                        console.log('[POLLING] ⏸️ Status is REGISTRATION - skipping loadCurrentQuestion()');
                     }
                 }, 3000);
             } catch (error) {
@@ -643,11 +648,15 @@
         }
 
         async function loadCurrentQuestion() {
+            console.log(`[LOAD_QUESTION] Starting request to /api/pub-quiz/${SESSION_ID}/current-question`);
+            
             try {
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/current-question`);
+                console.log(`[LOAD_QUESTION] Response status: ${response.status}`);
                 
                 // Si es 404, probablemente no hay preguntas generadas (es normal en fase de registro)
                 if (response.status === 404) {
+                    console.log('[LOAD_QUESTION] 📝 404 received - showing registration phase message');
                     document.getElementById('questionText').innerHTML = 
                         '📝 Registration Phase<br><br>' +
                         '<small style="font-size: 0.5em; opacity: 0.8; line-height: 1.6;">' +
@@ -793,6 +802,9 @@
 
                 if (data.success) {
                     const stats = data.stats;
+                    console.log(`[UPDATE_STATS] Session status from backend: "${stats.status}"`);
+                    console.log(`[UPDATE_STATS] Current round: ${stats.current_round}, Total rounds: ${stats.total_rounds}`);
+                    
                     document.getElementById('statTeams').textContent = stats.total_teams;
                     document.getElementById('statPlayers').textContent = stats.total_players;
                     document.getElementById('statRound').textContent = stats.current_round;
@@ -804,7 +816,9 @@
                     document.getElementById('progressText').textContent = percent + '%';
 
                     const statusBadge = document.getElementById('statusBadge');
-                    statusBadge.textContent = stats.status.toUpperCase().replace('_', ' ');
+                    const displayStatus = stats.status.toUpperCase().replace('_', ' ');
+                    statusBadge.textContent = displayStatus;
+                    console.log(`[UPDATE_STATS] Status badge updated to: "${displayStatus}"`);
 
                     if (stats.status === 'in_progress' || stats.status === 'halftime') {
                         document.getElementById('btnStart').disabled = true;

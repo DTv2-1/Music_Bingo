@@ -437,7 +437,21 @@ def next_question(request, session_id):
 @api_view(['GET'])
 def get_current_question(request, session_id):
     """Obtiene la pregunta actual"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"\n{'='*80}")
+    logger.info(f"GET_CURRENT_QUESTION - Session ID: {session_id}")
+    
     session = get_object_or_404(PubQuizSession, id=session_id)
+    logger.info(f"Session found: {session.venue_name}")
+    logger.info(f"Session status: {session.status}")
+    logger.info(f"Current round: {session.current_round}")
+    logger.info(f"Current question: {session.current_question}")
+    
+    # Contar preguntas totales
+    total_questions = QuizQuestion.objects.filter(session=session).count()
+    logger.info(f"Total questions in session: {total_questions}")
     
     question = QuizQuestion.objects.filter(
         session=session,
@@ -446,7 +460,16 @@ def get_current_question(request, session_id):
     ).first()
     
     if not question:
+        logger.warning(f"\u274c NO QUESTION FOUND for round={session.current_round}, question={session.current_question}")
+        logger.info(f"Available questions:")
+        questions = QuizQuestion.objects.filter(session=session).values('round_number', 'question_number', 'question_text')
+        for q in questions[:5]:
+            logger.info(f"  - Round {q['round_number']}, Q{q['question_number']}: {q['question_text'][:50]}...")
+        logger.info(f"{'='*80}\n")
         return Response({'success': False, 'error': 'No question found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    logger.info(f"\u2705 Question found: {question.question_text[:50]}...")
+    logger.info(f"{'='*80}\n")
     
     # Obtener respuestas/buzzes para esta pregunta
     answers = []
