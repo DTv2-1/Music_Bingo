@@ -29,16 +29,38 @@ from .pub_quiz_generator import PubQuizGenerator, initialize_genres_in_db
 
 @api_view(['GET'])
 def get_sessions(request):
-    """Obtiene las sesiones de Pub Quiz más recientes"""
-    sessions = PubQuizSession.objects.all().order_by('-date')[:10]
-    data = [{
-        'id': s.id,
-        'venue_name': s.venue_name,
-        'date': s.date,
-        'status': s.status,
-        'team_count': s.teams.count()
-    } for s in sessions]
-    return Response(data)
+    """Obtiene las sesiones de Pub Quiz con filtros opcionales"""
+    status_filter = request.GET.get('status', None)
+    
+    sessions = PubQuizSession.objects.all()
+    
+    # Filtrar por status si se proporciona
+    if status_filter:
+        sessions = sessions.filter(status=status_filter)
+    
+    sessions = sessions.order_by('-date', '-id')[:20]
+    
+    data = []
+    for s in sessions:
+        team_count = s.teams.count()
+        question_count = QuizQuestion.objects.filter(session=s).count()
+        
+        data.append({
+            'id': s.id,
+            'venue_name': s.venue_name,
+            'host_name': s.host_name,
+            'date': s.date.isoformat(),
+            'status': s.status,
+            'team_count': team_count,
+            'total_rounds': s.total_rounds,
+            'current_round': s.current_round,
+            'current_question': s.current_question,
+            'questions_per_round': s.questions_per_round,
+            'question_count': question_count,
+            'duration_minutes': s.duration_minutes,
+        })
+    
+    return Response({'success': True, 'sessions': data})
 
 
 @api_view(['POST'])

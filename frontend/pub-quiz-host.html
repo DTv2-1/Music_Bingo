@@ -368,6 +368,10 @@
 </head>
 
 <body>
+    <a href="/pub-quiz-sessions.html" style="position: fixed; top: 20px; left: 20px; z-index: 1000; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 10px; color: white; text-decoration: none; font-weight: 600; backdrop-filter: blur(10px); transition: all 0.3s ease;">
+        ← Sessions
+    </a>
+    
     <div class="dashboard-container">
         <!-- Left Panel: Stats & Controls -->
         <div class="side-panel">
@@ -548,12 +552,20 @@
         // Fetch initial data
         async function init() {
             if (!SESSION_ID) {
-                alert('No Session ID provided. Please use ?session=ID in the URL or enter when prompted.');
+                // Redirect to session manager
+                if (confirm('No session selected. Go to Session Manager to create or select a quiz?')) {
+                    window.location.href = '/pub-quiz-sessions.html';
+                }
                 return;
             }
             
             try {
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-data`);
+                
+                if (!response.ok) {
+                    throw new Error(`Session not found (${response.status})`);
+                }
+                
                 const data = await response.json();
 
                 document.getElementById('venueName').textContent = data.session.venue_name;
@@ -569,6 +581,10 @@
                 }, 3000);
             } catch (error) {
                 console.error('Error initializing host view:', error);
+                alert('Error loading session. Please check the session ID or create a new session.');
+                if (confirm('Go to Session Manager?')) {
+                    window.location.href = '/pub-quiz-sessions.html';
+                }
             }
         }
 
