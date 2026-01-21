@@ -510,6 +510,7 @@ def get_leaderboard(request, session_id):
     leaderboard = []
     for i, team in enumerate(teams, 1):
         leaderboard.append({
+            'id': team.id,  # Necesario para award points
             'position': i,
             'team_name': team.team_name,
             'table_number': team.table_number,
