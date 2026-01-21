@@ -7,7 +7,7 @@ import json
 import random
 import os
 from typing import List, Dict, Any
-import openai
+from openai import OpenAI
 
 
 # 50 géneros extraídos del PDF 4
@@ -257,13 +257,16 @@ Generate exactly {num_questions} questions now.
         """
         Generate questions using OpenAI API
         """
-        openai.api_key = os.getenv('OPENAI_API_KEY', '')
+        api_key = os.getenv('OPENAI_API_KEY', '')
         
-        if not openai.api_key:
+        if not api_key:
             # Fallback to sample questions if no API key
             return self._get_fallback_questions(genre_name, count, question_type)
         
         try:
+            # Initialize OpenAI client
+            client = OpenAI(api_key=api_key)
+            
             if question_type == 'multiple_choice':
                 prompt = f"""Generate {count} multiple choice trivia questions about {genre_name}.
 
@@ -312,7 +315,7 @@ Return ONLY a valid JSON array with this exact structure:
   }}
 ]"""
 
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {"role": "system", "content": "You are a professional pub quiz question writer. Generate only valid JSON. No markdown, no code blocks, just pure JSON."},
