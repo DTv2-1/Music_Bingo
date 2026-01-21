@@ -72,6 +72,17 @@ app.get('/pub-quiz/register/:id', (req, res) => {
   serveHtmlFile(res, 'pub-quiz-register.html');
 });
 
+// Support legacy .html?session=X format
+app.get('/pub-quiz-register.html', (req, res) => {
+  console.log(`📄 Request for /pub-quiz-register.html - serving with injection`);
+  serveHtmlFile(res, 'pub-quiz-register.html');
+});
+
+app.get('/pub-quiz-host.html', (req, res) => {
+  console.log(`📄 Request for /pub-quiz-host.html - serving with injection`);
+  serveHtmlFile(res, 'pub-quiz-host.html');
+});
+
 app.get('/pub-quiz/host/:id', (req, res) => {
   console.log(`📄 Request for /pub-quiz/host/${req.params.id} - serving pub-quiz-host.html`);
   serveHtmlFile(res, 'pub-quiz-host.html');
