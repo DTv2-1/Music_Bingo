@@ -635,7 +635,7 @@
             try {
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/current-question`);
                 
-                // Si es 404, probablemente no hay preguntas generadas
+                // Si es 404, probablemente no hay preguntas generadas (es normal en fase de registro)
                 if (response.status === 404) {
                     document.getElementById('questionText').innerHTML = 
                         '📝 Registration Phase<br><br>' +
@@ -645,7 +645,11 @@
                         '3️⃣ Click "▶️ Start Quiz" to begin' +
                         '</small>';
                     document.getElementById('currentGenre').textContent = 'Waiting for Teams';
-                    return;
+                    return; // No es un error, simplemente no hay preguntas aún
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
                 }
                 
                 const data = await response.json();
@@ -670,7 +674,8 @@
                     updateLiveResponses(data);
                 }
             } catch (error) {
-                console.error('Error loading current question:', error);
+                // Solo loggear errores inesperados (no 404)
+                console.error('Unexpected error loading question:', error);
             }
         }
 
