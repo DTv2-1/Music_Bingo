@@ -164,14 +164,13 @@
         .genre-item {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 12px;
+            padding: 16px;
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            text-align: center;
             user-select: none;
+            position: relative;
         }
 
         .genre-item:hover {
@@ -186,7 +185,14 @@
         }
 
         .genre-item input {
-            display: none;
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .genre-item label {
+            pointer-events: none;
+            font-weight: 600;
         }
 
         .social-checkbox {
@@ -564,9 +570,7 @@
             genreGrid.innerHTML = genresList.map(genre => `
                 <div class="genre-item ${selectedGenres.includes(genre.id) ? 'selected' : ''}" onclick="toggleGenre(this, ${genre.id})">
                     <input type="checkbox" name="genre_vote" value="${genre.id}" id="genre${genre.id}" ${selectedGenres.includes(genre.id) ? 'checked' : ''}>
-                    <label for="genre${genre.id}" style="margin: 0; cursor: pointer;">
-                        ${genre.icon || '❓'} ${genre.name}
-                    </label>
+                    ${genre.icon || '❓'} ${genre.name}
                 </div>
             `).join('');
         }
