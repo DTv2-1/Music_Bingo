@@ -5,15 +5,24 @@
 
 // Detect backend URL
 const BACKEND_URL = (() => {
-    // Check if already set by server-side injection
-    if (window.BACKEND_URL) return window.BACKEND_URL;
-    
     // Local development
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:8001';
     }
     
-    // Production with App Platform ingress - use empty string for relative paths
+    // Production with App Platform ingress
+    // If window.BACKEND_URL is set and equals the frontend URL, use empty string for ingress routing
+    // Otherwise, use the injected value (for cases where backend has different domain)
+    if (window.BACKEND_URL) {
+        const frontendUrl = `${window.location.protocol}//${window.location.host}`;
+        if (window.BACKEND_URL === frontendUrl || window.BACKEND_URL === window.location.origin) {
+            // Backend URL same as frontend = using ingress rules
+            return '';
+        }
+        return window.BACKEND_URL;
+    }
+    
+    // Default: Production with App Platform ingress - use empty string for relative paths
     // Digital Ocean App Platform routes /api/* to backend automatically
     return '';
 })();

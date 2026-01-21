@@ -575,7 +575,32 @@
         }
 
         const SESSION_ID = getSessionId();
-        const BASE_URL = window.BACKEND_URL || (window.location.hostname === 'localhost' ? 'http://localhost:8001' : '');
+        
+        // Handle BACKEND_URL properly for ingress routing
+        const BASE_URL = (() => {
+            const frontendUrl = `${window.location.protocol}//${window.location.host}`;
+            
+            // Local development
+            if (window.location.hostname === 'localhost') {
+                return 'http://localhost:8001';
+            }
+            
+            // Production: if BACKEND_URL matches frontend, use ingress (empty string)
+            if (window.BACKEND_URL && 
+                (window.BACKEND_URL === frontendUrl || 
+                 window.BACKEND_URL === window.location.origin)) {
+                return '';
+            }
+            
+            // If BACKEND_URL is set to something different, use it
+            if (window.BACKEND_URL) {
+                return window.BACKEND_URL;
+            }
+            
+            // Default: ingress routing
+            return '';
+        })();
+        
         let currentQuestion = null;
         let showingAnswer = false;
         let updateInterval = null;

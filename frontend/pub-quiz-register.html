@@ -618,12 +618,37 @@
 
         // Global variables
         const SESSION_ID = getSessionId();
-        // Use same fallback as game.js - ingress rules will route to backend
-        const BASE_URL = window.BACKEND_URL || window.location.origin;
+        
+        // Handle BACKEND_URL properly for ingress routing
+        // If BACKEND_URL equals frontend URL, we're using ingress rules - use empty string
+        const BASE_URL = (() => {
+            const frontendUrl = `${window.location.protocol}//${window.location.host}`;
+            
+            // Local development
+            if (window.location.hostname === 'localhost') {
+                return 'http://localhost:8001';
+            }
+            
+            // Production: if BACKEND_URL matches frontend, use ingress (empty string)
+            if (window.BACKEND_URL && 
+                (window.BACKEND_URL === frontendUrl || 
+                 window.BACKEND_URL === window.location.origin)) {
+                return '';
+            }
+            
+            // If BACKEND_URL is set to something different, use it
+            if (window.BACKEND_URL) {
+                return window.BACKEND_URL;
+            }
+            
+            // Default: ingress routing
+            return '';
+        })();
         
         console.log('🌐 Global variables initialized:');
         console.log('   SESSION_ID:', SESSION_ID);
-        console.log('   BASE_URL:', BASE_URL);
+        console.log('   window.BACKEND_URL:', window.BACKEND_URL);
+        console.log('   BASE_URL:', BASE_URL || '(empty - using ingress)');
         console.log('   Full API URL will be:', `${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
         console.log('   localStorage key:', `pub_quiz_team_${SESSION_ID}`);
         
