@@ -109,7 +109,6 @@ def create_quiz_session(request):
 # ============================================================================
 
 @api_view(['GET'])
-@api_view(['GET'])
 def get_session_details(request, session_id):
     """Página de registro para equipos (acceso vía QR)"""
     session = get_object_or_404(PubQuizSession, id=session_id)
