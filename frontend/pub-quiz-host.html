@@ -573,6 +573,10 @@
                 // Update stats
                 updateStats();
                 updateLeaderboard();
+                
+                // Deshabilitar Start hasta que se generen preguntas
+                document.getElementById('btnStart').disabled = true;
+                document.getElementById('btnStart').style.opacity = '0.5';
 
                 // Auto-refresh - solo stats y leaderboard siempre
                 // loadCurrentQuestion se llama solo cuando hay quiz activo
@@ -604,6 +608,13 @@
         document.addEventListener('DOMContentLoaded', init);
 
         async function startQuiz() {
+            // Validar que haya preguntas generadas
+            const btn = document.getElementById('btnStart');
+            if (btn.disabled) {
+                alert('⚠️ Please generate questions first by clicking the "🔄 Generate" button!');
+                return;
+            }
+            
             try {
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start`, {
                     method: 'POST'
@@ -619,6 +630,8 @@
                     if (!statusBadge.includes('REGISTRATION')) {
                         await loadCurrentQuestion();
                     }
+                } else {
+                    alert('Error: ' + (data.error || 'Could not start quiz'));
                 }
             } catch (error) {
                 console.error('Error starting quiz:', error);
@@ -637,6 +650,11 @@
 
                 if (data.success) {
                     alert(`Quiz generated! Genres: ${data.selected_genres.join(', ')}`);
+                    
+                    // Habilitar botón de Start ahora que hay preguntas
+                    document.getElementById('btnStart').disabled = false;
+                    document.getElementById('btnStart').style.opacity = '1';
+                    
                     updateStats();
                 } else {
                     alert('Error: ' + data.error);
@@ -728,15 +746,19 @@
             const txt = text || document.getElementById('questionText').textContent;
             const voice = document.getElementById('ttsVoice').value;
             try {
-                const response = await fetch(`${BASE_URL}/api/generate-tts`, {
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/tts`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text: txt, voice_id: voice })
                 });
-                const data = await response.json();
-                if (data.url) {
-                    const audio = new Audio(`${BASE_URL}${data.url}`);
+                
+                if (response.ok) {
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
                     audio.play();
+                } else {
+                    console.error('TTS failed:', response.status);
                 }
             } catch (e) {
                 console.error('TTS failed:', e);

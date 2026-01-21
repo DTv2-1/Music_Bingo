@@ -657,6 +657,59 @@ def award_points(request, team_id):
         return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+def generate_quiz_tts(request):
+    """Generate TTS audio for quiz questions"""
+    import os
+    import requests
+    
+    ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY', '')
+    ELEVENLABS_VOICE_ID = os.getenv('ELEVENLABS_VOICE_ID', '21m00Tcm4TlvDq8ikWAM')
+    
+    if not ELEVENLABS_API_KEY:
+        return Response({'error': 'ElevenLabs API key not configured'}, status=500)
+    
+    try:
+        text = request.data.get('text', '')
+        voice_id = request.data.get('voice_id', ELEVENLABS_VOICE_ID)
+        
+        if not text:
+            return Response({'error': 'No text provided'}, status=400)
+        
+        url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
+        
+        response = requests.post(
+            url,
+            headers={
+                'xi-api-key': ELEVENLABS_API_KEY,
+                'Content-Type': 'application/json'
+            },
+            json={
+                'text': text,
+                'model_id': 'eleven_turbo_v2_5',
+                'voice_settings': {
+                    'stability': 0.35,
+                    'similarity_boost': 0.85,
+                    'style': 0.5,
+                    'use_speaker_boost': True
+                },
+                'optimize_streaming_latency': 1,
+                'output_format': 'mp3_44100_128'
+            }
+        )
+        
+        if not response.ok:
+            return Response({
+                'error': f'ElevenLabs API error: {response.status_code}',
+                'details': response.text
+            }, status=response.status_code)
+        
+        return HttpResponse(response.content, content_type='audio/mpeg')
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
 @api_view(['GET', 'POST'])
 def initialize_quiz_genres(request):
     """Endpoint para inicializar los 50 géneros"""
