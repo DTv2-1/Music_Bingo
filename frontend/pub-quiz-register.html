@@ -5,6 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register Your Team - Perfect DJ Quiz</title>
+    <script>
+        // Warm up the HTTP/2 connection immediately by making a lightweight request
+        (async function warmupConnection() {
+            try {
+                await fetch('/api/health', { method: 'HEAD' });
+                console.log('✅ HTTP/2 connection warmed up');
+            } catch (e) {
+                console.log('⚠️ Connection warmup failed:', e.message);
+            }
+        })();
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
 
@@ -432,6 +443,18 @@
         if (typeof CONFIG !== 'undefined') {
             console.log('🔧 CONFIG.BACKEND_URL:', CONFIG.BACKEND_URL);
         }
+        
+        // 🔥 WARM UP HTTP/2 CONNECTION - Make a quick health check to establish connection early
+        console.log('🔥 Warming up HTTP/2 connection...');
+        fetch('/api/health', { 
+            method: 'GET',
+            cache: 'no-store',
+            priority: 'high'
+        }).then(() => {
+            console.log('✅ HTTP/2 connection warmed up');
+        }).catch(err => {
+            console.log('⚠️ Health check failed (non-critical):', err.message);
+        });
     </script>
     <script src="/config.js"></script>
     <script>

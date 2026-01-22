@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pub Quiz Host - Perfect DJ</title>
+    <!-- Preconnect to API to warm up HTTP/2 connection -->
+    <link rel="preconnect" href="/api" crossorigin>
+    <link rel="dns-prefetch" href="/api">
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         :root {
@@ -546,6 +549,20 @@
         </div>
     </div>
 
+    <script>
+        // 🔥 WARM UP HTTP/2 CONNECTION - Make a quick health check to establish connection early
+        console.log('🔥 Warming up HTTP/2 connection...');
+        fetch('/api/health', { 
+            method: 'GET',
+            cache: 'no-store',
+            priority: 'high'
+        }).then(() => {
+            console.log('✅ HTTP/2 connection warmed up');
+        }).catch(err => {
+            console.log('⚠️ Health check failed (non-critical):', err.message);
+        });
+    </script>
+    
     <script>
         // Get SESSION_ID from URL query parameter or pathname
         function getSessionId() {
