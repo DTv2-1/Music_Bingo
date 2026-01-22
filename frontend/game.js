@@ -59,7 +59,7 @@ function saveVenueConfig(venueName, config) {
     };
     localStorage.setItem('venueConfigs', JSON.stringify(existingConfigs));
     console.log(`💾 Saved config to localStorage for venue: ${venueName}`);
-    
+
     // Also save to database
     saveVenueConfigToDatabase(venueName, config);
 }
@@ -69,12 +69,12 @@ function saveVenueConfig(venueName, config) {
  */
 async function saveVenueConfigToDatabase(venueName, config) {
     try {
-        const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL || 'http://localhost:8080';
+        const apiUrl = CONFIG.API_URL;
         const url = `${apiUrl}/api/venue-config/${encodeURIComponent(venueName)}`;
-        
+
         const response = await fetch(url, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 num_players: parseInt(config.numPlayers) || 25,
                 voice_id: config.voiceId,
@@ -88,7 +88,7 @@ async function saveVenueConfigToDatabase(venueName, config) {
                 prize_full_house: config.prizeFullHouse
             })
         });
-        
+
         if (response.ok) {
             console.log(`✅ Saved config to database for venue: ${venueName}`);
         } else {
@@ -106,11 +106,11 @@ async function saveVenueConfigToDatabase(venueName, config) {
 async function loadVenueConfig(venueName) {
     // First try to load from database
     try {
-        const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL || 'http://localhost:8080';
+        const apiUrl = CONFIG.API_URL;
         const url = `${apiUrl}/api/venue-config/${encodeURIComponent(venueName)}`;
-        
+
         const response = await fetch(url);
-        
+
         if (response.ok) {
             const data = await response.json();
             if (data.success && data.config) {
@@ -135,7 +135,7 @@ async function loadVenueConfig(venueName) {
     } catch (error) {
         console.warn('⚠️ Could not load from database, trying localStorage:', error);
     }
-    
+
     // Fallback to localStorage
     const venueKey = `venue_${venueName.toLowerCase().replace(/\s+/g, '_')}`;
     const existingConfigs = JSON.parse(localStorage.getItem('venueConfigs') || '{}');
@@ -171,23 +171,23 @@ function showGameNotification(message, type = 'info') {
         `;
         document.body.appendChild(notification);
     }
-    
+
     // Set colors based on type
     const colors = {
         success: 'background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white;',
         error: 'background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); color: white;',
         info: 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;'
     };
-    
+
     notification.style.cssText += colors[type] || colors.info;
     notification.textContent = message;
-    
+
     // Animate in
     setTimeout(() => {
         notification.style.opacity = '1';
         notification.style.transform = 'translateY(0)';
     }, 10);
-    
+
     // Animate out after 3 seconds
     setTimeout(() => {
         notification.style.opacity = '0';
@@ -216,17 +216,17 @@ let gameInitialized = false;
 
 window.addEventListener('DOMContentLoaded', async () => {
     console.log('🎮 Music Bingo - Waiting for setup...');
-    
+
     // Always show setup modal on page load
     // This allows users to see their saved configuration
     const savedVenueName = localStorage.getItem('venueName');
-    
+
     if (savedVenueName) {
         console.log(`📂 Loading saved configuration for: ${savedVenueName}`);
-        
+
         // Load venue config from database
         const venueConfig = await loadVenueConfig(savedVenueName);
-        
+
         if (venueConfig) {
             console.log('✅ Configuration found, displaying setup modal with saved settings');
             // Show setup modal with loaded configuration
@@ -249,23 +249,23 @@ async function initializeSetupModal() {
     const setupVenueName = document.getElementById('setupVenueName');
     const setupNumPlayers = document.getElementById('setupNumPlayers');
     const setupEstimation = document.getElementById('setupEstimation');
-    
+
     console.log('🔧 Initializing setup modal...');
-    
+
     // Load last used venue name
     const savedVenue = localStorage.getItem('venueName');
     if (savedVenue) {
         console.log(`📂 Found saved venue: ${savedVenue}`);
         setupVenueName.value = savedVenue;
-        
+
         // Try to load venue-specific config
         const venueConfig = await loadVenueConfig(savedVenue);
         console.log('📋 Loaded config:', venueConfig);
-        
+
         if (venueConfig) {
             // Restore all venue-specific settings
             console.log('🔄 Restoring venue configuration...');
-            
+
             if (venueConfig.numPlayers) {
                 console.log('  - Players:', venueConfig.numPlayers);
                 setupNumPlayers.value = venueConfig.numPlayers;
@@ -317,11 +317,11 @@ async function initializeSetupModal() {
                 console.log('  - Full House prize:', venueConfig.prizeFullHouse);
                 document.getElementById('prizeFullHouse').value = venueConfig.prizeFullHouse;
             }
-            
+
             console.log('✅ Restored venue-specific configuration');
         }
     }
-    
+
     // Fallback: load global settings (for backward compatibility) - only if no venue config loaded
     if (!savedVenue || !loadVenueConfig(savedVenue)) {
         const savedPlayers = localStorage.getItem('numPlayers');
@@ -333,7 +333,7 @@ async function initializeSetupModal() {
         const savedPrize4Corners = localStorage.getItem('prize4Corners');
         const savedPrizeFirstLine = localStorage.getItem('prizeFirstLine');
         const savedPrizeFullHouse = localStorage.getItem('prizeFullHouse');
-        
+
         if (savedPlayers) setupNumPlayers.value = savedPlayers;
         if (savedVoice) document.getElementById('setupVoice').value = savedVoice;
         if (savedPubLogo) {
@@ -348,7 +348,7 @@ async function initializeSetupModal() {
         if (savedPrize4Corners) document.getElementById('prize4Corners').value = savedPrize4Corners;
         if (savedPrizeFirstLine) document.getElementById('prizeFirstLine').value = savedPrizeFirstLine;
         if (savedPrizeFullHouse) document.getElementById('prizeFullHouse').value = savedPrizeFullHouse;
-        
+
         // Restore decade checkbox selections
         if (savedDecades) {
             try {
@@ -361,7 +361,7 @@ async function initializeSetupModal() {
             }
         }
     }
-    
+
     // Update estimation on player count change
     function updateSetupEstimation() {
         const numPlayers = parseInt(setupNumPlayers.value) || 25;
@@ -369,13 +369,13 @@ async function initializeSetupModal() {
         const estimatedMinutes = estimateGameDuration(optimalSongs);
         setupEstimation.textContent = `📊 Estimated: ~${optimalSongs} songs, ${estimatedMinutes} minutes`;
     }
-    
+
     setupNumPlayers.addEventListener('input', updateSetupEstimation);
     updateSetupEstimation();
-    
+
     // Setup voice card selection
     setupVoiceCardSelection();
-    
+
     // Allow Enter key to submit
     setupVenueName.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') completeSetup();
@@ -383,7 +383,7 @@ async function initializeSetupModal() {
     setupNumPlayers.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') completeSetup();
     });
-    
+
     // Load venue config when venue name changes (on blur/tab out)
     setupVenueName.addEventListener('blur', async () => {
         const venueName = setupVenueName.value.trim();
@@ -399,7 +399,7 @@ async function initializeSetupModal() {
                         document.querySelectorAll('input[name="decades"]').forEach(checkbox => {
                             checkbox.checked = decades.includes(checkbox.value);
                         });
-                    } catch (e) {}
+                    } catch (e) { }
                 }
                 if (venueConfig.pubLogo) {
                     document.getElementById('setupPubLogo').value = venueConfig.pubLogo;
@@ -414,7 +414,7 @@ async function initializeSetupModal() {
                 if (venueConfig.prize4Corners) document.getElementById('prize4Corners').value = venueConfig.prize4Corners;
                 if (venueConfig.prizeFirstLine) document.getElementById('prizeFirstLine').value = venueConfig.prizeFirstLine;
                 if (venueConfig.prizeFullHouse) document.getElementById('prizeFullHouse').value = venueConfig.prizeFullHouse;
-                
+
                 console.log(`✅ Auto-loaded saved config for: ${venueName}`);
                 showNotification(`📂 Loaded saved settings for ${venueName}`, 'success');
             }
@@ -428,7 +428,7 @@ async function initializeSetupModal() {
 function setupVoiceCardSelection() {
     const voiceCards = document.querySelectorAll('.voice-card');
     const hiddenInput = document.getElementById('setupVoice');
-    
+
     // Restore saved voice selection
     const savedVoice = localStorage.getItem('voiceId');
     if (savedVoice) {
@@ -441,22 +441,22 @@ function setupVoiceCardSelection() {
             }
         });
     }
-    
+
     // Add click handlers
     voiceCards.forEach(card => {
         card.addEventListener('click', (e) => {
             // Don't trigger if clicking the preview button
             if (e.target.classList.contains('preview-btn')) return;
-            
+
             // Deselect all cards
             voiceCards.forEach(c => c.classList.remove('selected'));
-            
+
             // Select clicked card
             card.classList.add('selected');
-            
+
             // Update hidden input
             hiddenInput.value = card.dataset.voiceId;
-            
+
             console.log(`✓ Voice selected: ${card.dataset.voiceName} (${card.dataset.voiceId})`);
         });
     });
@@ -469,61 +469,61 @@ let currentPreviewAudio = null;
 
 async function previewVoice(voiceId, voiceName) {
     const btn = event.target;
-    
+
     // Stop any currently playing preview
     if (currentPreviewAudio) {
         currentPreviewAudio.pause();
         currentPreviewAudio = null;
     }
-    
+
     // Disable button
     btn.disabled = true;
     btn.textContent = '⏳ Loading...';
-    
+
     try {
         // Sample text for preview
         const sampleText = `Hello! I'm ${voiceName}, your Music Bingo DJ. Get ready for an amazing night of music and fun!`;
-        
+
         // Generate TTS
         const response = await fetch(`${CONFIG.API_URL}/api/tts`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 text: sampleText,
                 voice_id: voiceId
             })
         });
-        
+
         if (!response.ok) {
             throw new Error('Failed to generate voice preview');
         }
-        
+
         const audioBlob = await response.blob();
         const blobUrl = URL.createObjectURL(audioBlob);
-        
+
         // Play preview
         currentPreviewAudio = new Audio(blobUrl);
         currentPreviewAudio.volume = 0.8;
-        
+
         currentPreviewAudio.onended = () => {
             btn.disabled = false;
             btn.textContent = '🔊 Preview';
             URL.revokeObjectURL(blobUrl);
         };
-        
+
         currentPreviewAudio.onerror = () => {
             btn.disabled = false;
             btn.textContent = '🔊 Preview';
             alert('Failed to play audio preview');
         };
-        
+
         await currentPreviewAudio.play();
         btn.textContent = '▶️ Playing...';
-        
+
         console.log(`✓ Playing voice preview: ${voiceName}`);
-        
+
     } catch (error) {
         console.error('Voice preview error:', error);
         alert(`Failed to preview voice: ${error.message}`);
@@ -539,10 +539,10 @@ async function completeSetup() {
     const setupVenueName = document.getElementById('setupVenueName');
     const setupNumPlayers = document.getElementById('setupNumPlayers');
     const startBtn = document.getElementById('startGameBtn');
-    
+
     const venueName = setupVenueName.value.trim();
     const numPlayers = parseInt(setupNumPlayers.value) || 25;
-    
+
     // Validate venue name
     if (!venueName) {
         setupVenueName.style.borderColor = '#e74c3c';
@@ -550,7 +550,7 @@ async function completeSetup() {
         alert('⚠️ Please enter a venue name');
         return;
     }
-    
+
     // Validate number of players
     if (numPlayers < 5 || numPlayers > 100) {
         setupNumPlayers.style.borderColor = '#e74c3c';
@@ -558,48 +558,48 @@ async function completeSetup() {
         alert('⚠️ Number of players must be between 5 and 100');
         return;
     }
-    
+
     // Disable button and show loading
     startBtn.disabled = true;
     startBtn.textContent = '⏳ Loading...';
-    
+
     try {
         // Get selected voice
         const setupVoice = document.getElementById('setupVoice');
         const selectedVoice = setupVoice.value;
-        
+
         // Get selected decades from checkboxes
         const decadeCheckboxes = document.querySelectorAll('input[name="decades"]:checked');
         const selectedDecades = Array.from(decadeCheckboxes).map(cb => cb.value);
-        
+
         if (selectedDecades.length === 0) {
             alert('⚠️ Please select at least one music era/decade');
             startBtn.disabled = false;
             startBtn.textContent = '🎮 Start Music Bingo';
             return;
         }
-        
+
         // Get marketing/branding fields (optional)
         const pubLogo = document.getElementById('setupPubLogo').value.trim();
         const includeQR = document.getElementById('setupIncludeQR').checked;
-        
+
         // Get social media info (platform + username)
         const socialPlatform = document.getElementById('socialPlatform').value;
         const socialUsername = document.getElementById('setupSocialMedia').value.trim();
         const socialMediaURL = includeQR ? getSocialMediaURL() : '';
-        
+
         // Get prizes (optional)
         const prize4Corners = document.getElementById('prize4Corners')?.value.trim() || '';
         const prizeFirstLine = document.getElementById('prizeFirstLine')?.value.trim() || '';
         const prizeFullHouse = document.getElementById('prizeFullHouse')?.value.trim() || '';
-        
+
         // Save settings globally (for current session)
         gameState.venueName = venueName;
         gameState.selectedDecades = selectedDecades;
         localStorage.setItem('venueName', venueName);
         localStorage.setItem('currentVenue', venueName); // For jingle-manager
         localStorage.setItem('setupCompleted', 'true');
-        
+
         // Save venue-specific configuration
         saveVenueConfig(venueName, {
             venueName: venueName,
@@ -615,7 +615,7 @@ async function completeSetup() {
             prizeFirstLine: prizeFirstLine,
             prizeFullHouse: prizeFullHouse
         });
-        
+
         // Also save to global keys for backward compatibility
         localStorage.setItem('numPlayers', numPlayers.toString());
         localStorage.setItem('voiceId', selectedVoice);
@@ -626,7 +626,7 @@ async function completeSetup() {
         localStorage.setItem('prize4Corners', prize4Corners);
         localStorage.setItem('prizeFirstLine', prizeFirstLine);
         localStorage.setItem('prizeFullHouse', prizeFullHouse);
-        
+
         // Update jingle manager link with venue
         const jingleManagerLink = document.getElementById('jingleManagerLink');
         if (jingleManagerLink && venueName !== 'this venue') {
@@ -634,17 +634,17 @@ async function completeSetup() {
         } else {
             jingleManagerLink.href = '/jingle-manager';
         }
-        
+
         // Update main UI inputs
         document.getElementById('venueName').value = venueName;
         document.getElementById('numPlayers').value = numPlayers;
-        
+
         // Hide modal
         document.getElementById('setupModal').classList.add('hidden');
-        
+
         // Initialize game
         await initializeGame();
-        
+
         console.log(`✓ Setup complete: ${venueName}, ${numPlayers} players`);
     } catch (error) {
         console.error('✗ Setup failed:', error);
@@ -662,29 +662,29 @@ async function initializeGame() {
         console.log('⚠️ Game already initialized');
         return;
     }
-    
+
     console.log('🎮 Initializing Music Bingo...');
-    
+
     try {
         // Load venue name from localStorage
         loadVenueNameFromStorage();
-        
+
         // Load song pool
         await loadSongPool();
-        
+
         // Load announcements
         await loadAnnouncements();
-        
+
         // Load AI announcements (optional)
         await loadAIAnnouncements();
-        
+
         // Start background music
         startBackgroundMusic();
-        
+
         // Update UI
         updateStats();
         updateStatus('✅ Ready to start! Press "NEXT SONG"', false);
-        
+
         gameInitialized = true;
         console.log('✓ Initialization complete');
     } catch (error) {
@@ -710,19 +710,19 @@ function loadVenueNameFromStorage() {
  */
 function resetSetup() {
     const confirmReset = confirm('⚠️ This will restart the game and clear all progress. Continue?');
-    
+
     if (!confirmReset) return;
-    
+
     // Clear setup flag
     localStorage.removeItem('setupCompleted');
-    
+
     // Show modal
     const modal = document.getElementById('setupModal');
     if (modal) {
         modal.classList.remove('hidden');
         initializeSetupModal();
     }
-    
+
     // Optionally reload page for clean slate
     setTimeout(() => {
         window.location.reload();
@@ -735,37 +735,37 @@ function resetSetup() {
 async function saveVenueName(event) {
     const input = document.getElementById('venueName');
     const venueName = input.value.trim();
-    
+
     if (!venueName) {
         alert('Please enter a venue name');
         return;
     }
-    
+
     gameState.venueName = venueName;
     localStorage.setItem('venueName', venueName);
-    
+
     // Reset welcome announcement flag so it uses new name
     gameState.welcomeAnnounced = false;
-    
+
     // Reload announcements with new venue name
     await loadAnnouncements();
-    
+
     // Update announcements list
     updateAnnouncementsList();
-    
+
     // Show confirmation
     if (event && event.target) {
         const button = event.target;
         const originalText = button.textContent;
         button.textContent = '✅ Saved!';
         button.style.background = 'linear-gradient(135deg, #38ef7d 0%, #11998e 100%)';
-        
+
         setTimeout(() => {
             button.textContent = originalText;
             button.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
         }, 2000);
     }
-    
+
     console.log(`✓ Venue name saved: ${venueName}`);
 }
 
@@ -797,10 +797,10 @@ async function loadSongPool() {
     if (!response.ok) {
         throw new Error(`Failed to load pool.json. Did you run generate_pool.py?`);
     }
-    
+
     const data = await response.json();
     gameState.pool = data.songs;
-    
+
     // Get selected decades from localStorage or gameState
     let selectedDecades = gameState.selectedDecades;
     if (!selectedDecades) {
@@ -808,7 +808,7 @@ async function loadSongPool() {
         selectedDecades = savedDecades ? JSON.parse(savedDecades) : ['1960s', '1970s', '1980s', '1990s'];
         gameState.selectedDecades = selectedDecades;
     }
-    
+
     // Filter songs by selected decades
     const filteredSongs = data.songs.filter(song => {
         const year = parseInt(song.release_year);
@@ -818,27 +818,27 @@ async function loadSongPool() {
             return year >= startYear && year <= endYear;
         });
     });
-    
+
     console.log(`✓ Filtered ${filteredSongs.length}/${data.songs.length} songs for decades: ${selectedDecades.join(', ')}`);
-    
+
     if (filteredSongs.length === 0) {
         console.warn('⚠️ No songs found for selected decades, using all songs');
         gameState.pool = data.songs;
     } else {
         gameState.pool = filteredSongs;
     }
-    
+
     // Limit songs based on player count
     const numPlayers = parseInt(document.getElementById('numPlayers')?.value) || 25;
     const optimalSongs = calculateOptimalSongs(numPlayers);
-    
+
     // Shuffle all songs first
     const shuffled = [...gameState.pool];
     shuffleArray(shuffled);
-    
+
     // Take only the optimal number of songs for this game
     gameState.remaining = shuffled.slice(0, optimalSongs);
-    
+
     // Try to restore saved game state ONLY if songs were already called
     const savedState = localStorage.getItem('gameState');
     if (savedState) {
@@ -856,9 +856,9 @@ async function loadSongPool() {
             localStorage.removeItem('gameState');
         }
     }
-    
+
     console.log(`✓ Game will use ${gameState.remaining.length} songs for ${numPlayers} players`);
-    
+
     console.log(`✓ Loaded ${gameState.pool.length} songs`);
 }
 
@@ -870,15 +870,15 @@ async function loadAnnouncements() {
         const response = await fetch(`${CONFIG.API_URL}/api/announcements`);
         if (response.ok) {
             gameState.announcementsData = await response.json();
-            
+
             // Replace [VENUE_NAME] placeholder with actual venue name
             const venueName = gameState.venueName || 'this venue';
-            
-            gameState.announcementsData.custom_announcements = 
-                gameState.announcementsData.custom_announcements.map(ann => 
+
+            gameState.announcementsData.custom_announcements =
+                gameState.announcementsData.custom_announcements.map(ann =>
                     ann.replace(/\[VENUE_NAME\]/g, venueName)
                 );
-            
+
             console.log(`✓ Loaded announcements for: ${venueName}`);
         } else {
             console.log('ℹ No announcements found, using defaults');
@@ -891,7 +891,7 @@ async function loadAnnouncements() {
                 ]
             };
         }
-        
+
         // Update the announcements list display
         updateAnnouncementsList();
     } catch (error) {
@@ -933,7 +933,7 @@ function startBackgroundMusic() {
     if (backgroundMusic) {
         backgroundMusic.stop();
     }
-    
+
     backgroundMusic = new Howl({
         src: [CONFIG.BACKGROUND_MUSIC_URL],
         html5: true,
@@ -946,7 +946,7 @@ function startBackgroundMusic() {
             console.warn('⚠️ Could not load background music:', error);
         }
     });
-    
+
     // Start playing
     backgroundMusic.play();
     console.log('✓ Background music started (volume: ' + Math.round(CONFIG.BACKGROUND_MUSIC_VOLUME * 100) + '%)');
@@ -983,9 +983,9 @@ function restoreGameState() {
     try {
         const savedState = localStorage.getItem('gameState');
         if (!savedState) return;
-        
+
         const state = JSON.parse(savedState);
-        
+
         // Check if saved state is from the same session (within last 24 hours)
         const hoursSinceLastSave = (Date.now() - state.timestamp) / (1000 * 60 * 60);
         if (hoursSinceLastSave > 24) {
@@ -993,16 +993,16 @@ function restoreGameState() {
             localStorage.removeItem('gameState');
             return;
         }
-        
+
         // Restore the game state, but validate songs exist in current pool
         if (state.remaining && state.remaining.length > 0) {
             // Create a Set of valid IDs from current pool
             const validIds = new Set(gameState.pool.map(song => song.id));
-            
+
             // Filter out songs that no longer exist in the pool
             const validRemaining = state.remaining.filter(song => validIds.has(song.id));
             const validCalled = (state.called || []).filter(song => validIds.has(song.id));
-            
+
             // Only restore if we still have valid songs
             if (validRemaining.length > 0) {
                 gameState.remaining = validRemaining;
@@ -1010,13 +1010,13 @@ function restoreGameState() {
                 gameState.currentTrack = state.currentTrack && validIds.has(state.currentTrack.id) ? state.currentTrack : null;
                 gameState.welcomeAnnounced = state.welcomeAnnounced || false;
                 gameState.halfwayAnnounced = state.halfwayAnnounced || false;
-                
+
                 const invalidCount = (state.remaining.length - validRemaining.length) + ((state.called?.length || 0) - validCalled.length);
                 if (invalidCount > 0) {
                     console.log(`ℹ️ Filtered out ${invalidCount} songs no longer in pool`);
                 }
                 console.log(`✓ Restored game state: ${gameState.called.length} songs called, ${gameState.remaining.length} remaining`);
-                
+
                 // Update UI to reflect restored state
                 if (gameState.currentTrack) {
                     updateCurrentTrackDisplay(gameState.currentTrack);
@@ -1058,30 +1058,30 @@ async function playNextTrack() {
         alert('All songs have been called!\n\nWould you like to reset the game?');
         return;
     }
-    
+
     // Check if already playing
     if (gameState.isPlaying) {
         console.log('⚠ Already playing, ignoring button press');
         return;
     }
-    
+
     // Get next track
     const track = gameState.remaining.shift();
     gameState.called.push(track);
     gameState.currentTrack = track;
-    
+
     // Save game state to localStorage
     saveGameState();
-    
+
     // Update UI immediately
     updateCurrentTrackDisplay(track);
     updateCalledList();
     updateStats();
-    
+
     // Disable button while playing
     setButtonState('nextTrack', false);
     gameState.isPlaying = true;
-    
+
     try {
         // Step 1: Play welcome announcement on first song
         if (!gameState.welcomeAnnounced) {
@@ -1091,15 +1091,15 @@ async function playNextTrack() {
             // Short pause after welcome
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
-        
+
         // Step 2: Check for jingle playback
         await checkAndPlayJingle();
-        
+
         // Step 3: Check for halfway announcement
         const totalSongs = gameState.pool.length;
         const songsPlayed = gameState.called.length;
         const halfwayPoint = Math.floor(totalSongs / 2);
-        
+
         if (!gameState.halfwayAnnounced && songsPlayed === halfwayPoint) {
             updateStatus('🎊 Halfway announcement...', true);
             await announceHalfway();
@@ -1107,18 +1107,18 @@ async function playNextTrack() {
             // Short pause after halfway
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
-        
+
         // Step 3: Play TTS announcement
         updateStatus('🎙️ Announcing...', true);
         await announceTrack(track);
-        
+
         // Step 4: Play song preview
         updateStatus('🎵 Playing song preview...', true);
         await playSongPreview(track);
-        
+
         // Done
         updateStatus(`✅ Ready for next song (${gameState.remaining.length} remaining)`, false);
-        
+
     } catch (error) {
         console.error('Error playing track:', error);
         updateStatus(`❌ Error: ${error.message}`, false);
@@ -1135,12 +1135,12 @@ async function playNextTrack() {
 function generateWelcomeText() {
     const welcomeScripts = [
         `Ladies and gentlemen, welcome to Music Bingo at ${gameState.venueName}! Tonight, we're dropping beats instead of balls. Grab your cards, your markers, and get ready to mark off those songs as we play short clips. No titles or artists will be announced—just listen closely, sing along if you know it, and shout 'Bingo!' when you get a line or full house. We've got great prizes up for grabs, so let's kick things off with some classic tunes!`,
-        
+
         `Hello everyone and welcome to the ultimate Music Bingo night at ${gameState.venueName}! Get those dabbers ready because we're about to play hits from across the decades. I'll spin the tracks, you identify them on your card—without any hints on the name or who sings it. First to a full line wins! Are you ready to test your music knowledge? Let's get this party started!`,
-        
+
         `Good evening, music lovers! It's time for Music Bingo extravaganza at ${gameState.venueName}. Rules are simple: We play a snippet, you spot the song on your card and mark it off. No song titles or artists given—just pure ear power. Prizes for the quickest bingos, so stay sharp. Here comes the first track—good luck!`
     ];
-    
+
     return welcomeScripts[Math.floor(Math.random() * welcomeScripts.length)];
 }
 
@@ -1150,12 +1150,12 @@ function generateWelcomeText() {
 function generateHalfwayText() {
     const halfwayScripts = [
         `Alright, everyone—we're halfway through this round! How's everyone doing? A few close calls out there? Keep those ears open because the hits are just getting better. Remember, no peeking at your phones for lyrics! Next track coming up—let's see who gets closer to that bingo!`,
-        
+
         `We're at the halfway mark, folks! Time for a quick breather. Anyone got a line yet? Shout out if you're one away! We've got some absolute bangers left, so don't give up now. Grab a drink, stretch those vocal cords for singing along, and let's dive back in!`,
-        
+
         `Halfway there, music bingo fans! You're all doing amazing—I've heard some epic sing-alongs already. Prizes are waiting for those full cards, so stay focused. If you're stuck on a song, maybe the next one will jog your memory. Here we go with more tunes!`
     ];
-    
+
     return halfwayScripts[Math.floor(Math.random() * halfwayScripts.length)];
 }
 
@@ -1165,17 +1165,17 @@ function generateHalfwayText() {
 async function announceWelcome() {
     const text = generateWelcomeText();
     console.log(`🎙️ Welcome: "${text.substring(0, 100)}..."`);
-    
+
     return new Promise(async (resolve, reject) => {
         try {
             // Duck background music (lower volume during announcement)
             if (backgroundMusic) {
                 backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME, CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, 500);
             }
-            
+
             // Generate TTS audio using ElevenLabs
             const audioUrl = await generateElevenLabsTTS(text);
-            
+
             // Play using Howler
             ttsPlayer = new Howl({
                 src: [audioUrl],
@@ -1199,9 +1199,9 @@ async function announceWelcome() {
                     reject(new Error('Failed to play TTS audio'));
                 }
             });
-            
+
             ttsPlayer.play();
-            
+
         } catch (error) {
             console.error('Welcome TTS generation error:', error);
             // Don't fail the whole game if welcome fails
@@ -1216,17 +1216,17 @@ async function announceWelcome() {
 async function announceHalfway() {
     const text = generateHalfwayText();
     console.log(`🎊 Halfway: "${text.substring(0, 100)}..."`);
-    
+
     return new Promise(async (resolve, reject) => {
         try {
             // Duck background music (lower volume during announcement)
             if (backgroundMusic) {
                 backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME, CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, 500);
             }
-            
+
             // Generate TTS audio using ElevenLabs
             const audioUrl = await generateElevenLabsTTS(text);
-            
+
             // Play using Howler
             ttsPlayer = new Howl({
                 src: [audioUrl],
@@ -1250,9 +1250,9 @@ async function announceHalfway() {
                     reject(new Error("Failed to play TTS audio"));
                 }
             });
-            
+
             ttsPlayer.play();
-            
+
         } catch (error) {
             console.error("Halfway TTS generation error:", error);
             // Don"t fail the whole game if halfway announcement fails
@@ -1269,31 +1269,31 @@ function generateAnnouncementText(track) {
     // Try AI announcements first
     if (gameState.announcementsAI && gameState.announcementsAI[track.id]) {
         const aiAnnouncements = gameState.announcementsAI[track.id];
-        
+
         // Randomly choose one of the 3 AI-generated types
         const types = ['decade', 'trivia', 'simple'];
         const randomType = types[Math.floor(Math.random() * types.length)];
-        
+
         console.log(`✓ Using AI announcement (${randomType}) for track ${track.id}`);
         return aiAnnouncements[randomType];
     }
-    
+
     // Debug: Log why AI announcement wasn't found
     console.warn(`⚠️ No AI announcement for track ${track.id} (type: ${typeof track.id})`);
     if (gameState.announcementsAI) {
         const keys = Object.keys(gameState.announcementsAI);
         console.log(`Available AI keys sample:`, keys.slice(0, 5));
     }
-    
+
     // Fallback to template system if AI not available
     const randomType = Math.random();
-    
+
     // Type A: Era/Decade Context (33%)
     if (randomType < 0.33) {
         const year = parseInt(track.release_year);
         let decade = '';
         let description = '';
-        
+
         if (year >= 2020) {
             decade = '2020s';
             description = 'Get ready for this fresh hit from the 2020s';
@@ -1323,10 +1323,10 @@ function generateAnnouncementText(track) {
         } else {
             description = 'Here\'s a classic for you';
         }
-        
+
         return description;
     }
-    
+
     // Type B: Fun Facts/Trivia (33%)
     else if (randomType < 0.66) {
         const funFacts = [
@@ -1343,7 +1343,7 @@ function generateAnnouncementText(track) {
         ];
         return funFacts[Math.floor(Math.random() * funFacts.length)];
     }
-    
+
     // Type C: Generic Simple (33%)
     else {
         const simpleAnnouncements = [
@@ -1369,17 +1369,17 @@ async function announceTrack(track) {
     // Generate varied announcement - NO track name or artist (per Philip's feedback)
     const text = generateAnnouncementText(track);
     console.log(`🎙️ Announcing: "${text}" (Track: ${track.title} by ${track.artist} [${track.release_year}])`);
-    
+
     return new Promise(async (resolve, reject) => {
         try {
             // Duck background music (lower volume during announcement)
             if (backgroundMusic) {
                 backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME, CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, 500);
             }
-            
+
             // Generate TTS audio using ElevenLabs
             const audioUrl = await generateElevenLabsTTS(text);
-            
+
             // Play using Howler
             ttsPlayer = new Howl({
                 src: [audioUrl],
@@ -1403,9 +1403,9 @@ async function announceTrack(track) {
                     reject(new Error('Failed to play TTS audio'));
                 }
             });
-            
+
             ttsPlayer.play();
-            
+
         } catch (error) {
             console.error('TTS generation error:', error);
             reject(error);
@@ -1423,26 +1423,26 @@ async function announceTrack(track) {
 async function generateElevenLabsTTS(text) {
     // Get selected voice from localStorage (British voice)
     const voiceId = localStorage.getItem('voiceId') || 'JBFqnCBsd6RMkjVDRZzb'; // Default: George (Male British)
-    
+
     const response = await fetch(`${CONFIG.API_URL}/api/tts`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
             text,
             voice_id: voiceId
         })
     });
-    
+
     if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || `TTS API error: ${response.status}`);
     }
-    
+
     const audioBlob = await response.blob();
     const blobUrl = URL.createObjectURL(audioBlob);
-    
+
     return blobUrl;
 }
 
@@ -1457,7 +1457,7 @@ async function playSongPreview(track) {
             backgroundMusic.fade(backgroundMusic.volume(), 0, 1000);  // Fade to 0 over 1 second
             console.log('🔇 Background music silenced for track preview');
         }
-        
+
         // Create Howler instance for this preview
         musicPlayer = new Howl({
             src: [track.preview_url],
@@ -1469,13 +1469,13 @@ async function playSongPreview(track) {
             },
             onplay: () => {
                 console.log('▶ Preview playing with fade in/out');
-                
+
                 // PHILIP'S FEEDBACK #9: Fade in at start
                 musicPlayer.fade(0, 0.9, 1500);  // Fade from 0 to 90% over 1.5 seconds
-                
+
                 // Calculate when to start fade out (3 seconds before end)
                 const fadeOutTime = CONFIG.PREVIEW_DURATION_MS - 3000;
-                
+
                 // Start fade out before stopping
                 setTimeout(() => {
                     if (musicPlayer) {
@@ -1483,61 +1483,61 @@ async function playSongPreview(track) {
                         musicPlayer.fade(0.9, 0, 3000);  // Fade from 90% to 0 over 3 seconds
                     }
                 }, fadeOutTime);
-                
+
                 // Stop after full duration
                 setTimeout(() => {
                     if (musicPlayer) {
                         musicPlayer.stop();
-                        console.log(`⏹ Preview stopped (${CONFIG.PREVIEW_DURATION_MS/1000} seconds)`);
-                        
+                        console.log(`⏹ Preview stopped (${CONFIG.PREVIEW_DURATION_MS / 1000} seconds)`);
+
                         // Restore background music
                         if (backgroundMusic) {
                             backgroundMusic.fade(0, CONFIG.BACKGROUND_MUSIC_VOLUME, 1500);
                             console.log('🔊 Background music restored');
                         }
-                        
+
                         resolve();
                     }
                 }, CONFIG.PREVIEW_DURATION_MS);
             },
             onend: () => {
                 console.log('✓ Preview ended naturally');
-                
+
                 // Restore background music
                 if (backgroundMusic) {
                     backgroundMusic.fade(0, CONFIG.BACKGROUND_MUSIC_VOLUME, 1500);
                     console.log('🔊 Background music restored');
                 }
-                
+
                 resolve();
             },
             onloaderror: (id, error) => {
                 console.error('Preview load error:', error);
-                
+
                 // Restore background music on error
                 if (backgroundMusic) {
                     backgroundMusic.fade(0, CONFIG.BACKGROUND_MUSIC_VOLUME, 1000);
                 }
-                
+
                 reject(new Error('Failed to load song preview'));
             },
             onplayerror: (id, error) => {
                 console.error('Preview play error:', error);
-                
+
                 // Restore background music on error
                 if (backgroundMusic) {
                     backgroundMusic.fade(0, CONFIG.BACKGROUND_MUSIC_VOLUME, 1000);
                 }
-                
+
                 // Attempt to unlock audio (browser autoplay policy)
                 musicPlayer.once('unlock', () => {
                     musicPlayer.play();
                 });
-                
+
                 reject(new Error('Failed to play song preview'));
             }
         });
-        
+
         // Start playback
         musicPlayer.play();
     });
@@ -1552,18 +1552,18 @@ async function playCustomAnnouncement() {
         console.log('ℹ️ No custom announcements configured.');
         return;
     }
-    
+
     // Scroll to announcements list
     const announcementsList = document.getElementById('announcementsList');
     if (announcementsList) {
         announcementsList.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
+
         // Highlight the section briefly
         announcementsList.style.boxShadow = '0 0 20px rgba(102,126,234,0.6)';
         setTimeout(() => {
             announcementsList.style.boxShadow = 'none';
         }, 2000);
-        
+
         updateStatus('👇 Use the Quick Announcements buttons below', false);
     }
 }
@@ -1574,7 +1574,7 @@ async function playCustomAnnouncement() {
 function resetSetup() {
     // Clear setup flag to show modal again
     localStorage.removeItem('setupCompleted');
-    
+
     // Show modal with current settings loaded
     const modal = document.getElementById('setupModal');
     if (modal) {
@@ -1590,7 +1590,7 @@ function resetGame() {
     if (!confirm('⚠️ Reset game? This will clear all called songs and restart from the beginning.')) {
         return;
     }
-    
+
     // Stop any playing audio
     if (musicPlayer) {
         musicPlayer.stop();
@@ -1600,7 +1600,7 @@ function resetGame() {
         ttsPlayer.stop();
         ttsPlayer = null;
     }
-    
+
     // Reset state
     gameState.remaining = [...gameState.pool];
     shuffleArray(gameState.remaining);
@@ -1609,10 +1609,10 @@ function resetGame() {
     gameState.isPlaying = false;
     gameState.welcomeAnnounced = false;
     gameState.halfwayAnnounced = false;
-    
+
     // Clear saved game state
     clearGameState();
-    
+
     // Reset UI
     document.getElementById('currentTrack').style.display = 'none';
     document.getElementById('calledList').innerHTML = `
@@ -1620,10 +1620,10 @@ function resetGame() {
             No songs called yet. Press "NEXT SONG" to begin!
         </p>
     `;
-    
+
     updateStats();
     updateStatus('✅ Game reset! Ready to start.', false);
-    
+
     console.log('🔄 Game reset');
 }
 
@@ -1637,7 +1637,7 @@ function resetGame() {
 function updateStatus(message, isPlaying) {
     const statusEl = document.getElementById('status');
     statusEl.textContent = message;
-    
+
     if (isPlaying) {
         statusEl.classList.add('playing');
     } else {
@@ -1653,7 +1653,7 @@ function updateCurrentTrackDisplay(track) {
     const artwork = document.getElementById('trackArtwork');
     const title = document.getElementById('trackTitle');
     const artist = document.getElementById('trackArtist');
-    
+
     container.style.display = 'flex';
     artwork.src = track.artwork_url || '';
     artwork.alt = `${track.title} artwork`;
@@ -1666,7 +1666,7 @@ function updateCurrentTrackDisplay(track) {
  */
 function updateCalledList() {
     const listEl = document.getElementById('calledList');
-    
+
     if (gameState.called.length === 0) {
         listEl.innerHTML = `
             <p style="opacity: 0.6; text-align: center; grid-column: 1/-1;">
@@ -1675,7 +1675,7 @@ function updateCalledList() {
         `;
         return;
     }
-    
+
     // Show most recent songs first
     const html = gameState.called
         .slice()
@@ -1692,7 +1692,7 @@ function updateCalledList() {
             `;
         })
         .join('');
-    
+
     listEl.innerHTML = html;
 }
 
@@ -1702,11 +1702,11 @@ function updateCalledList() {
 function updateStats() {
     const totalSongs = gameState.called.length + gameState.remaining.length;
     const estimatedMinutes = estimateGameDuration(totalSongs);
-    
+
     // Update the stats counters
     document.getElementById('calledCount').textContent = gameState.called.length;
     document.getElementById('remainingCount').textContent = gameState.remaining.length;
-    
+
     // Update the top estimation text to show actual game total
     const estimatedSongsEl = document.getElementById('estimatedSongs');
     if (estimatedSongsEl) {
@@ -1720,14 +1720,14 @@ function updateStats() {
 function updateAnnouncementsList() {
     const container = document.getElementById('announcementsList');
     if (!container) return;
-    
+
     if (!gameState.announcementsData || !gameState.announcementsData.custom_announcements) {
         container.innerHTML = '<p style="opacity: 0.6;">No announcements loaded</p>';
         return;
     }
-    
+
     const announcements = gameState.announcementsData.custom_announcements;
-    
+
     let html = '<div style="display: grid; gap: 8px;">';
     announcements.forEach((ann, i) => {
         html += `
@@ -1752,7 +1752,7 @@ function updateAnnouncementsList() {
         `;
     });
     html += '</div>';
-    
+
     container.innerHTML = html;
 }
 
@@ -1764,14 +1764,14 @@ async function playSpecificAnnouncement(index) {
         alert('No announcements available');
         return;
     }
-    
+
     const text = gameState.announcementsData.custom_announcements[index];
-    
+
     updateStatus('📢 Playing announcement...', true);
-    
+
     try {
         const audioUrl = await generateElevenLabsTTS(text);
-        
+
         await new Promise((resolve, reject) => {
             const announcementPlayer = new Howl({
                 src: [audioUrl],
@@ -1781,10 +1781,10 @@ async function playSpecificAnnouncement(index) {
                 onloaderror: reject,
                 onplayerror: reject
             });
-            
+
             announcementPlayer.play();
         });
-        
+
         updateStatus('✅ Announcement complete', false);
     } catch (error) {
         console.error('Error playing announcement:', error);
@@ -1808,15 +1808,15 @@ document.addEventListener('keydown', (e) => {
     // Ignore keyboard shortcuts when user is typing in an input/textarea
     const activeElement = document.activeElement;
     const isTyping = activeElement && (
-        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'INPUT' ||
         activeElement.tagName === 'TEXTAREA' ||
         activeElement.isContentEditable
     );
-    
+
     if (isTyping) {
         return; // Don't intercept keys when typing
     }
-    
+
     // Space or Enter = Next track
     if (e.code === 'Space' || e.code === 'Enter') {
         e.preventDefault();
@@ -1824,18 +1824,18 @@ document.addEventListener('keydown', (e) => {
             playNextTrack();
         }
     }
-    
+
     // A = Announcement
     if (e.code === 'KeyA' && !gameState.isPlaying) {
         playCustomAnnouncement();
     }
-    
+
     // R = Reset
     if (e.code === 'KeyR' && e.ctrlKey) {
         e.preventDefault();
         resetGame();
     }
-    
+
     // M = Toggle background music
     if (e.code === 'KeyM') {
         toggleBackgroundMusic();
@@ -1856,7 +1856,7 @@ function toggleBackgroundMusic() {
         console.log('🎵 Background music started');
         return;
     }
-    
+
     if (backgroundMusic.playing()) {
         backgroundMusic.pause();
         document.getElementById('toggleMusic').textContent = '🔇 Music';
@@ -1904,18 +1904,18 @@ function calculateOptimalSongs(numPlayers, targetDurationMinutes = 45) {
     // This ensures enough variety so players don't get the same songs
     const MULTIPLIER = 3;
     let baseSongs = Math.floor(numPlayers * MULTIPLIER);
-    
+
     // Ensure reasonable minimum and maximum
     baseSongs = Math.max(baseSongs, 30);  // Minimum 30 songs
     baseSongs = Math.min(baseSongs, 150); // Maximum 150 songs (reasonable for 50 players)
-    
+
     // Adjust based on duration (30 seconds per song average including announcements)
     const songsPerMinute = 2;
     const maxSongsForDuration = targetDurationMinutes * songsPerMinute;
-    
+
     // Use the smaller of the two (don't exceed time limit)
     let optimalSongs = Math.min(baseSongs, maxSongsForDuration);
-    
+
     return optimalSongs;
 }
 
@@ -1929,28 +1929,28 @@ function updateSongEstimation() {
     const numPlayers = parseInt(document.getElementById('numPlayers').value) || 25;
     const optimalSongs = calculateOptimalSongs(numPlayers);
     const estimatedMinutes = estimateGameDuration(optimalSongs);
-    
-    document.getElementById('estimatedSongs').textContent = 
+
+    document.getElementById('estimatedSongs').textContent =
         `~${optimalSongs} songs, ${estimatedMinutes} min`;
 }
 
 // Add event listener for player count changes
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const numPlayersInput = document.getElementById('numPlayers');
     if (numPlayersInput) {
-        numPlayersInput.addEventListener('input', async function() {
+        numPlayersInput.addEventListener('input', async function () {
             updateSongEstimation();
-            
+
             // Reload song pool with new player count (only if game hasn't started)
             if (gameState.called.length === 0 && gameState.pool.length > 0) {
                 const numPlayers = parseInt(numPlayersInput.value) || 25;
                 const optimalSongs = calculateOptimalSongs(numPlayers);
-                
+
                 // Re-shuffle and limit songs
                 const shuffled = [...gameState.pool];
                 shuffleArray(shuffled);
                 gameState.remaining = shuffled.slice(0, optimalSongs);
-                
+
                 updateStats();
                 console.log(`✓ Updated to ${optimalSongs} songs for ${numPlayers} players`);
             }
@@ -1963,50 +1963,50 @@ document.addEventListener('DOMContentLoaded', function() {
 async function generateCards() {
     const venueName = document.getElementById('venueName').value.trim();
     const numPlayers = parseInt(document.getElementById('numPlayers').value) || 25;
-    
+
     if (!venueName) {
         alert('Please enter a venue name first!');
         return;
     }
-    
+
     // Calculate optimal songs
     const optimalSongs = calculateOptimalSongs(numPlayers);
     const estimatedMinutes = estimateGameDuration(optimalSongs);
-    
+
     // Show loading state
     const btn = event.target;
     const originalText = btn.textContent;
     btn.textContent = '⏳ Starting generation...';
     btn.disabled = true;
-    
+
     try {
         // Get branding data from localStorage
         let pubLogo = localStorage.getItem('pubLogo') || '';
-        
+
         console.log('📋 Preparing to generate cards (ASYNC MODE)...');
         console.log('   Venue:', venueName);
         console.log('   Players:', numPlayers);
         console.log('   Pub Logo (stored):', pubLogo);
-        
+
         // If pubLogo is a relative path, convert to full URL
         if (pubLogo && !pubLogo.startsWith('http')) {
             pubLogo = `${CONFIG.API_URL}${pubLogo}`;
             console.log('   Pub Logo (converted):', pubLogo);
         }
-        
+
         const socialMedia = localStorage.getItem('socialMedia') || '';
         const includeQR = localStorage.getItem('includeQR') === 'true';
-        
+
         // Get prizes
         const prize4Corners = localStorage.getItem('prize4Corners') || '';
         const prizeFirstLine = localStorage.getItem('prizeFirstLine') || '';
         const prizeFullHouse = localStorage.getItem('prizeFullHouse') || '';
-        
+
         console.log('   Social Media:', socialMedia);
         console.log('   Include QR:', includeQR);
         console.log('   Prizes:', { prize4Corners, prizeFirstLine, prizeFullHouse });
         console.log('📤 Sending async request to backend...');
-        
+
         // Use new async endpoint
         const response = await fetch(`${CONFIG.API_URL}/api/generate-cards-async`, {
             method: 'POST',
@@ -2025,55 +2025,55 @@ async function generateCards() {
                 prize_full_house: prizeFullHouse
             })
         });
-        
+
         console.log('📨 Response status:', response.status);
-        
+
         if (!response.ok) {
             const errorText = await response.text();
             console.error('❌ Backend error:', errorText);
             throw new Error('Failed to start card generation');
         }
-        
+
         const result = await response.json();
         console.log('✅ Task started:', result);
-        
+
         const taskId = result.task_id;
-        
+
         // Show progress message
         btn.textContent = '⏳ Generating cards...';
-        
+
         // Poll for status
         let attempts = 0;
         const maxAttempts = 120; // 4 minutes max (2 seconds per poll)
-        
+
         const checkStatus = async () => {
             attempts++;
-            
+
             try {
                 const statusResponse = await fetch(`${CONFIG.API_URL}/api/tasks/${taskId}`);
-                
+
                 if (!statusResponse.ok) {
                     throw new Error('Failed to check status');
                 }
-                
+
                 const status = await statusResponse.json();
                 console.log(`📊 Status check #${attempts}:`, status.status, `(${status.elapsed_time}s), Progress: ${status.progress || 0}%`);
-                
+
                 // Update button with progress
                 if (status.status === 'processing' && status.progress) {
                     btn.textContent = `⏳ Generating... ${status.progress}%`;
                 }
-                
+
                 if (status.status === 'completed') {
                     // Success!
                     console.log('✅ Generation completed:', status.result);
-                    
+
                     btn.textContent = originalText;
                     btn.disabled = false;
-                    
+
                     // Show success message
                     alert(`✅ Cards generated successfully!\n\nVenue: ${venueName}\nPlayers: ${numPlayers}\nOptimal songs: ${optimalSongs}\nEstimated duration: ${estimatedMinutes} minutes\n\nCards: ${status.result.num_cards}\nFile size: ${status.result.file_size_mb}MB\nGeneration time: ${status.result.generation_time}s\n\nDownloading now...`);
-                    
+
                     // Download the PDF automatically
                     const timestamp = new Date().getTime();
                     const link = document.createElement('a');
@@ -2083,34 +2083,34 @@ async function generateCards() {
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    
+
                 } else if (status.status === 'failed') {
                     // Failed
                     console.error('❌ Generation failed:', status.error);
-                    
+
                     btn.textContent = originalText;
                     btn.disabled = false;
-                    
+
                     alert(`❌ Card generation failed:\n\n${status.error}\n\nPlease try again or contact support.`);
-                    
+
                 } else if (attempts >= maxAttempts) {
                     // Timeout
                     console.error('⏱️ Polling timeout');
-                    
+
                     btn.textContent = originalText;
                     btn.disabled = false;
-                    
+
                     alert('⏱️ Card generation is taking longer than expected.\n\nThe task may still complete in the background.\nPlease check back in a few minutes.');
-                    
+
                 } else {
                     // Still processing, check again
                     btn.textContent = `⏳ Generating... (${Math.round(status.elapsed_time)}s)`;
                     setTimeout(checkStatus, 2000); // Poll every 2 seconds
                 }
-                
+
             } catch (error) {
                 console.error('Error checking status:', error);
-                
+
                 if (attempts >= maxAttempts) {
                     btn.textContent = originalText;
                     btn.disabled = false;
@@ -2121,10 +2121,10 @@ async function generateCards() {
                 }
             }
         };
-        
+
         // Start polling
         setTimeout(checkStatus, 2000); // First check after 2 seconds
-        
+
     } catch (error) {
         console.error('❌ Error generating cards:', error);
         alert('❌ Error generating cards. Please try again.');
@@ -2140,50 +2140,50 @@ async function generateCards() {
 async function handleLogoUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
-    
+
     // Validate file type
     if (!file.type.startsWith('image/')) {
         alert('⚠️ Please select an image file (PNG, JPG, or SVG)');
         return;
     }
-    
+
     // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
         alert('⚠️ Image is too large. Please use a file smaller than 10MB.\n\nTip: You can compress your image at tinypng.com');
         return;
     }
-    
+
     // Show loading state
     const uploadBtn = event.target.parentElement.querySelector('.upload-btn');
     const originalText = uploadBtn.textContent;
     uploadBtn.textContent = '⏳ Uploading...';
     uploadBtn.disabled = true;
-    
+
     try {
         // Create FormData
         const formData = new FormData();
         formData.append('logo', file);
-        
+
         // Upload to server
         const response = await fetch(`${CONFIG.API_URL}/api/upload-logo`, {
             method: 'POST',
             body: formData
         });
-        
+
         if (!response.ok) {
             throw new Error('Upload failed');
         }
-        
+
         const result = await response.json();
-        
+
         // Set the URL in the input field
         document.getElementById('setupPubLogo').value = result.url;
-        
+
         // Show preview
         showLogoPreview(result.url);
-        
+
         console.log('✓ Logo uploaded successfully:', result.url);
-        
+
     } catch (error) {
         console.error('Error uploading logo:', error);
         alert('❌ Error uploading logo. Please try again or use a URL instead.');
@@ -2201,7 +2201,7 @@ async function handleLogoUpload(event) {
 function showLogoPreview(url) {
     const preview = document.getElementById('logoPreview');
     const img = document.getElementById('logoPreviewImg');
-    
+
     img.src = url;
     preview.style.display = 'flex';
 }
@@ -2221,7 +2221,7 @@ function removeLogo() {
 function toggleSocialMediaField() {
     const checkbox = document.getElementById('setupIncludeQR');
     const field = document.getElementById('socialMediaField');
-    
+
     if (checkbox.checked) {
         field.style.display = 'block';
         updateSocialPreview(); // Update preview when field appears
@@ -2237,20 +2237,20 @@ function updateSocialPreview() {
     const platform = document.getElementById('socialPlatform').value;
     const username = document.getElementById('setupSocialMedia').value.trim();
     const preview = document.getElementById('socialPreview');
-    
+
     if (!username) {
         preview.textContent = 'QR will link to: (enter username above)';
         preview.style.opacity = '0.6';
         return;
     }
-    
+
     preview.style.opacity = '1';
-    
+
     // Build URL based on platform
     let url = '';
     let cleanUsername = username.replace(/^@/, ''); // Remove @ if present
-    
-    switch(platform) {
+
+    switch (platform) {
         case 'instagram':
             url = `https://instagram.com/${cleanUsername}`;
             break;
@@ -2269,7 +2269,7 @@ function updateSocialPreview() {
             preview.textContent = `QR will link to: ${url}`;
             return;
     }
-    
+
     preview.textContent = `QR will link to: ${url}`;
 }
 
@@ -2279,12 +2279,12 @@ function updateSocialPreview() {
 function getSocialMediaURL() {
     const platform = document.getElementById('socialPlatform').value;
     const username = document.getElementById('setupSocialMedia').value.trim();
-    
+
     if (!username) return '';
-    
+
     let cleanUsername = username.replace(/^@/, '');
-    
-    switch(platform) {
+
+    switch (platform) {
         case 'instagram':
             return `https://instagram.com/${cleanUsername}`;
         case 'facebook':
@@ -2316,14 +2316,14 @@ let jinglePlaylist = {
  */
 async function loadJinglePlaylist() {
     try {
-        const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL || 'http://localhost:8080';
+        const apiUrl = CONFIG.API_URL;
         const url = apiUrl.endsWith('/api') ? `${apiUrl}/playlist` : `${apiUrl}/api/playlist`;
-        
+
         const response = await fetch(url);
         const playlist = await response.json();
-        
+
         jinglePlaylist = { ...playlist, currentIndex: 0 };
-        
+
         if (playlist.enabled && playlist.jingles.length > 0) {
             console.log(`🎵 Jingle playlist loaded: ${playlist.jingles.length} jingles, play every ${playlist.interval} rounds`);
         }
@@ -2339,24 +2339,24 @@ async function loadJinglePlaylist() {
  */
 async function fetchActiveJingles() {
     try {
-        const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL || 'http://localhost:8080';
-        let url = apiUrl.endsWith('/api') 
-            ? `${apiUrl}/jingle-schedules/active` 
+        const apiUrl = CONFIG.API_URL;
+        let url = apiUrl.endsWith('/api')
+            ? `${apiUrl}/jingle-schedules/active`
             : `${apiUrl}/api/jingle-schedules/active`;
-        
+
         // Add venue filter
         const venueName = gameState.venueName;
         if (venueName && venueName !== 'this venue') {
             url += `?venue_name=${encodeURIComponent(venueName)}`;
         }
-        
+
         const response = await fetch(url);
-        
+
         if (!response.ok) {
             console.error('Error fetching active jingles:', response.status);
             return [];
         }
-        
+
         const data = await response.json();
         return data.active_jingles || [];
     } catch (error) {
@@ -2371,13 +2371,13 @@ async function fetchActiveJingles() {
 async function trackJinglePlay(scheduleId, roundNumber) {
     try {
         const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL;
-        const url = apiUrl.endsWith('/api') 
-            ? `${apiUrl}/jingle-schedules/${scheduleId}/play` 
+        const url = apiUrl.endsWith('/api')
+            ? `${apiUrl}/jingle-schedules/${scheduleId}/play`
             : `${apiUrl}/api/jingle-schedules/${scheduleId}/play`;
-        
+
         await fetch(url, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ round_number: roundNumber })
         });
     } catch (error) {
@@ -2391,31 +2391,31 @@ async function trackJinglePlay(scheduleId, roundNumber) {
 async function checkAndPlayJingle() {
     // Fetch active schedules from backend
     const activeSchedules = await fetchActiveJingles();
-    
+
     if (activeSchedules.length === 0) {
         console.log('No active jingle schedules');
         return;
     }
-    
+
     const songsPlayed = gameState.called.length;
-    
+
     // Check each schedule to see if it should play
     for (const schedule of activeSchedules) {
         const shouldPlay = (songsPlayed > 0 && songsPlayed % schedule.interval === 0);
-        
+
         if (shouldPlay) {
             console.log(`🎵 Playing scheduled jingle: ${schedule.jingle_name}`);
-            
+
             updateStatus('🎵 Playing promotional jingle...', true);
-            
+
             try {
                 await playJingleAudio(schedule.jingle_filename);
-                
+
                 // Track play event (optional)
                 await trackJinglePlay(schedule.id, songsPlayed);
-                
+
                 await new Promise(resolve => setTimeout(resolve, 500));
-                
+
                 // Only play ONE jingle per round (highest priority wins)
                 break;
             } catch (error) {
@@ -2430,25 +2430,25 @@ async function checkAndPlayJingle() {
  */
 function playJingleAudio(filename) {
     return new Promise((resolve, reject) => {
-        const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL || 'http://localhost:8080';
-        const url = apiUrl.endsWith('/api') 
-            ? `${apiUrl}/jingles/${filename}` 
+        const apiUrl = CONFIG.API_URL;
+        const url = apiUrl.endsWith('/api')
+            ? `${apiUrl}/jingles/${filename}`
             : `${apiUrl}/api/jingles/${filename}`;
-        
+
         console.log(`🎵 Playing jingle: ${filename}`);
-        
+
         const audio = new Audio(url);
-        
+
         audio.onended = () => {
             console.log('✅ Jingle finished');
             resolve();
         };
-        
+
         audio.onerror = (error) => {
             console.error('Error playing jingle:', error);
             reject(error);
         };
-        
+
         audio.play().catch(reject);
     });
 }
