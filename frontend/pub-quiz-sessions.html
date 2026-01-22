@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pub Quiz Sessions - Perfect DJ</title>
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #00f2fe;
+            --bg: #0b0e14;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ffffff, #e0e0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.2em;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(118, 75, 162, 0.6);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-tab {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: white;
+        }
+
+        .sessions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .session-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .session-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .session-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .status-registration {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+
+        .status-in_progress {
+            background: rgba(0, 242, 254, 0.2);
+            color: #00f2fe;
+            border: 1px solid #00f2fe;
+        }
+
+        .status-completed {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+
+        .session-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .session-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .session-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.9em;
+            flex: 1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            border-radius: 24px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1em;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .sessions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+    <script src="/config.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 Pub Quiz Sessions</h1>
+            <p>Manage all your quiz events</p>
+        </div>
+
+        <div class="actions">
+            <div class="filter-tabs">
+                <div class="filter-tab active" data-filter="all">All</div>
+                <div class="filter-tab" data-filter="registration">Registration</div>
+                <div class="filter-tab" data-filter="in_progress">In Progress</div>
+                <div class="filter-tab" data-filter="completed">Completed</div>
+            </div>
+            <button class="btn btn-primary" onclick="showCreateModal()">
+                ✨ Create New Quiz
+            </button>
+        </div>
+
+        <div id="sessionsContainer" class="sessions-grid">
+            <!-- Sessions will be loaded here -->
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">🎭</div>
+            <h2>No Quiz Sessions Yet</h2>
+            <p style="margin: 20px 0; opacity: 0.8;">Create your first quiz session to get started!</p>
+            <button class="btn btn-primary" onclick="showCreateModal()">Create Quiz Session</button>
+        </div>
+    </div>
+
+    <!-- Create Session Modal -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <h2>✨ Create New Quiz</h2>
+            <form id="createForm" onsubmit="createSession(event)">
+                <div class="form-group">
+                    <label for="venueName">Venue Name</label>
+                    <input type="text" id="venueName" required placeholder="Bar El Rincón">
+                </div>
+                <div class="form-group">
+                    <label for="hostName">Host Name (Optional)</label>
+                    <input type="text" id="hostName" placeholder="Perfect DJ">
+                </div>
+                <div class="form-group">
+                    <label for="totalRounds">Number of Rounds</label>
+                    <select id="totalRounds">
+                        <option value="4">4 Rounds</option>
+                        <option value="5">5 Rounds</option>
+                        <option value="6" selected>6 Rounds</option>
+                        <option value="8">8 Rounds</option>
+                        <option value="10">10 Rounds</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="questionsPerRound">Questions per Round</label>
+                    <select id="questionsPerRound">
+                        <option value="5">5 Questions</option>
+                        <option value="8">8 Questions</option>
+                        <option value="10" selected>10 Questions</option>
+                        <option value="12">12 Questions</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="hideCreateModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 2;">🚀 Create & Start</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = window.BACKEND_URL || (window.location.hostname === 'localhost' ? 'http://localhost:8001' : '');
+        let currentFilter = 'all';
+
+        // Load sessions on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSessions();
+            setupFilterTabs();
+        });
+
+        function setupFilterTabs() {
+            const tabs = document.querySelectorAll('.filter-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentFilter = tab.dataset.filter;
+                    loadSessions();
+                });
+            });
+        }
+
+        async function loadSessions() {
+            try {
+                const url = currentFilter === 'all' 
+                    ? `${BASE_URL}/api/pub-quiz/sessions`
+                    : `${BASE_URL}/api/pub-quiz/sessions?status=${currentFilter}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                displaySessions(data.sessions || []);
+            } catch (error) {
+                console.error('Error loading sessions:', error);
+            }
+        }
+
+        function displaySessions(sessions) {
+            const container = document.getElementById('sessionsContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            if (!sessions || sessions.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            container.style.display = 'grid';
+            emptyState.style.display = 'none';
+
+            container.innerHTML = sessions.map(session => {
+                const date = new Date(session.date);
+                const dateStr = date.toLocaleDateString('es-ES', { 
+                    day: 'numeric', 
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const progress = session.total_rounds > 0 
+                    ? `${session.current_round}/${session.total_rounds}`
+                    : '0/0';
+
+                return `
+                    <div class="session-card" onclick="openSession(${session.id})">
+                        <span class="session-status status-${session.status}">${getStatusLabel(session.status)}</span>
+                        <h3>${session.venue_name}</h3>
+                        <p style="opacity: 0.7; margin-bottom: 15px;">📅 ${dateStr}</p>
+                        
+                        <div class="session-info">
+                            <div class="info-item">
+                                <div class="info-label">Teams</div>
+                                <div class="info-value">${session.team_count}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Progress</div>
+                                <div class="info-value">${progress}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Questions</div>
+                                <div class="info-value">${session.question_count}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Duration</div>
+                                <div class="info-value">${session.duration_minutes}min</div>
+                            </div>
+                        </div>
+
+                        <div class="session-actions" onclick="event.stopPropagation()">
+                            <button class="btn btn-primary btn-small" onclick="openHostDashboard(${session.id})">
+                                🎤 Host
+                            </button>
+                            <button class="btn btn-secondary btn-small" onclick="openRegistration(${session.id})">
+                                📱 QR
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getStatusLabel(status) {
+            const labels = {
+                'registration': '📝 Registration',
+                'in_progress': '🎮 Live',
+                'completed': '✅ Completed',
+                'paused': '⏸️ Paused'
+            };
+            return labels[status] || status;
+        }
+
+        function showCreateModal() {
+            document.getElementById('createModal').style.display = 'flex';
+        }
+
+        function hideCreateModal() {
+            document.getElementById('createModal').style.display = 'none';
+            document.getElementById('createForm').reset();
+        }
+
+        async function createSession(event) {
+            event.preventDefault();
+            
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Mostrar loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ Creating Session...';
+            
+            const formData = {
+                venue_name: document.getElementById('venueName').value,
+                host_name: document.getElementById('hostName').value || 'Perfect DJ',
+                total_rounds: parseInt(document.getElementById('totalRounds').value),
+                questions_per_round: parseInt(document.getElementById('questionsPerRound').value),
+                duration_minutes: 120
+            };
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/create-session`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    submitBtn.innerHTML = '✅ Session Created!';
+                    
+                    // Pequeño delay para mostrar el mensaje
+                    setTimeout(() => {
+                        hideCreateModal();
+                        // Redirect to host dashboard
+                        window.location.href = `/pub-quiz-host.html?session=${data.session_id}`;
+                    }, 800);
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    alert('Error creating session: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error creating session:', error);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                alert('Failed to create session');
+            }
+        }
+
+        function openSession(sessionId) {
+            openHostDashboard(sessionId);
+        }
+
+        function openHostDashboard(sessionId) {
+            window.location.href = `/pub-quiz-host.html?session=${sessionId}`;
+        }
+
+        function openRegistration(sessionId) {
+            window.location.href = `/pub-quiz-register.html?session=${sessionId}`;
+        }
+    </script>
+</body>
+</html>

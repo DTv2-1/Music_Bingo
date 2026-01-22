@@ -52,23 +52,28 @@ urlpatterns = [
     # PUB QUIZ ENDPOINTS
     # ============================================================
     path('pub-quiz/sessions', pub_quiz_views.get_sessions, name='pub-quiz-sessions'),
-    path('pub-quiz/<uuid:session_id>/leaderboard', pub_quiz_views.get_leaderboard, name='pub_quiz_leaderboard'),
+    # Removed: leaderboard endpoint - replaced by SSE
     path('pub-quiz/team/<int:team_id>/award-points', pub_quiz_views.award_points, name='pub_quiz_award_points'),
     path('pub-quiz/initialize-genres', pub_quiz_views.initialize_quiz_genres, name='initialize_quiz_genres'),
     path('pub-quiz/create-session', pub_quiz_views.create_quiz_session, name='pub-quiz-create-session'),
     path('pub-quiz/<int:session_id>/details', pub_quiz_views.get_session_details, name='pub-quiz-details'),
+    path('pub-quiz/<int:session_id>/check-team', pub_quiz_views.check_existing_team, name='pub-quiz-check-team'),
     path('pub-quiz/<int:session_id>/register-team', pub_quiz_views.register_team, name='pub-quiz-register-team'),
     path('pub-quiz/<int:session_id>/generate-questions', pub_quiz_views.generate_quiz_questions, name='pub-quiz-generate'),
     path('pub-quiz/<int:session_id>/host-data', pub_quiz_views.quiz_host_data, name='pub-quiz-host-data'),
     path('pub-quiz/<int:session_id>/start', pub_quiz_views.start_quiz, name='pub-quiz-start'),
+    path('pub-quiz/<int:session_id>/reset', pub_quiz_views.reset_quiz, name='pub-quiz-reset'),
     path('pub-quiz/<int:session_id>/next', pub_quiz_views.next_question, name='pub-quiz-next'),
-    path('pub-quiz/<int:session_id>/current-question', pub_quiz_views.get_current_question, name='pub-quiz-current'),
+    path('pub-quiz/<int:session_id>/stream', pub_quiz_views.quiz_stream, name='pub-quiz-stream'),  # SSE endpoint for players
+    path('pub-quiz/<int:session_id>/host-stream', pub_quiz_views.host_stream, name='pub-quiz-host-stream'),  # SSE endpoint for host
     path('pub-quiz/question/<int:question_id>/answer', pub_quiz_views.get_question_answer, name='pub-quiz-answer'),
     path('pub-quiz/question/<int:question_id>/submit', pub_quiz_views.submit_answer, name='pub-quiz-submit'),
     path('pub-quiz/question/<int:question_id>/buzz', pub_quiz_views.record_buzz, name='pub-quiz-buzz'),
-    path('pub-quiz/<int:session_id>/leaderboard', pub_quiz_views.get_leaderboard, name='pub-quiz-leaderboard'),
-    path('pub-quiz/<int:session_id>/stats', pub_quiz_views.get_session_stats, name='pub-quiz-stats'),
+    # Removed polling endpoints - replaced by SSE:
+    # path('pub-quiz/<int:session_id>/leaderboard', ...)
+    # path('pub-quiz/<int:session_id>/stats', ...)
     path('pub-quiz/<int:session_id>/qr-code', pub_quiz_views.generate_qr_code, name='pub-quiz-qr'),
+    path('pub-quiz/tts', pub_quiz_views.generate_quiz_tts, name='pub-quiz-tts'),
     
     # ============================================================
     # KARAOKE ENDPOINTS

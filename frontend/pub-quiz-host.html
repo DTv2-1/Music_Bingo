@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pub Quiz Host - Perfect DJ</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         :root {
             --primary: #4facfe;
@@ -364,9 +365,22 @@
             border-radius: 8px;
         }
     </style>
+    <script src="/config.js"></script>
 </head>
 
 <body>
+<<<<<<< HEAD
+    <a href="/pub-quiz-sessions.html" style="position: fixed; top: 20px; left: 20px; z-index: 1000; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 10px; color: white; text-decoration: none; font-weight: 600; backdrop-filter: blur(10px); transition: all 0.3s ease;">
+        ← Sessions
+    </a>
+    
+=======
+    <a href="/pub-quiz-sessions.html"
+        style="position: fixed; top: 20px; left: 20px; z-index: 1000; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 10px; color: white; text-decoration: none; font-weight: 600; backdrop-filter: blur(10px); transition: all 0.3s ease;">
+        ← Sessions
+    </a>
+
+>>>>>>> dev
     <div class="dashboard-container">
         <!-- Left Panel: Stats & Controls -->
         <div class="side-panel">
@@ -410,9 +424,24 @@
                 <option value="alice">Alice (Female British)</option>
             </select>
 
+            <div class="stat-label" style="margin-bottom: 10px;">📝 Question Types Mix</div>
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer;">
+                    <input type="checkbox" id="includeMultipleChoice" checked style="width: 20px; height: 20px;">
+                    <span>Multiple Choice (70%)</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="includeWritten" checked style="width: 20px; height: 20px;">
+                    <span>Written Answer (30%)</span>
+                </label>
+            </div>
+
             <div class="host-controls">
                 <button onclick="startQuiz()" class="btn btn-primary" id="btnStart">
                     <span>▶️ Start Quiz</span>
+                </button>
+                <button onclick="showQR()" class="btn btn-primary" style="grid-column: span 2;">
+                    <span>📱 Show QR Code for Teams</span>
                 </button>
                 <button onclick="generateQuestions()" class="btn btn-secondary">
                     <span>🔄 Generate</span>
@@ -426,12 +455,33 @@
                 <button onclick="playTTS()" class="btn btn-secondary">
                     <span>🔊 Speak Q</span>
                 </button>
-                <button onclick="showQR()" class="btn btn-secondary">
-                    <span>📱 Team QR</span>
+                <button onclick="resetQuiz()" class="btn btn-danger">
+                    <span>🔄 Reset Quiz</span>
                 </button>
                 <button onclick="endQuiz()" class="btn btn-danger">
                     <span>⏹️ End Quiz</span>
                 </button>
+            </div>
+<<<<<<< HEAD
+            
+=======
+
+>>>>>>> dev
+            <!-- Progress Bar for Question Generation -->
+            <div id="generationProgress" style="display: none; margin-top: 15px;">
+                <div style="font-size: 0.8em; margin-bottom: 5px; opacity: 0.8;">
+                    <span id="progressStatus">Generating questions...</span>
+                    <span id="progressPercent" style="float: right;">0%</span>
+                </div>
+                <div style="height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+<<<<<<< HEAD
+                    <div id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.3s ease;"></div>
+=======
+                    <div id="progressBar"
+                        style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.3s ease;">
+                    </div>
+>>>>>>> dev
+                </div>
             </div>
         </div>
 
@@ -443,8 +493,21 @@
                     <div class="question-text" id="questionText">Ready to start the Perfect DJ Experience?</div>
 
                     <div class="answer-display" id="answerDisplay">
-                        <div style="font-size: 0.9em; opacity: 0.7; margin-bottom: 10px; text-transform: uppercase;">
-                            Correct Answer:</div>
+<<<<<<< HEAD
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div style="font-size: 0.9em; opacity: 0.7; text-transform: uppercase;">Correct Answer:</div>
+                            <button onclick="speakAnswer()" class="btn btn-secondary" style="padding: 5px 15px; font-size: 0.8em;">
+=======
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div style="font-size: 0.9em; opacity: 0.7; text-transform: uppercase;">Correct Answer:
+                            </div>
+                            <button onclick="speakAnswer()" class="btn btn-secondary"
+                                style="padding: 5px 15px; font-size: 0.8em;">
+>>>>>>> dev
+                                <span>🔊 Speak Answer</span>
+                            </button>
+                        </div>
                         <div style="font-size: 2.2em; font-weight: 800; color: var(--secondary);" id="correctAnswer">-
                         </div>
                         <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
@@ -494,39 +557,515 @@
     <!-- QR Modal -->
     <div id="qrModal" class="modal" onclick="hideQR()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h2 style="margin-bottom: 20px;">Join the Pub Quiz!</h2>
-            <img id="qrImage" src="" alt="QR Code" style="width: 100%; border-radius: 12px; margin-bottom: 20px;">
-            <p id="qrUrl" style="font-size: 0.8em; opacity: 0.7;"></p>
-            <button onclick="hideQR()" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Close</button>
+            <h2 style="margin-bottom: 10px;">📱 Scan to Join the Quiz!</h2>
+            <p style="opacity: 0.8; margin-bottom: 20px;">Teams scan this QR code to register</p>
+            <div id="qrcode" style="display: flex; justify-content: center; margin: 20px 0;"></div>
+            <div style="background: rgba(0, 242, 254, 0.1); padding: 15px; border-radius: 12px; margin: 20px 0;">
+                <p style="font-size: 0.9em; opacity: 0.9; margin-bottom: 5px;">Or visit:</p>
+                <p id="qrUrl" style="font-size: 1.1em; font-weight: 600; word-break: break-all;"></p>
+            </div>
+            <button onclick="hideQR()" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Close</button>
         </div>
     </div>
 
     <script>
-        const SESSION_ID = window.location.pathname.split('/').pop();
-        const BASE_URL = window.BACKEND_URL || '';
+        // Get SESSION_ID from URL query parameter or pathname
+        function getSessionId() {
+            // Try query parameter first: ?session=123
+            const urlParams = new URLSearchParams(window.location.search);
+            const querySession = urlParams.get('session');
+            if (querySession) return querySession;
+<<<<<<< HEAD
+            
+            // Try from pathname: /pub-quiz/123/host or /123
+            const pathParts = window.location.pathname.split('/').filter(p => p);
+            const lastPart = pathParts[pathParts.length - 1];
+            
+            // If last part is a number, use it
+            if (!isNaN(lastPart) && lastPart !== '') return lastPart;
+            
+=======
+
+            // Try from pathname: /pub-quiz/123/host or /123
+            const pathParts = window.location.pathname.split('/').filter(p => p);
+            const lastPart = pathParts[pathParts.length - 1];
+
+            // If last part is a number, use it
+            if (!isNaN(lastPart) && lastPart !== '') return lastPart;
+
+>>>>>>> dev
+            // If second-to-last part is a number (e.g., /pub-quiz/123/host)
+            if (pathParts.length >= 2 && !isNaN(pathParts[pathParts.length - 2])) {
+                return pathParts[pathParts.length - 2];
+            }
+<<<<<<< HEAD
+            
+            // Fallback: ask user or use localStorage
+            let stored = localStorage.getItem('pub_quiz_host_session');
+            if (stored) return stored;
+            
+=======
+
+            // Fallback: ask user or use localStorage
+            let stored = localStorage.getItem('pub_quiz_host_session');
+            if (stored) return stored;
+
+>>>>>>> dev
+            stored = prompt('Enter Quiz Session ID:');
+            if (stored) {
+                localStorage.setItem('pub_quiz_host_session', stored);
+                return stored;
+            }
+<<<<<<< HEAD
+            
+=======
+
+>>>>>>> dev
+            return null;
+        }
+
+        const SESSION_ID = getSessionId();
+<<<<<<< HEAD
+        
+        // Handle BACKEND_URL properly for ingress routing
+        const BASE_URL = (() => {
+            const frontendUrl = `${window.location.protocol}//${window.location.host}`;
+            
+            // Local development
+            if (window.location.hostname === 'localhost') {
+                return 'http://localhost:8001';
+            }
+            
+            // Production: if BACKEND_URL matches frontend, use ingress (empty string)
+            if (window.BACKEND_URL && 
+                (window.BACKEND_URL === frontendUrl || 
+                 window.BACKEND_URL === window.location.origin)) {
+                return '';
+            }
+            
+            // If BACKEND_URL is set to something different, use it
+            if (window.BACKEND_URL) {
+                return window.BACKEND_URL;
+            }
+            
+            // Default: ingress routing
+            return '';
+        })();
+        
+=======
+        const BASE_URL = (() => {
+            const frontendUrl = `${window.location.protocol}//${window.location.host}`;
+            // If BACKEND_URL is equal to the URL of the frontend, use relative paths
+            if (window.BACKEND_URL === frontendUrl) {
+                return '';
+            }
+            return window.BACKEND_URL || (window.location.hostname === 'localhost' ? 'http://localhost:8001' : '');
+        })();
+>>>>>>> dev
         let currentQuestion = null;
         let showingAnswer = false;
         let updateInterval = null;
+        let questionsGenerated = false;
+        let hostEventSource = null;
+        let lastSpokenQuestionId = null; // Track last spoken question to avoid repetition
+        let isPlayingWelcomeMessage = false; // Flag to prevent question TTS during welcome
+
+        // SSE connection for host panel
+        function connectHostSSE() {
+            if (hostEventSource) {
+                hostEventSource.close();
+            }
+<<<<<<< HEAD
+            
+            console.log('🔌 Connecting to Host SSE stream...');
+            hostEventSource = new EventSource(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-stream`);
+            
+            hostEventSource.onopen = () => {
+                console.log('✅ Host SSE Connected');
+            };
+            
+=======
+
+            console.log('🔌 Connecting to Host SSE stream...');
+            hostEventSource = new EventSource(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-stream`);
+
+            hostEventSource.onopen = () => {
+                console.log('✅ Host SSE Connected');
+            };
+
+>>>>>>> dev
+            hostEventSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('📨 Host SSE Message:', data.type);
+<<<<<<< HEAD
+                    
+                    switch(data.type) {
+                        case 'connected':
+                            console.log(`Connected to session ${data.session_id}`);
+                            break;
+                        
+=======
+
+                    switch (data.type) {
+                        case 'connected':
+                            console.log(`Connected to session ${data.session_id}`);
+                            break;
+
+>>>>>>> dev
+                        case 'generation_progress':
+                            // Update progress bar
+                            updateGenerationProgress(data.progress, data.status);
+                            break;
+<<<<<<< HEAD
+                            
+                        case 'host_update':
+                            // Update stats
+                            updateStatsFromSSE(data.stats);
+                            
+                            // Update leaderboard
+                            updateLeaderboardFromSSE(data.leaderboard);
+                            
+=======
+
+                        case 'host_update':
+                            // Update stats
+                            updateStatsFromSSE(data.stats);
+
+                            // Update leaderboard
+                            updateLeaderboardFromSSE(data.leaderboard);
+
+>>>>>>> dev
+                            // Update current question if available
+                            if (data.question) {
+                                updateQuestionFromSSE(data.question, data.stats.status);
+                            }
+                            break;
+<<<<<<< HEAD
+                            
+=======
+
+>>>>>>> dev
+                        case 'ended':
+                            console.log('Session completed');
+                            if (hostEventSource) {
+                                hostEventSource.close();
+                                hostEventSource = null;
+                            }
+                            break;
+<<<<<<< HEAD
+                            
+=======
+
+>>>>>>> dev
+                        case 'error':
+                            console.error('Host SSE Error:', data.message);
+                            break;
+                    }
+                } catch (error) {
+                    console.error('Error parsing Host SSE message:', error);
+                }
+            };
+<<<<<<< HEAD
+            
+=======
+
+>>>>>>> dev
+            hostEventSource.onerror = (error) => {
+                console.error('❌ Host SSE Connection error:', error);
+                if (hostEventSource) {
+                    hostEventSource.close();
+                    hostEventSource = null;
+                }
+<<<<<<< HEAD
+                
+=======
+
+>>>>>>> dev
+                // Retry connection after 5 seconds
+                console.log('Retrying Host SSE connection in 5 seconds...');
+                setTimeout(() => {
+                    if (!hostEventSource) {
+                        connectHostSSE();
+                    }
+                }, 5000);
+            };
+        }
+
+        function updateGenerationProgress(progress, status) {
+            const progressDiv = document.getElementById('generationProgress');
+            const progressBar = document.getElementById('progressBar');
+            const progressStatus = document.getElementById('progressStatus');
+            const progressPercent = document.getElementById('progressPercent');
+<<<<<<< HEAD
+            
+            // Show progress bar
+            progressDiv.style.display = 'block';
+            
+=======
+
+            // Show progress bar
+            progressDiv.style.display = 'block';
+
+>>>>>>> dev
+            // Update progress
+            progressBar.style.width = progress + '%';
+            progressStatus.textContent = status;
+            progressPercent.textContent = progress + '%';
+<<<<<<< HEAD
+            
+=======
+
+>>>>>>> dev
+            // Hide when complete
+            if (progress >= 100) {
+                setTimeout(() => {
+                    progressDiv.style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        function updateStatsFromSSE(stats) {
+            // Update stat cards
+            document.getElementById('statTeams').textContent = stats.total_teams;
+            // statPlayers no viene en stats, mantener como está
+            document.getElementById('statRound').textContent = stats.current_round;
+            document.getElementById('statTotalRounds').textContent = stats.total_rounds;
+            // statFollowers no viene en stats
+<<<<<<< HEAD
+            
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = stats.status.toUpperCase().replace('_', ' ');
+            statusBadge.className = `status-badge ${stats.status}`;
+            
+=======
+
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = stats.status.toUpperCase().replace('_', ' ');
+            statusBadge.className = `status-badge ${stats.status}`;
+
+>>>>>>> dev
+            // Update progress bar
+            const totalQuestions = stats.total_rounds * stats.questions_per_round;
+            const answeredQuestions = ((stats.current_round - 1) * stats.questions_per_round) + (stats.current_question - 1);
+            const percentage = Math.min(100, Math.round((answeredQuestions / totalQuestions) * 100));
+            document.getElementById('progressBarFill').style.width = `${percentage}%`;
+            document.getElementById('progressText').textContent = `${percentage}%`;
+<<<<<<< HEAD
+            
+=======
+
+>>>>>>> dev
+            questionsGenerated = stats.questions_generated;
+            updateButtonStates(stats.status);
+        }
+
+        function updateLeaderboardFromSSE(leaderboard) {
+            const list = document.getElementById('leaderboardList');
+            if (leaderboard && leaderboard.length > 0) {
+                list.innerHTML = leaderboard.map((team, idx) => `
+                    <li class="leaderboard-item ${idx < 3 ? 'top-3' : ''}">
+                        <span class="rank">${idx + 1}</span>
+                        <div class="team-info">
+                            <span class="team-name-label">${team.team_name}</span>
+                            <span class="team-table-label">Table ${team.table_number || '-'}</span>
+                        </div>
+                        <span class="team-total-score">${team.total_score}</span>
+                    </li>
+                `).join('');
+            } else {
+                list.innerHTML = '<li style="opacity: 0.5; padding: 20px; text-align: center;">No teams registered yet</li>';
+            }
+        }
+
+        function updateQuestionFromSSE(question, status) {
+            console.log('[SSE_UPDATE] Updating question display:', {
+                text: question.text,
+                round: question.round,
+                number: question.number,
+                status: status
+            });
+<<<<<<< HEAD
+            
+            // Check if this is a new question
+            const isNewQuestion = !currentQuestion || currentQuestion.id !== question.id;
+            
+            currentQuestion = question;
+            const wasShowingAnswer = showingAnswer;
+            showingAnswer = (status === 'revealing_answer');
+            
+            document.getElementById('questionText').textContent = question.text;
+            document.getElementById('currentGenre').textContent = `Round ${question.round} - Q${question.number} (${question.points}pts)`;
+            
+            const answerDiv = document.getElementById('answerDisplay');
+            
+=======
+
+            // Check if this is a new question
+            const isNewQuestion = !currentQuestion || currentQuestion.id !== question.id;
+
+            currentQuestion = question;
+            const wasShowingAnswer = showingAnswer;
+            showingAnswer = (status === 'revealing_answer');
+
+            document.getElementById('questionText').textContent = question.text;
+            document.getElementById('currentGenre').textContent = `Round ${question.round} - Q${question.number} (${question.points}pts)`;
+
+            const answerDiv = document.getElementById('answerDisplay');
+
+>>>>>>> dev
+            // Only update answer display if it's a new question or status changed
+            if (isNewQuestion || showingAnswer !== wasShowingAnswer) {
+                if (showingAnswer && question.answer) {
+                    answerDiv.style.display = 'block';
+                    document.getElementById('correctAnswer').textContent = question.answer;
+                    document.getElementById('funFact').textContent = question.fun_fact || '';
+                    document.getElementById('btnShowAnswer').innerHTML = '<span>🙈 Hide Answer</span>';
+                } else if (isNewQuestion) {
+                    // Only hide if it's a new question
+                    answerDiv.style.display = 'none';
+                    document.getElementById('btnShowAnswer').innerHTML = '<span>👁️ Show Answer</span>';
+                }
+            }
+<<<<<<< HEAD
+            
+=======
+
+>>>>>>> dev
+            // Auto-play TTS for new questions (not when revealing answer, not during welcome)
+            if (isNewQuestion && !showingAnswer && !isPlayingWelcomeMessage && question.id !== lastSpokenQuestionId) {
+                lastSpokenQuestionId = question.id;
+                console.log('[TTS] Auto-playing question:', question.text);
+                playTTS(question.text, 'daniel');
+            }
+<<<<<<< HEAD
+            
+=======
+
+>>>>>>> dev
+            console.log('[SSE_UPDATE] ✅ Question display updated');
+        }
+
+
+        // Control button states based on quiz status
+        function updateButtonStates(status) {
+            const btnStart = document.getElementById('btnStart');
+            const btnGenerate = document.querySelector('button[onclick="generateQuestions()"]');
+            const btnShowAnswer = document.getElementById('btnShowAnswer');
+            const btnNext = document.getElementById('btnNext');
+            const btnTTS = document.querySelector('button[onclick="playTTS()"]');
+            const btnEnd = document.querySelector('button[onclick="endQuiz()"]');
+
+            console.log(`[BUTTON_CONTROL] Updating buttons for status: ${status}, questionsGenerated: ${questionsGenerated}`);
+
+<<<<<<< HEAD
+            switch(status) {
+=======
+            switch (status) {
+>>>>>>> dev
+                case 'registration':
+                    // Phase 1: REGISTRATION - only QR and Generate are available
+                    btnStart.disabled = true;
+                    btnStart.style.opacity = '0.5';
+                    btnGenerate.disabled = false;
+                    btnGenerate.style.opacity = '1';
+                    btnShowAnswer.disabled = true;
+                    btnNext.disabled = true;
+                    btnTTS.disabled = true;
+                    btnEnd.disabled = true;
+                    btnEnd.style.opacity = '0.5';
+                    break;
+
+                case 'ready':
+                    // Phase 2: READY - questions generated, can start quiz
+                    btnStart.disabled = !questionsGenerated;
+                    btnStart.style.opacity = questionsGenerated ? '1' : '0.5';
+                    btnGenerate.disabled = true;
+                    btnGenerate.style.opacity = '0.5';
+                    btnShowAnswer.disabled = true;
+                    btnNext.disabled = true;
+                    btnTTS.disabled = true;
+                    btnEnd.disabled = true;
+                    btnEnd.style.opacity = '0.5';
+                    break;
+
+                case 'in_progress':
+                case 'halftime':
+                    // Phase 3: ACTIVE - all quiz controls available
+                    btnStart.disabled = true;
+                    btnStart.style.opacity = '0.5';
+                    btnGenerate.disabled = true;
+                    btnGenerate.style.opacity = '0.5';
+                    btnShowAnswer.disabled = false;
+                    btnNext.disabled = false;
+                    btnTTS.disabled = false;
+                    btnEnd.disabled = false;
+                    btnEnd.style.opacity = '1';
+                    break;
+
+                case 'completed':
+                    // Phase 4: COMPLETED - quiz finished
+                    btnStart.disabled = true;
+                    btnStart.style.opacity = '0.5';
+                    btnGenerate.disabled = true;
+                    btnGenerate.style.opacity = '0.5';
+                    btnShowAnswer.disabled = true;
+                    btnNext.disabled = true;
+                    btnTTS.disabled = true;
+                    btnEnd.disabled = true;
+                    btnEnd.style.opacity = '0.5';
+                    break;
+            }
+        }
 
         // Fetch initial data
         async function init() {
+            if (!SESSION_ID) {
+                // Redirect to session manager
+                if (confirm('No session selected. Go to Session Manager to create or select a quiz?')) {
+                    window.location.href = '/pub-quiz-sessions.html';
+                }
+                return;
+            }
+<<<<<<< HEAD
+            
             try {
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-data`);
+                
+                if (!response.ok) {
+                    throw new Error(`Session not found (${response.status})`);
+                }
+                
                 const data = await response.json();
 
                 document.getElementById('venueName').textContent = data.session.venue_name;
-                // Update other initial stats if needed
-                updateStats();
-                updateLeaderboard();
+                
+                // Connect to SSE stream for real-time updates
+                connectHostSSE();
+                
+=======
 
-                // Auto-refresh cada 3 segundos (más rápido para buzzers)
-                updateInterval = setInterval(() => {
-                    updateStats();
-                    updateLeaderboard();
-                    loadCurrentQuestion();
-                }, 3000);
+            try {
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-data`);
+
+                if (!response.ok) {
+                    throw new Error(`Session not found (${response.status})`);
+                }
+
+                const data = await response.json();
+
+                document.getElementById('venueName').textContent = data.session.venue_name;
+
+                // Connect to SSE stream for real-time updates
+                connectHostSSE();
+
+>>>>>>> dev
             } catch (error) {
                 console.error('Error initializing host view:', error);
+                alert('Error loading session. Please check the session ID or create a new session.');
+                if (confirm('Go to Session Manager?')) {
+                    window.location.href = '/pub-quiz-sessions.html';
+                }
             }
         }
 
@@ -534,6 +1073,17 @@
         document.addEventListener('DOMContentLoaded', init);
 
         async function startQuiz() {
+            // Validar que haya preguntas generadas
+            const btn = document.getElementById('btnStart');
+            if (btn.disabled) {
+                alert('⚠️ Please generate questions first by clicking the "🔄 Generate" button!');
+                return;
+            }
+<<<<<<< HEAD
+            
+=======
+
+>>>>>>> dev
             try {
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start`, {
                     method: 'POST'
@@ -544,7 +1094,45 @@
                     document.getElementById('btnStart').disabled = true;
                     document.getElementById('btnShowAnswer').disabled = false;
                     document.getElementById('btnNext').disabled = false;
-                    await loadCurrentQuestion();
+<<<<<<< HEAD
+                    
+                    // Bloquear TTS automático de preguntas durante el mensaje de bienvenida
+                    isPlayingWelcomeMessage = true;
+                    
+=======
+
+                    // Bloquear TTS automático de preguntas durante el mensaje de bienvenida
+                    isPlayingWelcomeMessage = true;
+
+>>>>>>> dev
+                    // Reproducir mensaje de bienvenida primero
+                    if (data.welcome_message) {
+                        await playTTS(data.welcome_message, 'daniel');
+                    }
+<<<<<<< HEAD
+                    
+                    // Desbloquear TTS automático
+                    isPlayingWelcomeMessage = false;
+                    
+=======
+
+                    // Desbloquear TTS automático
+                    isPlayingWelcomeMessage = false;
+
+>>>>>>> dev
+                    // Reproducir la primera pregunta si ya está disponible
+                    if (currentQuestion) {
+                        lastSpokenQuestionId = currentQuestion.id;
+                        await playTTS(currentQuestion.text, 'daniel');
+                    }
+<<<<<<< HEAD
+                    
+=======
+
+>>>>>>> dev
+                    console.log('✅ Quiz started - SSE will update the question display');
+                } else {
+                    alert('Error: ' + (data.error || 'Could not start quiz'));
                 }
             } catch (error) {
                 console.error('Error starting quiz:', error);
@@ -556,14 +1144,56 @@
             if (!confirm('Generate quiz questions based on team votes?')) return;
 
             try {
+                // Show progress bar initially
+                const progressDiv = document.getElementById('generationProgress');
+                progressDiv.style.display = 'block';
+                document.getElementById('progressBar').style.width = '0%';
+                document.getElementById('progressStatus').textContent = 'Starting generation...';
+                document.getElementById('progressPercent').textContent = '0%';
+<<<<<<< HEAD
+                
+                const includeMultipleChoice = document.getElementById('includeMultipleChoice').checked;
+                const includeWritten = document.getElementById('includeWritten').checked;
+                
+=======
+
+                const includeMultipleChoice = document.getElementById('includeMultipleChoice').checked;
+                const includeWritten = document.getElementById('includeWritten').checked;
+
+>>>>>>> dev
+                if (!includeMultipleChoice && !includeWritten) {
+                    alert('Please select at least one question type!');
+                    return;
+                }
+<<<<<<< HEAD
+                
+=======
+
+>>>>>>> dev
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/generate-questions`, {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        include_multiple_choice: includeMultipleChoice,
+                        include_written: includeWritten
+                    })
                 });
                 const data = await response.json();
+                
+                console.log('[GENERATE] Response:', response.status, data);
+
+                console.log('[GENERATE] Response:', response.status, data);
 
                 if (data.success) {
+                    questionsGenerated = true;
                     alert(`Quiz generated! Genres: ${data.selected_genres.join(', ')}`);
-                    updateStats();
+<<<<<<< HEAD
+                    
+=======
+
+>>>>>>> dev
+                    // El SSE actualizará automáticamente los stats y botones
+                    console.log('✅ Questions generated - SSE will update the display');
                 } else {
                     alert('Error: ' + data.error);
                 }
@@ -574,22 +1204,73 @@
         }
 
         async function loadCurrentQuestion() {
-            try {
-                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/current-question`);
-                const data = await response.json();
+            console.log(`[LOAD_QUESTION] Loading current question from session data`);
+<<<<<<< HEAD
+            
+=======
 
-                if (data.success) {
-                    currentQuestion = data.question;
-                    document.getElementById('questionText').textContent = currentQuestion.text;
+>>>>>>> dev
+            try {
+                // Get session data instead of current-question endpoint
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-data`);
+                console.log(`[LOAD_QUESTION] Response status: ${response.status}`);
+<<<<<<< HEAD
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+=======
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+>>>>>>> dev
+                const data = await response.json();
+                const session = data.session;
+
+                // Check if there are questions
+                if (!data.questions || data.questions.length === 0) {
+                    console.log('[LOAD_QUESTION] 📝 No questions yet - showing registration phase message');
+<<<<<<< HEAD
+                    document.getElementById('questionText').innerHTML = 
+=======
+                    document.getElementById('questionText').innerHTML =
+>>>>>>> dev
+                        '📝 Registration Phase<br><br>' +
+                        '<small style="font-size: 0.5em; opacity: 0.8; line-height: 1.6;">' +
+                        '1️⃣ Teams register and vote for genres<br>' +
+                        '2️⃣ Click "🔄 Generate" to create questions based on votes<br>' +
+                        '3️⃣ Click "▶️ Start Quiz" to begin' +
+                        '</small>';
+                    document.getElementById('currentGenre').textContent = 'Waiting for Teams';
+                    return;
+                }
+
+                // Find current question based on session.current_round and session.current_question
+<<<<<<< HEAD
+                const question = data.questions.find(q => 
+                    q.round_number === session.current_round && 
+=======
+                const question = data.questions.find(q =>
+                    q.round_number === session.current_round &&
+>>>>>>> dev
+                    q.question_number === session.current_question
+                );
+
+                if (question) {
+                    currentQuestion = question;
+                    document.getElementById('questionText').textContent = question.question_text;
                     document.getElementById('currentGenre').textContent =
-                        `${currentQuestion.type === 'buzzer' ? '🚨 BUZZER ROUND' : (currentQuestion.genre || 'General')} (${currentQuestion.difficulty ? currentQuestion.difficulty.toUpperCase() : 'MEDIUM'})`;
+                        `${question.question_type === 'buzzer' ? '🚨 BUZZER ROUND' : 'Question'} (${question.difficulty ? question.difficulty.toUpperCase() : 'MEDIUM'})`;
 
                     if (!showingAnswer) {
                         document.getElementById('answerDisplay').style.display = 'none';
                         document.getElementById('btnShowAnswer').innerHTML = '<span>👁️ Show Answer</span>';
-                    } else if (data.session_status === 'revealing_answer') {
-                        document.getElementById('correctAnswer').textContent = currentQuestion.answer;
-                        document.getElementById('funFact').textContent = currentQuestion.fun_fact || '';
+                    } else if (session.status === 'revealing_answer') {
+                        document.getElementById('correctAnswer').textContent = question.correct_answer;
+                        document.getElementById('funFact').textContent = question.fun_fact || '';
                         document.getElementById('answerDisplay').style.display = 'block';
                         document.getElementById('btnShowAnswer').innerHTML = '<span>🙈 Hide Answer</span>';
                     }
@@ -598,7 +1279,8 @@
                     updateLiveResponses(data);
                 }
             } catch (error) {
-                console.error('Error loading current question:', error);
+                // Solo loggear errores inesperados (no 404)
+                console.error('Unexpected error loading question:', error);
             }
         }
 
@@ -627,23 +1309,68 @@
             }
         }
 
-        async function playTTS(text) {
+        async function playTTS(text, voiceId) {
             const txt = text || document.getElementById('questionText').textContent;
-            const voice = document.getElementById('ttsVoice').value;
-            try {
-                const response = await fetch(`${BASE_URL}/api/generate-tts`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: txt, voice_id: voice })
-                });
-                const data = await response.json();
-                if (data.url) {
-                    const audio = new Audio(`${BASE_URL}${data.url}`);
-                    audio.play();
+            const voice = voiceId || document.getElementById('ttsVoice').value;
+<<<<<<< HEAD
+            
+=======
+
+>>>>>>> dev
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const response = await fetch(`${BASE_URL}/api/pub-quiz/tts`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: txt, voice_id: voice })
+                    });
+<<<<<<< HEAD
+                    
+=======
+
+>>>>>>> dev
+                    if (response.ok) {
+                        const audioBlob = await response.blob();
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        const audio = new Audio(audioUrl);
+<<<<<<< HEAD
+                        
+=======
+
+>>>>>>> dev
+                        // Wait for audio to finish playing
+                        audio.onended = () => {
+                            URL.revokeObjectURL(audioUrl);
+                            resolve();
+                        };
+<<<<<<< HEAD
+                        
+=======
+
+>>>>>>> dev
+                        audio.onerror = (e) => {
+                            console.error('Audio playback error:', e);
+                            reject(e);
+                        };
+<<<<<<< HEAD
+                        
+=======
+
+>>>>>>> dev
+                        audio.play();
+                    } else {
+                        console.error('TTS failed:', response.status);
+                        reject(new Error('TTS failed'));
+                    }
+                } catch (e) {
+                    console.error('TTS failed:', e);
+                    reject(e);
                 }
-            } catch (e) {
-                console.error('TTS failed:', e);
-            }
+<<<<<<< HEAD
+            });
+=======
+            })
+>>>>>>> dev
         }
 
         async function toggleAnswer() {
@@ -667,6 +1394,28 @@
             }
         }
 
+        async function speakAnswer() {
+            const answer = document.getElementById('correctAnswer').textContent;
+            const funFact = document.getElementById('funFact').textContent;
+<<<<<<< HEAD
+            
+            if (answer && answer !== '-') {
+                const textToSpeak = funFact 
+                    ? `The correct answer is: ${answer}. ${funFact}`
+                    : `The correct answer is: ${answer}`;
+                
+=======
+
+            if (answer && answer !== '-') {
+                const textToSpeak = funFact
+                    ? `The correct answer is: ${answer}. ${funFact}`
+                    : `The correct answer is: ${answer}`;
+
+>>>>>>> dev
+                await playTTS(textToSpeak, 'daniel');
+            }
+        }
+
         async function nextQuestion() {
             try {
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/next`, {
@@ -683,48 +1432,12 @@
                         alert('🎉 Quiz completed! Check the final leaderboard!');
                         document.getElementById('questionText').textContent = 'QUIZ COMPLETED! 🎉';
                         document.getElementById('currentGenre').textContent = 'FINISH';
-                        clearInterval(updateInterval);
-                    } else {
-                        await loadCurrentQuestion();
                     }
-                    updateStats();
+                    // El SSE actualizará automáticamente la pregunta y stats
+                    console.log('✅ Moved to next question - SSE will update the display');
                 }
             } catch (error) {
                 console.error('Error moving to next question:', error);
-            }
-        }
-
-        async function updateStats() {
-            try {
-                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/stats`);
-                const data = await response.json();
-
-                if (data.success) {
-                    const stats = data.stats;
-                    document.getElementById('statTeams').textContent = stats.total_teams;
-                    document.getElementById('statPlayers').textContent = stats.total_players;
-                    document.getElementById('statRound').textContent = stats.current_round;
-                    document.getElementById('statTotalRounds').textContent = stats.total_rounds;
-                    document.getElementById('statFollowers').textContent = stats.social_followers;
-
-                    const percent = Math.round(stats.progress_percent);
-                    document.getElementById('progressBarFill').style.width = percent + '%';
-                    document.getElementById('progressText').textContent = percent + '%';
-
-                    const statusBadge = document.getElementById('statusBadge');
-                    statusBadge.textContent = stats.status.toUpperCase().replace('_', ' ');
-
-                    if (stats.status === 'in_progress' || stats.status === 'halftime') {
-                        document.getElementById('btnStart').disabled = true;
-                        document.getElementById('btnShowAnswer').disabled = false;
-                        document.getElementById('btnNext').disabled = false;
-                    }
-
-                    // Update Genre Votes Summary
-                    updateGenreVotesUI(stats);
-                }
-            } catch (error) {
-                console.error('Error updating stats:', error);
             }
         }
 
@@ -755,33 +1468,6 @@
             }
         }
 
-        async function updateLeaderboard() {
-            try {
-                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/leaderboard`);
-                const data = await response.json();
-
-                if (data.success && data.leaderboard.length > 0) {
-                    const list = document.getElementById('leaderboardList');
-                    list.innerHTML = data.leaderboard.map((team, idx) => `
-                        <li class="leaderboard-item ${idx < 3 ? 'top-3' : ''}">
-                            <div class="rank">#${team.position}</div>
-                            <div class="team-info">
-                                <span class="team-name-label">${team.team_name}</span>
-                                <span class="team-table-label">Table ${team.table_number || 'N/A'}</span>
-                            </div>
-                            <div class="team-total-score">${team.total_score}</div>
-                            <div class="score-control">
-                                <button onclick="awardPoint(${team.id}, 1)" class="btn btn-icon btn-success">+</button>
-                                <button onclick="awardPoint(${team.id}, -1)" class="btn btn-icon btn-danger">-</button>
-                            </div>
-                        </li>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error('Error updating leaderboard:', error);
-            }
-        }
-
         async function awardPoint(teamId, points) {
             try {
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/team/${teamId}/award-points`, {
@@ -791,7 +1477,7 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    updateLeaderboard();
+                    console.log('Points awarded successfully');
                 }
             } catch (e) {
                 console.error('Error awarding points:', e);
@@ -799,15 +1485,82 @@
         }
 
         function showQR() {
-            const img = document.getElementById('qrImage');
-            const url = document.getElementById('qrUrl');
-            img.src = `${BASE_URL}/api/pub-quiz/${SESSION_ID}/qr-code`;
-            url.textContent = window.location.origin + `/pub-quiz/register/${SESSION_ID}`;
+            const qrContainer = document.getElementById('qrcode');
+            const urlDisplay = document.getElementById('qrUrl');
+<<<<<<< HEAD
+            
+            // Build the registration URL with session parameter
+            const registrationUrl = `${window.location.origin}/pub-quiz-register.html?session=${SESSION_ID}`;
+            
+            // Clear previous QR code
+            qrContainer.innerHTML = '';
+            
+=======
+
+            // Build the registration URL with session parameter
+            const registrationUrl = `${window.location.origin}/pub-quiz-register.html?session=${SESSION_ID}`;
+
+            // Clear previous QR code
+            qrContainer.innerHTML = '';
+
+>>>>>>> dev
+            // Generate new QR code
+            new QRCode(qrContainer, {
+                text: registrationUrl,
+                width: 300,
+                height: 300,
+                colorDark: "#0b0e14",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+<<<<<<< HEAD
+            
+            // Display URL
+            urlDisplay.textContent = registrationUrl;
+            
+=======
+
+            // Display URL
+            urlDisplay.textContent = registrationUrl;
+
+>>>>>>> dev
+            // Show modal
             document.getElementById('qrModal').style.display = 'flex';
         }
 
         function hideQR() {
             document.getElementById('qrModal').style.display = 'none';
+        }
+
+        async function resetQuiz() {
+            if (!confirm('⚠️ Are you sure you want to RESET the entire quiz? This will:\n\n- Delete all questions\n- Delete all answers\n- Reset all team scores to 0\n- Return to REGISTRATION status\n\nThis action CANNOT be undone!')) {
+                return;
+            }
+<<<<<<< HEAD
+            
+=======
+
+>>>>>>> dev
+            try {
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/reset`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+<<<<<<< HEAD
+                
+=======
+
+>>>>>>> dev
+                if (data.success) {
+                    alert('✅ Quiz reset successfully! Reloading page...');
+                    window.location.reload();
+                } else {
+                    alert('❌ Error: ' + (data.error || 'Could not reset quiz'));
+                }
+            } catch (error) {
+                console.error('Error resetting quiz:', error);
+                alert('❌ Error resetting quiz');
+            }
         }
 
         function endQuiz() {

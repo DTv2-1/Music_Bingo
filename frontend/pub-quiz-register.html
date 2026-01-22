@@ -9,15 +9,255 @@
         * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
 
-            :root {
-                --primary: #9d50bb;
-                --secondary: #6e48aa;
-                --accent: #00f2fe;
-                --bg: #0f0c29;
-                --glass: rgba(255, 255, 255, 0.1);
-                --glass-border: rgba(255, 255, 255, 0.2);
-                --text: #ffffff;
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ffffff, #e0e0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border: none;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .venue-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 100px;
+            font-size: 0.9em;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 1em;
+            color: #ffffff;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .genre-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 24px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .genre-search {
+            margin-bottom: 15px;
+        }
+
+        .genre-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 5px;
+            margin-top: 10px;
+        }
+
+        .genre-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .genre-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .genre-grid::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .genre-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            user-select: none;
+            position: relative;
+        }
+
+        .genre-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .genre-item.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            box-shadow: 0 8px 15px rgba(118, 75, 162, 0.4);
+        }
+
+        .genre-item input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .genre-item label {
+            pointer-events: none;
+            font-weight: 600;
+        }
+
+        .social-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .social-checkbox:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-weight: 800;
+            font-size: 1.2em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+        }
+
+        .btn-register:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(118, 75, 162, 0.6);
+        }
+
+        .btn-register:active {
+            transform: scale(0.98);
+        }
+
+        .success-card {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-card.show {
+            display: block;
+            animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
             }
 
             @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
@@ -34,313 +274,187 @@
                 justify-content: center;
                 align-items: center;
             }
+        }
+        }
 
+        .success-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+
+        .bonus-badge {
+            background: #ffd700;
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-weight: 800;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        #genreCounter {
+            float: right;
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+
+        #gameContainer {
+            display: none;
+            text-align: center;
+        }
+
+        .question-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 1.2em;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            box-shadow: 0 8px 15px rgba(118, 75, 162, 0.4);
+        }
+
+        .option-letter {
+            font-size: 1.5em;
+            font-weight: 900;
+            background: rgba(255, 255, 255, 0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            font-size: 1.1em;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-buzz {
+            width: 100%;
+            padding: 30px;
+            font-size: 2.5em;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ff4e50 0%, #f9d423 100%);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 10px 25px rgba(255, 75, 43, 0.4);
+            user-select: none;
+        }
+
+        .btn-buzz:hover:not(.disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(255, 75, 43, 0.6);
+        }
+
+        .btn-buzz:active {
+            transform: scale(0.9);
+        }
+
+        .btn-buzz.disabled {
+            filter: grayscale(1);
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .buzzed-at {
+            color: #00ff88;
+            font-weight: 800;
+            font-size: 1.2em;
+            margin-top: 10px;
+            background: rgba(0, 255, 136, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
             .container {
-                width: 100%;
-                max-width: 600px;
-                background: var(--glass);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                border: 1px solid var(--glass-border);
-                border-radius: 24px;
-                padding: 40px;
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-                animation: fadeIn 0.8s ease-out;
-            }
-
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(20px);
-                }
-
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .header {
-                text-align: center;
-                margin-bottom: 40px;
+                padding: 20px;
             }
 
             .header h1 {
-                font-size: 2.5em;
-                font-weight: 800;
-                margin: 0;
-                background: linear-gradient(to right, #00f2fe, #4facfe);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                text-transform: uppercase;
-                letter-spacing: 2px;
-            }
-
-            .header p {
-                opacity: 0.8;
-                font-weight: 300;
-                margin-top: 10px;
-            }
-
-            .venue-badge {
-                display: inline-block;
-                padding: 6px 16px;
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 100px;
-                font-size: 0.9em;
-                border: 1px solid var(--glass-border);
-            }
-
-            .form-group {
-                margin-bottom: 25px;
-            }
-
-            label {
-                display: block;
-                margin-bottom: 8px;
-                font-weight: 600;
-                font-size: 0.9em;
-                opacity: 0.9;
-            }
-
-            input[type="text"],
-            input[type="number"],
-            input[type="email"],
-            input[type="tel"] {
-                width: 100%;
-                padding: 12px 16px;
-                background: rgba(0, 0, 0, 0.2);
-                border: 1px solid var(--glass-border);
-                border-radius: 12px;
-                color: white;
-                font-family: inherit;
-                font-size: 1em;
-                box-sizing: border-box;
-                transition: all 0.3s ease;
-            }
-
-            input:focus {
-                outline: none;
-                border-color: var(--accent);
-                background: rgba(0, 0, 0, 0.3);
-                box-shadow: 0 0 0 4px rgba(0, 242, 254, 0.1);
-            }
-
-            .genre-section {
-                background: rgba(0, 0, 0, 0.1);
-                padding: 24px;
-                border-radius: 20px;
-                border: 1px solid var(--glass-border);
-                margin-bottom: 30px;
-            }
-
-            .genre-search {
-                margin-bottom: 15px;
+                font-size: 2em;
             }
 
             .genre-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-                gap: 12px;
-                max-height: 300px;
-                overflow-y: auto;
-                padding: 5px;
-                margin-top: 10px;
-            }
-
-            /* Custom Scrollbar */
-            .genre-grid::-webkit-scrollbar {
-                width: 6px;
-            }
-
-            .genre-grid::-webkit-scrollbar-track {
-                background: rgba(255, 255, 255, 0.05);
-                border-radius: 10px;
-            }
-
-            .genre-grid::-webkit-scrollbar-thumb {
-                background: rgba(255, 255, 255, 0.2);
-                border-radius: 10px;
-            }
-
-            .genre-item {
-                background: rgba(255, 255, 255, 0.05);
-                border: 1px solid var(--glass-border);
-                padding: 12px;
-                border-radius: 12px;
-                cursor: pointer;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                user-select: none;
-            }
-
-            .genre-item:hover {
-                background: rgba(255, 255, 255, 0.1);
-                transform: translateY(-2px);
-            }
-
-            .genre-item.selected {
-                background: linear-gradient(135deg, var(--primary), var(--secondary));
-                border-color: transparent;
-                box-shadow: 0 8px 15px rgba(157, 80, 187, 0.3);
-            }
-
-            .genre-item input {
-                display: none;
-            }
-
-            .social-checkbox {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                background: rgba(29, 161, 242, 0.1);
-                padding: 16px;
-                border-radius: 16px;
-                border: 1px solid rgba(29, 161, 242, 0.3);
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-
-            .social-checkbox:hover {
-                background: rgba(29, 161, 242, 0.2);
-            }
-
-            .btn-register {
-                width: 100%;
-                padding: 16px;
-                background: linear-gradient(to right, #00f2fe, #4facfe);
-                border: none;
-                border-radius: 14px;
-                color: #000;
-                font-weight: 800;
-                font-size: 1.1em;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                cursor: pointer;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                margin-top: 20px;
-            }
-
-            .btn-register:hover {
-                transform: scale(1.02);
-                box-shadow: 0 10px 20px rgba(0, 242, 254, 0.3);
-            }
-
-            .btn-register:active {
-                transform: scale(0.98);
-            }
-
-            .success-card {
-                display: none;
-                text-align: center;
-                padding: 40px 20px;
-            }
-
-            .success-card.show {
-                display: block;
-                animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            }
-
-            @keyframes scaleIn {
-                from {
-                    opacity: 0;
-                    transform: scale(0.8);
-                }
-
-                to {
-                    opacity: 1;
-                    transform: scale(1);
-                }
-            }
-
-            .success-icon {
-                font-size: 5em;
-                margin-bottom: 20px;
-            }
-
-            .bonus-badge {
-                background: #ffd700;
-                color: #000;
-                padding: 4px 12px;
-                border-radius: 100px;
-                font-weight: 800;
-                font-size: 0.8em;
-                margin-left: 10px;
-            }
-
-            #genreCounter {
-                float: right;
-                font-size: 0.8em;
-                opacity: 0.7;
-            }
-
-            /* Game UI Styles */
-            #gameContainer {
-                display: none;
-                text-align: center;
-            }
-
-            .question-card {
-                background: rgba(255, 255, 255, 0.05);
-                padding: 30px;
-                border-radius: 20px;
-                margin-bottom: 20px;
-                border: 1px solid var(--glass-border);
-            }
-
-            .answer-input {
-                width: 100%;
-                padding: 15px;
-                margin: 20px 0;
-                font-size: 1.2em;
-                text-align: center;
-            }
-
-            .btn-buzz {
-                width: 200px;
-                height: 200px;
-                border-radius: 50%;
-                background: radial-gradient(circle, #ff416c, #ff4b2b);
-                border: 8px solid rgba(255, 255, 255, 0.2);
-                color: white;
-                font-size: 2em;
-                font-weight: 800;
-                cursor: pointer;
-                box-shadow: 0 15px 35px rgba(255, 75, 43, 0.4);
-                transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                margin: 20px auto;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                text-transform: uppercase;
-                user-select: none;
-            }
-
-            .btn-buzz:active {
-                transform: scale(0.9);
-                box-shadow: 0 5px 15px rgba(255, 75, 43, 0.2);
-            }
-
-            .btn-buzz.disabled {
-                filter: grayscale(1);
-                opacity: 0.5;
-                cursor: not-allowed;
-                pointer-events: none;
-            }
-
-            .buzzed-at {
-                color: var(--accent);
-                font-weight: 800;
-                font-size: 1.2em;
-                margin-top: 10px;
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 
 <body>
+    <script>
+        // Debug: Check if BACKEND_URL was injected by server.js
+        console.log('🔧 window.BACKEND_URL at page load:', window.BACKEND_URL);
+        console.log('🔧 CONFIG available:', typeof CONFIG !== 'undefined');
+        if (typeof CONFIG !== 'undefined') {
+            console.log('🔧 CONFIG.BACKEND_URL:', CONFIG.BACKEND_URL);
+        }
+    </script>
+    <script src="/config.js"></script>
+    <script>
+        // Debug: Check CONFIG after loading config.js
+        console.log('🔧 After config.js - window.BACKEND_URL:', window.BACKEND_URL);
+        console.log('🔧 After config.js - CONFIG.BACKEND_URL:', CONFIG?.BACKEND_URL);
+    </script>
+
+    <a href="/" class="back-btn">← Back</a>
+
     <div class="container">
         <div class="header">
             <h1>🎤 Join the Quiz! 🎵</h1>
@@ -370,27 +484,18 @@
 
                 <div class="genre-section">
                     <label>
-                        Choose Top 5 Genres 🎯
+                        Vote for Your Favorite Genres 🎭
                         <span id="genreCounter">0 / 5</span>
                     </label>
-                    <p style="font-size: 0.8em; opacity: 0.7; margin: 0 0 15px 0;">Help the Host decide tonight's
-                        rounds!</p>
-
-                    <div class="genre-search">
-                        <input type="text" id="genreSearch" placeholder="🔍 Search genres (Science, Music, AI...)"
-                            onkeyup="filterGenres()">
-                    </div>
-
-                    <div class="genre-grid" id="genreGrid">
-                        <!-- Loaded via JS -->
-                    </div>
+                    <input type="text" id="genreSearch" class="genre-search" placeholder="Search genres..."
+                        oninput="filterGenres()">
+                    <div class="genre-grid" id="genreGrid"></div>
                 </div>
 
-                <div class="form-group">
-                    <label class="social-checkbox">
-                        <input type="checkbox" id="followedSocial" style="transform: scale(1.5);">
-                        <span>We follow <b>@PerfectDJ</b> on social media! 📱<span class="bonus-badge">+1
-                                POINT</span></span>
+                <div class="social-checkbox" onclick="toggleSocialCheckbox()">
+                    <input type="checkbox" id="followedSocial">
+                    <label for="followedSocial" style="cursor: pointer; margin: 0;">
+                        📲 Follow us on Instagram for a bonus point!
                     </label>
                 </div>
 
@@ -407,14 +512,21 @@
             <div class="success-icon">✨</div>
             <h2>You're In!</h2>
             <p id="successTeamName" style="font-size: 1.5em; font-weight: 800; margin: 10px 0;"></p>
-            <p id="successBonus" style="color: var(--accent); font-weight: 600;"></p>
+            <p id="successBonus" style="color: #ffd700; font-weight: 600;"></p>
             <div style="margin: 30px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
                 <p>Wait for the host to start the quiz!</p>
             </div>
+            <button onclick="editRegistration()"
+                style="background: rgba(255,193,7,0.2); border: 1px solid #ffc107; color: #ffc107; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600; margin-top: 10px;">
+                ✏️ Edit Registration
+            </button>
         </div>
 
-        <!-- Game Container -->
         <div id="gameContainer">
+            <button onclick="editRegistration()"
+                style="position: fixed; top: 20px; right: 20px; background: rgba(255,193,7,0.2); border: 1px solid #ffc107; color: #ffc107; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; z-index: 1000; font-size: 0.9em;">
+                ✏️ Edit
+            </button>
             <div class="header">
                 <h2 id="roundTitle">Round 1</h2>
                 <div id="questionInfo" style="opacity: 0.7;">Question 1 / 40</div>
@@ -437,17 +549,46 @@
             <div id="questionScreen" style="display: none;">
                 <div class="question-card">
                     <h3 id="currentQuestionText">Loading question...</h3>
+                    <div id="questionTypeLabel" style="font-size: 0.8em; opacity: 0.7; margin-top: 10px;"></div>
                 </div>
-                <div id="answerFormContainer">
-                    <input type="text" id="playerAnswer" class="answer-input" placeholder="Your answer here...">
-                    <button class="btn-register" onclick="sendAnswer()">Submit Answer</button>
-                </div>
-                <div id="answerStatus" class="buzzed-at" style="display: none;">Answer Submitted! ✅</div>
+                <<<<<<< HEAD=======>>>>>>> dev
+                    <!-- Multiple Choice Options -->
+                    <div id="multipleChoiceContainer" style="display: none; margin: 20px 0;">
+                        <div class="options-grid">
+                            <button class="option-btn" data-option="A" onclick="selectOption('A')">
+                                <span class="option-letter">A</span>
+                                <span class="option-text" id="optionA"></span>
+                            </button>
+                            <button class="option-btn" data-option="B" onclick="selectOption('B')">
+                                <span class="option-letter">B</span>
+                                <span class="option-text" id="optionB"></span>
+                            </button>
+                            <button class="option-btn" data-option="C" onclick="selectOption('C')">
+                                <span class="option-letter">C</span>
+                                <span class="option-text" id="optionC"></span>
+                            </button>
+                            <button class="option-btn" data-option="D" onclick="selectOption('D')">
+                                <span class="option-letter">D</span>
+                                <span class="option-text" id="optionD"></span>
+                            </button>
+                        </div>
+                        <button class="btn-register" onclick="submitMultipleChoice()" id="submitMCBtn" disabled>
+                            Submit Answer
+                        </button>
+                    </div>
+
+                    <!-- Written Answer -->
+                    <div id="answerFormContainer">
+                        <input type="text" id="playerAnswer" class="answer-input" placeholder="Your answer here...">
+                        <button class="btn-register" onclick="sendAnswer()">Submit Answer</button>
+                    </div>
+
+                    <div id="answerStatus" class="buzzed-at" style="display: none;">Answer Submitted! ✅</div>
             </div>
 
             <div id="revealScreen" style="display: none;">
                 <div class="question-card">
-                    <h3 style="color: var(--accent);">Correct Answer:</h3>
+                    <h3 style="color: #ffd700;">Correct Answer:</h3>
                     <h2 id="correctAnswerText">...</h2>
                     <p id="funFactText" style="margin-top: 15px; font-size: 0.9em; opacity: 0.8; font-style: italic;">
                     </p>
@@ -458,40 +599,227 @@
     </div>
 
     <script>
+        // Get SESSION_ID from URL query parameter or pathname
+        function getSessionId() {
+            console.log('🔍 Getting Session ID from URL:', window.location.href);
+            // Try query parameter first: ?session=123
+            const urlParams = new URLSearchParams(window.location.search);
+            const querySession = urlParams.get('session');
+            console.log('   Query param session:', querySession);
+            if (querySession) {
+                console.log('✅ Using query session:', querySession);
+                return querySession;
+            }
+
+            // Try from pathname: /pub-quiz/123 or /123
+            const pathParts = window.location.pathname.split('/').filter(p => p);
+            console.log('   Path parts:', pathParts);
+            const lastPart = pathParts[pathParts.length - 1];
+            console.log('   Last part:', lastPart);
+
+            // If last part is a number, use it
+            if (!isNaN(lastPart) && lastPart !== '') {
+                console.log('✅ Using last part as session:', lastPart);
+                return lastPart;
+            }
+
+            // If there's a part before .html that's a number
+            for (let i = pathParts.length - 1; i >= 0; i--) {
+                if (!isNaN(pathParts[i]) && pathParts[i] !== '') {
+                    console.log('✅ Found session in path:', pathParts[i]);
+                    return pathParts[i];
+                }
+            }
+
+            // Fallback: use default session
+            console.warn('⚠️ No session found, using fallback: 1');
+            return '1';
+        }
+
+        // Global variables
+        const SESSION_ID = getSessionId();
+        // Use same fallback as game.js - ingress rules will route to backend
+        const BASE_URL = (() => {
+            const frontendUrl = `${window.location.protocol}//${window.location.host}`;
+            // If BACKEND_URL is equal to the URL of the frontend, use relative paths
+            if (window.BACKEND_URL === frontendUrl) {
+                return '';
+            }
+            return window.BACKEND_URL || window.location.origin;
+        })();
+
+        console.log('🌐 Global variables initialized:');
+        console.log('   SESSION_ID:', SESSION_ID);
+        console.log('   BASE_URL:', BASE_URL);
+        console.log('   Full API URL will be:', `${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
+        console.log('   localStorage key:', `pub_quiz_team_${SESSION_ID}`);
+
+        let allGenres = [];
+        let selectedGenres = [];
+        const MAX_GENRES = 5;
         let teamId = localStorage.getItem(`pub_quiz_team_${SESSION_ID}`);
+        console.log('💾 localStorage teamId:', teamId);
         let currentQuestionId = null;
         let lastKnownStatus = null;
         let lastKnownQuestionNum = 0;
-        let pollInterval = null;
+        let eventSource = null; // SSE connection
+        let statusPollInterval = null; // Only for waiting status (checking if quiz started)
+        let selectedOption = null; // For multiple choice questions
 
         async function init() {
+            console.log('🚀 Initializing... teamId:', teamId, 'SESSION_ID:', SESSION_ID);
             if (teamId) {
+                console.log('✅ Team already registered, showing game');
                 showGame();
             } else {
+                console.log('📝 No team registered, showing registration form');
+                console.log('🔗 Fetching session details from:', `${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
                 try {
-                    const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
+                    console.log('⏳ Starting fetch...');
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => {
+                        console.error('⏰ Fetch timeout after 10 seconds!');
+                        controller.abort();
+                    }, 10000);
+
+                    const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`, {
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    console.log('📡 Response received! Status:', response.status, response.statusText);
+
+                    if (!response.ok) {
+                        console.error('❌ Response not OK:', response.status, response.statusText);
+                        const errorText = await response.text();
+                        console.error('❌ Error response body:', errorText);
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    console.log('🔄 Parsing JSON...');
                     const data = await response.json();
+                    console.log('📊 Session data loaded:', data);
+                    console.log('🎭 Genres received:', data.genres);
+                    console.log('🎭 Number of genres:', data.genres?.length || 0);
+                    console.log('🎭 First genre example:', data.genres?.[0]);
+<<<<<<< HEAD
+
                     document.getElementById('venueName').innerHTML = `📍 <span class="venue-badge">${data.session.venue_name}</span>`;
-                    allGenres = data.genres;
-                    renderGenres(allGenres);
+                    allGenres = data.genres || [];
+                    console.log('🎭 allGenres variable set:', allGenres.length);
+
+=======
+
+                    document.getElementById('venueName').innerHTML = `📍 <span class="venue-badge">${data.session.venue_name}</span>`;
+                    allGenres = data.genres || [];
+                    console.log('🎭 allGenres variable set:', allGenres.length);
+
+>>>>>>> dev
+                    if (!allGenres || allGenres.length === 0) {
+                        console.error('❌ No genres loaded!');
+                    } else {
+                        console.log(`✅ Loaded ${allGenres.length} genres`);
+                        renderGenres(allGenres);
+                    }
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+                    // Detectar si hay un equipo previo guardado (por nombre, no por teamId)
+                    const savedTeamName = localStorage.getItem(`pub_quiz_team_name_${SESSION_ID}`);
+                    if (savedTeamName) {
+                        await checkExistingTeam(savedTeamName);
+                    }
                 } catch (error) {
-                    console.error('Error loading session details:', error);
+                    console.error('❌ ERROR loading session details:', error);
+                    console.error('❌ Error name:', error.name);
+                    console.error('❌ Error message:', error.message);
+                    console.error('❌ Error stack:', error.stack);
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+                    // Show error to user
+                    alert(`Error loading quiz: ${error.message}\n\nPlease check the console for details.`);
                 }
+            }
+        }
+
+        async function checkExistingTeam(teamName) {
+            try {
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/check-team?team_name=${encodeURIComponent(teamName)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.exists) {
+                        // Pre-llenar formulario con datos existentes
+                        document.getElementById('teamName').value = data.team.team_name;
+                        document.getElementById('tableNumber').value = data.team.table_number || '';
+                        document.getElementById('numPlayers').value = data.team.num_players || 4;
+                        document.getElementById('socialHandle').value = data.team.social_handle || '';
+                        document.getElementById('followedSocial').checked = data.team.followed_social || false;
+<<<<<<< HEAD
+
+                        // Pre-seleccionar géneros votados
+                        selectedGenres = data.team.genre_votes || [];
+                        renderGenres(allGenres);
+
+=======
+
+                        // Pre-seleccionar géneros votados
+                        selectedGenres = data.team.genre_votes || [];
+                        renderGenres(allGenres);
+
+>>>>>>> dev
+                        // Mostrar mensaje de edición
+                        const registerCard = document.querySelector('.register-card');
+                        const editBanner = document.createElement('div');
+                        editBanner.style.cssText = 'background: rgba(255,193,7,0.2); padding: 12px; border-radius: 10px; margin-bottom: 20px; text-align: center; color: #ffc107; font-weight: 600;';
+                        editBanner.innerHTML = '✏️ Editando registro existente';
+                        registerCard.insertBefore(editBanner, registerCard.firstChild);
+                    }
+                }
+            } catch (error) {
+                console.log('No previous registration found');
             }
         }
 
         document.addEventListener('DOMContentLoaded', init);
 
         function renderGenres(genresList) {
+            console.log('🎨 renderGenres() called with', genresList.length, 'genres');
             const genreGrid = document.getElementById('genreGrid');
+            console.log('   genreGrid element:', genreGrid ? 'found' : 'NOT FOUND');
+<<<<<<< HEAD
+
+=======
+>>>>>>> dev
+            if (!genreGrid) {
+                console.error('❌ genreGrid element not found!');
+                return;
+            }
+<<<<<<< HEAD
+
+            console.log('   Building HTML for genres...');
             genreGrid.innerHTML = genresList.map(genre => `
                 <div class="genre-item ${selectedGenres.includes(genre.id) ? 'selected' : ''}" onclick="toggleGenre(this, ${genre.id})">
                     <input type="checkbox" name="genre_vote" value="${genre.id}" id="genre${genre.id}" ${selectedGenres.includes(genre.id) ? 'checked' : ''}>
+                    ${genre.icon || '❓'} ${genre.name}
+                </div>
+            `).join('');
+
+=======
+
+            console.log('   Building HTML for genres...');
+            genreGrid.innerHTML = genresList.map(genre => `
                     <label for="genre${genre.id}" style="margin: 0; cursor: pointer;">
                         ${genre.icon || '❓'} ${genre.name}
                     </label>
                 </div>
             `).join('');
+
+>>>>>>> dev
+            console.log('✅ Genres rendered to DOM');
         }
 
         function filterGenres() {
@@ -518,37 +846,261 @@
             document.getElementById('genreCounter').textContent = `${selectedGenres.length} / ${MAX_GENRES}`;
         }
 
+        function toggleSocialCheckbox() {
+            const checkbox = document.getElementById('followedSocial');
+            checkbox.checked = !checkbox.checked;
+        }
+
         function showGame() {
+            console.log('🎮 showGame() called');
+            console.log('   Hiding formContainer');
             document.getElementById('formContainer').style.display = 'none';
+            console.log('   Hiding successMessage');
             document.getElementById('successMessage').style.display = 'none';
+            console.log('   Showing gameContainer');
             document.getElementById('gameContainer').style.display = 'block';
-            startPolling();
+<<<<<<< HEAD
+
+            // Check session status first
+            checkSessionStatus();
         }
 
-        function startPolling() {
-            if (pollInterval) clearInterval(pollInterval);
-            pollInterval = setInterval(pollGameState, 2000);
-            pollGameState();
+=======
+
+            // Check session status first
+            checkSessionStatus();
         }
 
-        async function pollGameState() {
+>>>>>>> dev
+        async function checkSessionStatus() {
             try {
-                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/current-question`);
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
                 const data = await response.json();
-                if (!data.success) return;
-                const status = data.session_status;
-                const question = data.question;
-                if (question) {
-                    currentQuestionId = question.id;
-                    updateUI(status, question);
-                } else if (status === 'registration' || status === 'waiting') {
+                const status = data.session.status;
+<<<<<<< HEAD
+
+                console.log(`Session status: ${status}`);
+
+=======
+
+                console.log(`Session status: ${status}`);
+
+>>>>>>> dev
+                if (status === 'in_progress' || status === 'halftime' || status === 'revealing_answer') {
+                    // Quiz is active - connect to SSE
+                    connectSSE();
+                } else if (status === 'ready' || status === 'registration') {
+                    // Quiz hasn't started - show waiting screen and poll status
                     showScreen('waitingScreen');
+                    startStatusPolling();
+                } else if (status === 'completed') {
+                    showScreen('waitingScreen');
+                    alert('This quiz has ended. Thank you for playing!');
                 }
-            } catch (e) { console.error('Poll error:', e); }
+            } catch (error) {
+                console.error('Error checking session status:', error);
+            }
+        }
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+        function startStatusPolling() {
+            // Poll session status every 5 seconds when waiting for quiz to start
+            if (statusPollInterval) clearInterval(statusPollInterval);
+            statusPollInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
+                    const data = await response.json();
+                    const status = data.session.status;
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+                    if (status === 'in_progress' || status === 'halftime') {
+                        // Quiz started! Stop status polling and connect to SSE
+                        clearInterval(statusPollInterval);
+                        statusPollInterval = null;
+                        connectSSE();
+                    }
+                } catch (error) {
+                    console.error('Status poll error:', error);
+                }
+            }, 5000); // Check every 5 seconds
+        }
+
+        async function editRegistration() {
+            // Detener SSE si está activo
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            if (statusPollInterval) {
+                clearInterval(statusPollInterval);
+                statusPollInterval = null;
+            }
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+            // Volver a mostrar el formulario
+            document.getElementById('gameContainer').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('formContainer').style.display = 'block';
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+            // Si no hay géneros cargados, cargarlos primero
+            if (allGenres.length === 0) {
+                try {
+                    const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
+                    const data = await response.json();
+                    allGenres = data.genres;
+                    renderGenres(allGenres);
+                } catch (error) {
+                    console.error('Error loading genres:', error);
+                }
+            }
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+            // Cargar datos actuales del equipo
+            const savedTeamName = localStorage.getItem(`pub_quiz_team_name_${SESSION_ID}`);
+            if (savedTeamName) {
+                await checkExistingTeam(savedTeamName);
+            }
+        }
+
+        function connectSSE() {
+            // Close existing connection if any
+            if (eventSource) {
+                eventSource.close();
+            }
+<<<<<<< HEAD
+
+            console.log('🔌 Connecting to SSE stream...');
+            eventSource = new EventSource(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/stream`);
+
+=======
+
+            console.log('🔌 Connecting to SSE stream...');
+            eventSource = new EventSource(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/stream`);
+
+>>>>>>> dev
+            eventSource.onopen = () => {
+                console.log('✅ SSE Connected');
+                sseRetryCount = 0; // Reset retry counter on successful connection
+            };
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+            eventSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('📨 SSE Message:', data.type);
+<<<<<<< HEAD
+
+                    switch (data.type) {
+                        case 'connected':
+                            console.log(`Connected to session ${data.session_id}`);
+                            break;
+
+=======
+
+                    switch (data.type) {
+                        case 'connected':
+                            console.log(`Connected to session ${data.session_id}`);
+                            break;
+
+>>>>>>> dev
+                        case 'waiting':
+                            // Waiting for questions to be generated
+                            console.log(`⏳ ${data.message}`);
+                            showScreen('waitingScreen');
+                            break;
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+                        case 'question_update':
+                            // New question or question update
+                            const question = data.question;
+                            currentQuestionId = question.id;
+                            updateUI(data.session_status, question);
+                            break;
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+                        case 'status_change':
+                            // Status changed (registration, ready, etc.)
+                            console.log(`Status changed to: ${data.status}`);
+                            if (data.status === 'ready' || data.status === 'registration') {
+                                showScreen('waitingScreen');
+                            }
+                            break;
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+                        case 'ended':
+                            // Quiz completed
+                            showScreen('waitingScreen');
+                            alert('Quiz completed! Thank you for playing!');
+                            eventSource.close();
+                            eventSource = null;
+                            break;
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+                        case 'error':
+                            console.error('SSE Error:', data.message);
+                            break;
+                    }
+                } catch (error) {
+                    console.error('Error parsing SSE message:', error);
+                }
+            };
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+            eventSource.onerror = (error) => {
+                console.error('❌ SSE Connection error:', error);
+                eventSource.close();
+                eventSource = null;
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+                // Retry connection after 5 seconds
+                console.log('Retrying SSE connection in 5 seconds...');
+                setTimeout(() => {
+                    if (!eventSource) { // Only reconnect if not already connected
+                        connectSSE();
+                    }
+                }, 5000);
+            };
         }
 
         function showScreen(id) {
-            ['waitingScreen', 'buzzScreen', 'questionScreen', 'revealScreen'].forEach(s => {
+            ['registrationScreen', 'waitingScreen', 'buzzScreen', 'questionScreen', 'revealScreen'].forEach(s => {
                 const el = document.getElementById(s);
                 if (el) el.style.display = (s === id) ? 'block' : 'none';
             });
@@ -570,10 +1122,70 @@
                     if (document.getElementById('currentQuestionText')) {
                         document.getElementById('currentQuestionText').textContent = question.text;
                     }
-                    if (lastKnownStatus !== 'in_progress' || question.number !== lastKnownQuestionNum) {
-                        document.getElementById('playerAnswer').value = '';
+<<<<<<< HEAD
+
+                    // Show question type label
+                    const typeLabel = document.getElementById('questionTypeLabel');
+                    if (typeLabel) {
+                        typeLabel.textContent = question.type === 'multiple_choice' ?
+                            '📝 Multiple Choice - Select the correct answer' :
+                            '✍️ Written Answer - Type your answer';
+                    }
+
+=======
+
+                    // Show question type label
+                    const typeLabel = document.getElementById('questionTypeLabel');
+                    if (typeLabel) {
+                        typeLabel.textContent = question.type === 'multiple_choice' ?
+                            '📝 Multiple Choice - Select the correct answer' :
+                            '✍️ Written Answer - Type your answer';
+                    }
+
+>>>>>>> dev
+                    // Handle multiple choice vs written answer
+                    if (question.type === 'multiple_choice' && question.options) {
+                        // Show multiple choice options
+                        document.getElementById('multipleChoiceContainer').style.display = 'block';
+                        document.getElementById('answerFormContainer').style.display = 'none';
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+                        // Populate options
+                        ['A', 'B', 'C', 'D'].forEach(letter => {
+                            const optionText = document.getElementById('option' + letter);
+                            if (optionText && question.options[letter]) {
+                                optionText.textContent = question.options[letter];
+                            }
+                        });
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+                        // Reset selection if new question
+                        if (lastKnownStatus !== 'in_progress' || question.number !== lastKnownQuestionNum) {
+                            document.querySelectorAll('.option-btn').forEach(btn => {
+                                btn.classList.remove('selected');
+                            });
+                            document.getElementById('submitMCBtn').disabled = true;
+                            selectedOption = null;
+                        }
+                    } else {
+                        // Show written answer input
+                        document.getElementById('multipleChoiceContainer').style.display = 'none';
                         document.getElementById('answerFormContainer').style.display = 'block';
-                        document.getElementById('answerStatus').style.display = 'none';
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> dev
+                        if (lastKnownStatus !== 'in_progress' || question.number !== lastKnownQuestionNum) {
+                            document.getElementById('playerAnswer').value = '';
+                            document.getElementById('answerStatus').style.display = 'none';
+                        }
                     }
                 }
             } else if (status === 'revealing_answer') {
@@ -630,6 +1242,57 @@
             } catch (e) { console.error('Error submitting answer:', e); }
         }
 
+        // Multiple Choice Functions
+        function selectOption(letter) {
+            // Deselect all options
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+<<<<<<< HEAD
+            });
+
+            // Select clicked option
+            const selectedBtn = document.querySelector(`.option-btn[data-option="${letter}"]`);
+            if (selectedBtn) {
+                selectedBtn.classList.add('selected');
+                selectedOption = letter;
+                document.getElementById('submitMCBtn').disabled = false;
+            }
+=======
+                // Select clicked option
+                const selectedBtn = document.querySelector(`.option-btn[data-option="${letter}"]`);
+                if (selectedBtn) {
+                    selectedBtn.classList.add('selected');
+                    selectedOption = letter;
+                    document.getElementById('submitMCBtn').disabled = false;
+                }
+            })
+>>>>>>> dev
+        }
+
+        async function submitMultipleChoice() {
+            if (!selectedOption) return;
+<<<<<<< HEAD
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/question/${currentQuestionId}/submit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        team_id: teamId,
+                        answer: selectedOption,
+                        is_multiple_choice: true
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('multipleChoiceContainer').style.display = 'none';
+                    document.getElementById('answerStatus').style.display = 'block';
+                }
+            } catch (e) {
+                console.error('Error submitting multiple choice answer:', e);
+            }
+        }
+
         document.getElementById('registrationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = {
@@ -640,22 +1303,63 @@
                 followed_social: document.getElementById('followedSocial').checked,
                 genre_votes: selectedGenres
             };
+=======
+
+>>>>>>> dev
             try {
-                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/register-team`, {
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/question/${currentQuestionId}/submit`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
+                    body: JSON.stringify({
+                        team_id: teamId,
+                        answer: selectedOption,
+                        is_multiple_choice: true
+                    })
                 });
                 const data = await response.json();
                 if (data.success) {
+<<<<<<< HEAD
                     teamId = data.team_id;
                     localStorage.setItem(`pub_quiz_team_${SESSION_ID}`, teamId);
+                    localStorage.setItem(`pub_quiz_team_name_${SESSION_ID}`, formData.team_name);
                     showGame();
                 } else {
                     alert('Error: ' + data.error);
+=======
+                    document.getElementById('multipleChoiceContainer').style.display = 'none';
+                    document.getElementById('answerStatus').style.display = 'block';
+>>>>>>> dev
                 }
-            } catch (error) { console.error('Error registering team:', error); }
-        });
+            } catch (e) {
+                console.error('Error submitting multiple choice answer:', e);
+            }
+
+            document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+                const formData = {
+                    team_name: document.getElementById('teamName').value,
+                    table_number: parseInt(document.getElementById('tableNumber').value),
+                    num_players: parseInt(document.getElementById('numPlayers').value),
+                    followed_social: document.getElementById('followedSocial').checked,
+                    genre_votes: selectedGenres
+                };
+                try {
+                    const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/register-team`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        teamId = data.team_id;
+                        localStorage.setItem(`pub_quiz_team_${SESSION_ID}`, teamId);
+                        showGame();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                } catch (error) { console.error('Error registering team:', error); }
+            });
+
+        }
     </script>
 </body>
 

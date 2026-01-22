@@ -6,6 +6,11 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const BACKEND_URL = process.env.BACKEND_URL || '';
 
+console.log('🚀 Server starting...');
+console.log('   PORT:', PORT);
+console.log('   BACKEND_URL from env:', process.env.BACKEND_URL);
+console.log('   BACKEND_URL final:', BACKEND_URL);
+
 // Inject BACKEND_URL into HTML
 function injectBackendUrl(html) {
   return html.replace(
@@ -65,6 +70,17 @@ app.get('/index', (req, res) => {
 app.get('/pub-quiz/register/:id', (req, res) => {
   console.log(`📄 Request for /pub-quiz/register/${req.params.id} - serving pub-quiz-register.html`);
   serveHtmlFile(res, 'pub-quiz-register.html');
+});
+
+// Support legacy .html?session=X format
+app.get('/pub-quiz-register.html', (req, res) => {
+  console.log(`📄 Request for /pub-quiz-register.html - serving with injection`);
+  serveHtmlFile(res, 'pub-quiz-register.html');
+});
+
+app.get('/pub-quiz-host.html', (req, res) => {
+  console.log(`📄 Request for /pub-quiz-host.html - serving with injection`);
+  serveHtmlFile(res, 'pub-quiz-host.html');
 });
 
 app.get('/pub-quiz/host/:id', (req, res) => {

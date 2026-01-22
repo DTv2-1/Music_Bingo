@@ -64,4 +64,4 @@ services:
     envs:
       - key: BACKEND_URL
         scope: RUN_TIME
-        value: ${APP_URL}
+        value: ${backend.PUBLIC_URL}  # Use backend service's public URL

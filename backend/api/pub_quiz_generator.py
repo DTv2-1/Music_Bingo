@@ -5,7 +5,9 @@ Basado en los 50 géneros extraídos de los PDFs
 
 import json
 import random
+import os
 from typing import List, Dict, Any
+from openai import OpenAI
 
 
 # 50 géneros extraídos del PDF 4
@@ -211,26 +213,179 @@ Generate exactly {num_questions} questions now.
             "rounds": rounds,
         }
     
-    def generate_sample_questions(self, genre_name: str, count: int = 10) -> List[Dict]:
+    def generate_sample_questions(self, genre_name: str, count: int = 10, question_types: dict = None) -> List[Dict]:
         """
-        Genera preguntas de muestra (placeholder - reemplazar con IA real)
+        Genera preguntas usando OpenAI GPT-4
+        question_types: {'multiple_choice': 0.7, 'written': 0.3}
         """
-        # Esto es solo un placeholder - en producción usar IA real
-        samples = {
+        # Default to 70% multiple choice, 30% written
+        if question_types is None:
+            question_types = {'multiple_choice': 0.7, 'written': 0.3}
+        
+        # Calculate how many of each type
+        num_mc = int(count * question_types.get('multiple_choice', 0.7))
+        num_written = count - num_mc
+        
+        questions = []
+        
+        # Generate multiple choice questions
+        if num_mc > 0:
+            mc_questions = self._generate_openai_questions(
+                genre_name, 
+                num_mc, 
+                'multiple_choice'
+            )
+            questions.extend(mc_questions)
+        
+        # Generate written questions
+        if num_written > 0:
+            written_questions = self._generate_openai_questions(
+                genre_name, 
+                num_written, 
+                'written'
+            )
+            questions.extend(written_questions)
+        
+        # Shuffle and assign question numbers
+        random.shuffle(questions)
+        for i, q in enumerate(questions, 1):
+            q['question_number'] = i
+        
+        return questions
+    
+    def _generate_openai_questions(self, genre_name: str, count: int, question_type: str) -> List[Dict]:
+        """
+        Generate questions using OpenAI API
+        """
+        api_key = os.getenv('OPENAI_API_KEY', '')
+        
+        if not api_key:
+            # Fallback to sample questions if no API key
+            return self._get_fallback_questions(genre_name, count, question_type)
+        
+        try:
+            # Initialize OpenAI client
+            client = OpenAI(api_key=api_key)
+            
+            if question_type == 'multiple_choice':
+                prompt = f"""Generate {count} multiple choice trivia questions about {genre_name}.
+
+For each question, provide:
+- A clear, engaging question
+- 4 answer options (A, B, C, D)
+- The correct answer letter
+- A fun fact related to the answer
+- Difficulty level (easy, medium, or hard)
+
+Make questions diverse, interesting, and appropriate for a pub quiz audience.
+Mix difficulty levels naturally.
+
+Return ONLY a valid JSON array with this exact structure:
+[
+  {{
+    "question": "Question text here?",
+    "options": {{"A": "Option 1", "B": "Option 2", "C": "Option 3", "D": "Option 4"}},
+    "correct_option": "A",
+    "answer": "Correct answer text",
+    "difficulty": "easy",
+    "fun_fact": "Interesting fact about the answer"
+  }}
+]"""
+            else:  # written
+                prompt = f"""Generate {count} written answer trivia questions about {genre_name}.
+
+For each question, provide:
+- A clear, engaging question that requires a specific written answer
+- The correct answer
+- 2-4 alternative acceptable answers (variations, abbreviations, etc.)
+- A fun fact related to the answer
+- Difficulty level (easy, medium, or hard)
+
+Make questions diverse, interesting, and appropriate for a pub quiz audience.
+Mix difficulty levels naturally.
+
+Return ONLY a valid JSON array with this exact structure:
+[
+  {{
+    "question": "Question text here?",
+    "answer": "Correct answer",
+    "alternative_answers": ["Alt 1", "Alt 2"],
+    "difficulty": "easy",
+    "fun_fact": "Interesting fact about the answer"
+  }}
+]"""
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are a professional pub quiz question writer. Generate only valid JSON. No markdown, no code blocks, just pure JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.8,
+                max_tokens=2000
+            )
+            
+            # Parse response
+            content = response.choices[0].message.content.strip()
+            
+            # Remove markdown code blocks if present
+            if content.startswith('```'):
+                content = content.split('```')[1]
+                if content.startswith('json'):
+                    content = content[4:]
+                content = content.strip()
+            
+            questions = json.loads(content)
+            
+            # Add question_type to each question
+            for q in questions:
+                q['question_type'] = question_type
+                if question_type == 'written':
+                    q['options'] = {}
+                    q['correct_option'] = ''
+            
+            return questions
+            
+        except Exception as e:
+            print(f"Error generating OpenAI questions: {e}")
+            # Fallback to sample questions
+            return self._get_fallback_questions(genre_name, count, question_type)
+    
+    def _get_fallback_questions(self, genre_name: str, count: int, question_type: str) -> List[Dict]:
+        """
+        Fallback sample questions if OpenAI fails
+        """
+        samples_mc = {
             "General Knowledge": [
                 {
                     "question": "What is the capital of France?",
                     "answer": "Paris",
+                    "options": {"A": "Paris", "B": "London", "C": "Berlin", "D": "Madrid"},
+                    "correct_option": "A",
+                    "question_type": "multiple_choice",
                     "alternative_answers": [],
                     "difficulty": "easy",
                     "fun_fact": "Paris is known as the City of Light",
                     "hints": "City of Light"
+                },
+                {
+                    "question": "Which planet is known as the Red Planet?",
+                    "answer": "Mars",
+                    "options": {"A": "Venus", "B": "Mars", "C": "Jupiter", "D": "Saturn"},
+                    "correct_option": "B",
+                    "question_type": "multiple_choice",
+                    "difficulty": "easy",
+                    "fun_fact": "Mars appears red because of iron oxide on its surface",
+                    "hints": "Fourth planet from the Sun"
                 },
             ],
             "Pop Music": [
                 {
                     "question": "Who sang 'Thriller'?",
                     "answer": "Michael Jackson",
+                    "options": {"A": "Prince", "B": "Michael Jackson", "C": "Madonna", "D": "Stevie Wonder"},
+                    "correct_option": "B",
+                    "question_type": "multiple_choice",
                     "alternative_answers": ["MJ"],
                     "difficulty": "easy",
                     "fun_fact": "Thriller is the best-selling album of all time",
@@ -239,14 +394,45 @@ Generate exactly {num_questions} questions now.
             ],
         }
         
-        base_questions = samples.get(genre_name, samples["General Knowledge"])
+        samples_written = {
+            "General Knowledge": [
+                {
+                    "question": "Name any European capital city",
+                    "answer": "Various (Paris, London, Berlin, etc.)",
+                    "question_type": "written",
+                    "alternative_answers": ["Paris", "London", "Berlin", "Madrid", "Rome"],
+                    "difficulty": "easy",
+                    "fun_fact": "Europe has over 40 capital cities",
+                    "hints": "Think of major European cities"
+                },
+            ],
+            "Pop Music": [
+                {
+                    "question": "Name a Beatles song",
+                    "answer": "Various Beatles songs",
+                    "question_type": "written",
+                    "alternative_answers": ["Hey Jude", "Let It Be", "Yesterday", "Help"],
+                    "difficulty": "easy",
+                    "fun_fact": "The Beatles have the most number-one hits in history",
+                    "hints": "They were from Liverpool"
+                },
+            ],
+        }
         
-        # Duplicar/modificar para llenar el count
-        questions = []
-        for i in range(count):
-            q = base_questions[i % len(base_questions)].copy()
-            q["question_number"] = i + 1
-            questions.append(q)
+        base_questions_mc = samples_mc.get(genre_name, samples_mc["General Knowledge"])
+        base_questions_written = samples_written.get(genre_name, samples_written["General Knowledge"])
+        
+        # Return questions of the requested type
+        if question_type == 'multiple_choice':
+            questions = []
+            for i in range(count):
+                q = base_questions_mc[i % len(base_questions_mc)].copy()
+                questions.append(q)
+        else:  # written
+            questions = []
+            for i in range(count):
+                q = base_questions_written[i % len(base_questions_written)].copy()
+                questions.append(q)
         
         return questions
 
