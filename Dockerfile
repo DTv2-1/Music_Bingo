@@ -32,8 +32,8 @@ echo ""\n\
 echo "📋 Registered URL patterns:"\n\
 python manage.py show_urls 2>/dev/null || python -c "from django.core.management import execute_from_command_line; import sys; sys.argv = [\"manage.py\", \"shell\", \"-c\", \"from django.urls import get_resolver; [print(p.pattern) for p in get_resolver().url_patterns]\"]" || echo "Could not list URLs"\n\
 echo ""\n\
-echo "🚀 Starting gunicorn..."\n\
-exec gunicorn --workers 1 --bind 0.0.0.0:8080 --timeout 120 --access-logfile - --error-logfile - --log-level info wsgi:application' > /app/start.sh \
+echo "🚀 Starting Granian (Rust-powered server)..."\n\
+exec granian --interface wsgi --host 0.0.0.0 --port 8080 --workers 2 --threads 4 --http2 --log-level info wsgi:application' > /app/start.sh \
     && chmod +x /app/start.sh
 
 # Run gunicorn with 1 worker (required for in-memory task storage) and 120s timeout
