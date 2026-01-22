@@ -5,14 +5,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register Your Team - Perfect DJ Quiz</title>
+    
+    <!-- Resource Hints: Establish HTTP/2 connection early -->
+    <link rel="preconnect" href="https://music-bingo-x7qwu.ondigitalocean.app" crossorigin>
+    <link rel="dns-prefetch" href="https://music-bingo-x7qwu.ondigitalocean.app">
+    
+    <!-- Warmup connection BEFORE other scripts -->
     <script>
-        // Warm up the HTTP/2 connection immediately by making a lightweight request
-        (async function warmupConnection() {
+        // 🔥 GLOBAL WARMUP PROMISE - Establishes HTTP/2 connection early
+        window.connectionWarmup = (async function() {
+            const start = performance.now();
             try {
-                await fetch('/api/health', { method: 'HEAD' });
-                console.log('✅ HTTP/2 connection warmed up');
-            } catch (e) {
-                console.log('⚠️ Connection warmup failed:', e.message);
+                await fetch('/api/health', { 
+                    method: 'HEAD',  // Lighter than GET
+                    cache: 'no-store',
+                    credentials: 'same-origin'
+                });
+                const duration = performance.now() - start;
+                console.log(`✅ HTTP/2 warmed up in ${duration.toFixed(0)}ms`);
+                return true;
+            } catch (err) {
+                console.warn('⚠️ Warmup failed (non-critical):', err.message);
+                return false;
             }
         })();
     </script>
@@ -687,15 +701,23 @@
         let selectedOption = null; // For multiple choice questions
 
         async function init() {
+            console.time('init-total');
             console.log('🚀 Initializing... teamId:', teamId, 'SESSION_ID:', SESSION_ID);
+            
+            // ⏳ CRITICAL: Wait for warmup to complete
+            console.log('⏳ Waiting for connection warmup...');
+            const warmedUp = await window.connectionWarmup;
+            console.log('🚀 Warmup complete, proceeding with init...');
+            
             if (teamId) {
                 console.log('✅ Team already registered, showing game');
                 showGame();
+                console.timeEnd('init-total');
             } else {
                 console.log('📝 No team registered, showing registration form');
                 console.log('🔗 Fetching session details from:', `${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
                 try {
-                    console.log('⏳ Starting fetch...');
+                    console.time('fetch-details');
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => {
                         console.error('⏰ Fetch timeout after 30 seconds!');
@@ -705,11 +727,10 @@
                     const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`, {
                         signal: controller.signal,
                         cache: 'no-cache',
-                        headers: {
-                            'Connection': 'keep-alive'
-                        }
+                        credentials: 'same-origin'
                     });
                     clearTimeout(timeoutId);
+                    console.timeEnd('fetch-details');
                     console.log('📡 Response received! Status:', response.status, response.statusText);
 
                     if (!response.ok) {
@@ -740,6 +761,7 @@
                     if (savedTeamName) {
                         await checkExistingTeam(savedTeamName);
                     }
+                    console.timeEnd('init-total');
                 } catch (error) {
                     console.error('❌ ERROR loading session details:', error);
                     console.error('❌ Error name:', error.name);
@@ -748,6 +770,7 @@
 
                     // Show error to user
                     alert(`Error loading quiz: ${error.message}\n\nPlease check the console for details.`);
+                    console.timeEnd('init-total');
                 }
             }
         }

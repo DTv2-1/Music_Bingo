@@ -5,9 +5,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pub Quiz Host - Perfect DJ</title>
-    <!-- Preconnect to API to warm up HTTP/2 connection -->
-    <link rel="preconnect" href="/api" crossorigin>
-    <link rel="dns-prefetch" href="/api">
+    
+    <!-- Resource Hints: Establish HTTP/2 connection early -->
+    <link rel="preconnect" href="https://music-bingo-x7qwu.ondigitalocean.app" crossorigin>
+    <link rel="dns-prefetch" href="https://music-bingo-x7qwu.ondigitalocean.app">
+    
+    <!-- Warmup connection BEFORE other scripts -->
+    <script>
+        // 🔥 GLOBAL WARMUP PROMISE - Establishes HTTP/2 connection early
+        window.connectionWarmup = (async function() {
+            const start = performance.now();
+            try {
+                await fetch('/api/health', { 
+                    method: 'HEAD',
+                    cache: 'no-store',
+                    credentials: 'same-origin'
+                });
+                const duration = performance.now() - start;
+                console.log(`✅ HTTP/2 warmed up in ${duration.toFixed(0)}ms`);
+                return true;
+            } catch (err) {
+                console.warn('⚠️ Warmup failed (non-critical):', err.message);
+                return false;
+            }
+        })();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         :root {
@@ -550,20 +572,6 @@
     </div>
 
     <script>
-        // 🔥 WARM UP HTTP/2 CONNECTION - Make a quick health check to establish connection early
-        console.log('🔥 Warming up HTTP/2 connection...');
-        fetch('/api/health', { 
-            method: 'GET',
-            cache: 'no-store',
-            priority: 'high'
-        }).then(() => {
-            console.log('✅ HTTP/2 connection warmed up');
-        }).catch(err => {
-            console.log('⚠️ Health check failed (non-critical):', err.message);
-        });
-    </script>
-    
-    <script>
         // Get SESSION_ID from URL query parameter or pathname
         function getSessionId() {
             // Try query parameter first: ?session=123
@@ -863,15 +871,28 @@
 
         // Fetch initial data
         async function init() {
+            console.time('init-total');
+            
+            // ⏳ CRITICAL: Wait for warmup to complete
+            console.log('⏳ Waiting for connection warmup...');
+            const warmedUp = await window.connectionWarmup;
+            console.log('🚀 Warmup complete, proceeding with init...');
+            
             if (!SESSION_ID) {
                 // Redirect to session manager
                 if (confirm('No session selected. Go to Session Manager to create or select a quiz?')) {
                     window.location.href = '/pub-quiz-sessions.html';
                 }
+                console.timeEnd('init-total');
                 return;
             }
             try {
-                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-data`);
+                console.time('fetch-host-data');
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-data`, {
+                    cache: 'no-cache',
+                    credentials: 'same-origin'
+                });
+                console.timeEnd('fetch-host-data');
 
                 if (!response.ok) {
                     throw new Error(`Session not found (${response.status})`);
@@ -883,12 +904,14 @@
 
                 // Connect to SSE stream for real-time updates
                 connectHostSSE();
+                console.timeEnd('init-total');
             } catch (error) {
                 console.error('Error initializing host view:', error);
                 alert('Error loading session. Please check the session ID or create a new session.');
                 if (confirm('Go to Session Manager?')) {
                     window.location.href = '/pub-quiz-sessions.html';
                 }
+                console.timeEnd('init-total');
             }
         }
 
