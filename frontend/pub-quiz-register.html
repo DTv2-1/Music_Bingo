@@ -643,7 +643,8 @@
         console.log('   Full API URL will be:', `${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
         console.log('   localStorage key:', `pub_quiz_team_${SESSION_ID}`);
 
-        let allGenres = [];
+        // 🚀 INLINE GENRES - No HTTP request needed, loads instantly!
+        let allGenres = [{"id":1,"name":"General Knowledge","icon":"🧠","description":"Quiz questions about General Knowledge"},{"id":2,"name":"Pop Music","icon":"🎵","description":"Quiz questions about Pop Music"},{"id":3,"name":"Movies & Film","icon":"🎬","description":"Quiz questions about Movies & Film"},{"id":4,"name":"Television & Streaming Shows","icon":"📺","description":"Quiz questions about Television & Streaming Shows"},{"id":5,"name":"80s Nostalgia","icon":"📼","description":"Quiz questions about 80s Nostalgia"},{"id":6,"name":"90s Nostalgia","icon":"💿","description":"Quiz questions about 90s Nostalgia"},{"id":7,"name":"2000s Throwback","icon":"📱","description":"Quiz questions about 2000s Throwback"},{"id":8,"name":"2010s Pop Culture","icon":"📲","description":"Quiz questions about 2010s Pop Culture"},{"id":9,"name":"Current Events & News (2025-2026)","icon":"📰","description":"Quiz questions about Current Events & News (2025-2026)"},{"id":10,"name":"Sports","icon":"⚽","description":"Quiz questions about Sports"},{"id":11,"name":"Geography & World Capitals","icon":"🗺️","description":"Quiz questions about Geography & World Capitals"},{"id":12,"name":"History","icon":"📜","description":"Quiz questions about History"},{"id":13,"name":"Science & Inventions","icon":"🔬","description":"Quiz questions about Science & Inventions"},{"id":14,"name":"Food & Drink","icon":"🍔","description":"Quiz questions about Food & Drink"},{"id":15,"name":"Cocktails & Alcohol","icon":"🍸","description":"Quiz questions about Cocktails & Alcohol"},{"id":16,"name":"Celebrities & Gossip","icon":"⭐","description":"Quiz questions about Celebrities & Gossip"},{"id":17,"name":"Disney & Pixar","icon":"🏰","description":"Quiz questions about Disney & Pixar"},{"id":18,"name":"Harry Potter","icon":"⚡","description":"Quiz questions about Harry Potter"},{"id":19,"name":"Superheroes & Marvel/DC","icon":"🦸","description":"Quiz questions about Superheroes & Marvel/DC"},{"id":20,"name":"Video Games","icon":"🎮","description":"Quiz questions about Video Games"},{"id":21,"name":"Animals & Nature","icon":"🦁","description":"Quiz questions about Animals & Nature"},{"id":22,"name":"Mythology & Legends","icon":"🐉","description":"Quiz questions about Mythology & Legends"},{"id":23,"name":"Literature & Books","icon":"📚","description":"Quiz questions about Literature & Books"},{"id":24,"name":"Broadway & Musicals","icon":"🎭","description":"Quiz questions about Broadway & Musicals"},{"id":25,"name":"Art & Famous Paintings","icon":"🎨","description":"Quiz questions about Art & Famous Paintings"},{"id":26,"name":"Tech & Gadgets","icon":"💻","description":"Quiz questions about Tech & Gadgets"},{"id":27,"name":"AI & Future Tech","icon":"🤖","description":"Quiz questions about AI & Future Tech"},{"id":28,"name":"Memes & Viral Trends","icon":"😂","description":"Quiz questions about Memes & Viral Trends"},{"id":29,"name":"Picture Round","icon":"🖼️","description":"Quiz questions about Picture Round"},{"id":30,"name":"Music Round (Name That Tune)","icon":"🎼","description":"Quiz questions about Music Round (Name That Tune)"},{"id":31,"name":"Connections","icon":"🔗","description":"Quiz questions about Connections"},{"id":32,"name":"Anagrams & Wordplay","icon":"🔤","description":"Quiz questions about Anagrams & Wordplay"},{"id":33,"name":"Riddles & Brain Teasers","icon":"🧩","description":"Quiz questions about Riddles & Brain Teasers"},{"id":34,"name":"What Happened Next?","icon":"❓","description":"Quiz questions about What Happened Next?"},{"id":35,"name":"Wrong Answers Only","icon":"🤣","description":"Quiz questions about Wrong Answers Only"},{"id":36,"name":"Hidden Theme Rounds","icon":"🎯","description":"Quiz questions about Hidden Theme Rounds"},{"id":37,"name":"Slogans & Brands","icon":"™️","description":"Quiz questions about Slogans & Brands"},{"id":38,"name":"Toys & Games","icon":"🧸","description":"Quiz questions about Toys & Games"},{"id":39,"name":"Fashion & Style","icon":"👗","description":"Quiz questions about Fashion & Style"},{"id":40,"name":"Holidays & Seasonal","icon":"🎄","description":"Quiz questions about Holidays & Seasonal"},{"id":41,"name":"New York City Trivia","icon":"🗽","description":"Quiz questions about New York City Trivia"},{"id":42,"name":"Famous Quotes","icon":"💬","description":"Quiz questions about Famous Quotes"},{"id":43,"name":"True or False","icon":"✅","description":"Quiz questions about True or False"},{"id":44,"name":"Rapid Fire / Buzzer Questions","icon":"⚡","description":"Quiz questions about Rapid Fire / Buzzer Questions"},{"id":45,"name":"70s Disco & Funk","icon":"🕺","description":"Quiz questions about 70s Disco & Funk"},{"id":46,"name":"Hip-Hop & Rap","icon":"🎤","description":"Quiz questions about Hip-Hop & Rap"},{"id":47,"name":"Classic Rock","icon":"🎸","description":"Quiz questions about Classic Rock"},{"id":48,"name":"Country Music","icon":"🤠","description":"Quiz questions about Country Music"},{"id":49,"name":"Horror Movies","icon":"👻","description":"Quiz questions about Horror Movies"},{"id":50,"name":"Space & Astronomy","icon":"🚀","description":"Quiz questions about Space & Astronomy"}];
         let selectedGenres = [];
         const MAX_GENRES = 5;
         let teamId = localStorage.getItem(`pub_quiz_team_${SESSION_ID}`);
@@ -666,25 +667,22 @@
             } else {
                 console.log('📝 No team registered, showing registration form');
                 try {
-                    console.time('load-genres-static');
+                    console.time('init-genres');
                     
-                    // 🚀 LOAD GENRES FROM STATIC FILE (INSTANT!)
-                    const genresResponse = await fetch('/data/genres.json');
-                    allGenres = await genresResponse.json();
-                    console.timeEnd('load-genres-static');
-                    console.log(`✅ Loaded ${allGenres.length} genres from static file`);
+                    // ✅ Genres are already loaded inline (0ms!)
+                    console.log(`✅ ${allGenres.length} genres loaded inline (instant)`);
                     renderGenres(allGenres);
+                    console.timeEnd('init-genres');
                     
-                    // Load session info (venue name) separately - this can be slower
-                    console.time('fetch-session-info');
-                    const sessionResponse = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
-                    if (sessionResponse.ok) {
-                        const data = await sessionResponse.json();
-                        document.getElementById('venueName').innerHTML = `📍 <span class="venue-badge">${data.session.venue_name}</span>`;
-                        console.timeEnd('fetch-session-info');
-                    }
+                    // Load session info (venue name) separately - non-blocking
+                    fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`)
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById('venueName').innerHTML = `📍 <span class="venue-badge">${data.session.venue_name}</span>`;
+                        })
+                        .catch(err => console.warn('Could not load venue name:', err));
 
-                    // Detectar si hay un equipo previo guardado (por nombre, no por teamId)
+                    // Detectar si hay un equipo previo guardado
                     const savedTeamName = localStorage.getItem(`pub_quiz_team_name_${SESSION_ID}`);
                     if (savedTeamName) {
                         await checkExistingTeam(savedTeamName);
@@ -692,7 +690,6 @@
                     console.timeEnd('init-total');
                 } catch (error) {
                     console.error('❌ ERROR loading registration form:', error);
-                    alert(`Error loading quiz: ${error.message}\n\nPlease check the console for details.`);
                     console.timeEnd('init-total');
                 }
             }
@@ -846,15 +843,9 @@
             document.getElementById('successMessage').style.display = 'none';
             document.getElementById('formContainer').style.display = 'block';
 
-            // Si no hay géneros cargados, cargarlos primero
+            // Si no hay géneros cargados (no debería pasar, pero por seguridad)
             if (allGenres.length === 0) {
-                try {
-                    const response = await fetch('/data/genres.json');
-                    allGenres = await response.json();
-                    renderGenres(allGenres);
-                } catch (error) {
-                    console.error('Error loading genres:', error);
-                }
+                console.warn('⚠️ Genres not loaded, this should not happen');
             }
 
             // Cargar datos actuales del equipo
