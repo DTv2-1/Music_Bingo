@@ -369,10 +369,10 @@
 </head>
 
 <body>
-    <a href="/pub-quiz-sessions.html" style="position: fixed; top: 20px; left: 20px; z-index: 1000; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 10px; color: white; text-decoration: none; font-weight: 600; backdrop-filter: blur(10px); transition: all 0.3s ease;">
+    <a href="/pub-quiz-sessions.html"
+        style="position: fixed; top: 20px; left: 20px; z-index: 1000; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 10px; color: white; text-decoration: none; font-weight: 600; backdrop-filter: blur(10px); transition: all 0.3s ease;">
         ← Sessions
     </a>
-    
     <div class="dashboard-container">
         <!-- Left Panel: Stats & Controls -->
         <div class="side-panel">
@@ -454,7 +454,7 @@
                     <span>⏹️ End Quiz</span>
                 </button>
             </div>
-            
+
             <!-- Progress Bar for Question Generation -->
             <div id="generationProgress" style="display: none; margin-top: 15px;">
                 <div style="font-size: 0.8em; margin-bottom: 5px; opacity: 0.8;">
@@ -462,7 +462,9 @@
                     <span id="progressPercent" style="float: right;">0%</span>
                 </div>
                 <div style="height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
-                    <div id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.3s ease;"></div>
+                    <div id="progressBar"
+                        style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.3s ease;">
+                    </div>
                 </div>
             </div>
         </div>
@@ -475,9 +477,12 @@
                     <div class="question-text" id="questionText">Ready to start the Perfect DJ Experience?</div>
 
                     <div class="answer-display" id="answerDisplay">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <div style="font-size: 0.9em; opacity: 0.7; text-transform: uppercase;">Correct Answer:</div>
-                            <button onclick="speakAnswer()" class="btn btn-secondary" style="padding: 5px 15px; font-size: 0.8em;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div style="font-size: 0.9em; opacity: 0.7; text-transform: uppercase;">Correct Answer:
+                            </div>
+                            <button onclick="speakAnswer()" class="btn btn-secondary"
+                                style="padding: 5px 15px; font-size: 0.8em;">
                                 <span>🔊 Speak Answer</span>
                             </button>
                         </div>
@@ -548,59 +553,52 @@
             const urlParams = new URLSearchParams(window.location.search);
             const querySession = urlParams.get('session');
             if (querySession) return querySession;
-            
             // Try from pathname: /pub-quiz/123/host or /123
             const pathParts = window.location.pathname.split('/').filter(p => p);
             const lastPart = pathParts[pathParts.length - 1];
-            
+
             // If last part is a number, use it
             if (!isNaN(lastPart) && lastPart !== '') return lastPart;
-            
             // If second-to-last part is a number (e.g., /pub-quiz/123/host)
             if (pathParts.length >= 2 && !isNaN(pathParts[pathParts.length - 2])) {
                 return pathParts[pathParts.length - 2];
             }
-            
             // Fallback: ask user or use localStorage
             let stored = localStorage.getItem('pub_quiz_host_session');
             if (stored) return stored;
-            
             stored = prompt('Enter Quiz Session ID:');
             if (stored) {
                 localStorage.setItem('pub_quiz_host_session', stored);
                 return stored;
             }
-            
             return null;
         }
 
         const SESSION_ID = getSessionId();
-        
         // Handle BACKEND_URL properly for ingress routing
         const BASE_URL = (() => {
             const frontendUrl = `${window.location.protocol}//${window.location.host}`;
-            
+
             // Local development
             if (window.location.hostname === 'localhost') {
                 return 'http://localhost:8001';
             }
-            
+
             // Production: if BACKEND_URL matches frontend, use ingress (empty string)
-            if (window.BACKEND_URL && 
-                (window.BACKEND_URL === frontendUrl || 
-                 window.BACKEND_URL === window.location.origin)) {
+            if (window.BACKEND_URL &&
+                (window.BACKEND_URL === frontendUrl ||
+                    window.BACKEND_URL === window.location.origin)) {
                 return '';
             }
-            
+
             // If BACKEND_URL is set to something different, use it
             if (window.BACKEND_URL) {
                 return window.BACKEND_URL;
             }
-            
+
             // Default: ingress routing
             return '';
         })();
-        
         let currentQuestion = null;
         let showingAnswer = false;
         let updateInterval = null;
@@ -614,42 +612,37 @@
             if (hostEventSource) {
                 hostEventSource.close();
             }
-            
             console.log('🔌 Connecting to Host SSE stream...');
             hostEventSource = new EventSource(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-stream`);
-            
+
             hostEventSource.onopen = () => {
                 console.log('✅ Host SSE Connected');
             };
-            
             hostEventSource.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
                     console.log('📨 Host SSE Message:', data.type);
-                    
-                    switch(data.type) {
+
+                    switch (data.type) {
                         case 'connected':
                             console.log(`Connected to session ${data.session_id}`);
                             break;
-                        
                         case 'generation_progress':
                             // Update progress bar
                             updateGenerationProgress(data.progress, data.status);
                             break;
-                            
                         case 'host_update':
                             // Update stats
                             updateStatsFromSSE(data.stats);
-                            
+
                             // Update leaderboard
                             updateLeaderboardFromSSE(data.leaderboard);
-                            
                             // Update current question if available
                             if (data.question) {
                                 updateQuestionFromSSE(data.question, data.stats.status);
                             }
                             break;
-                            
+
                         case 'ended':
                             console.log('Session completed');
                             if (hostEventSource) {
@@ -657,7 +650,7 @@
                                 hostEventSource = null;
                             }
                             break;
-                            
+
                         case 'error':
                             console.error('Host SSE Error:', data.message);
                             break;
@@ -666,14 +659,12 @@
                     console.error('Error parsing Host SSE message:', error);
                 }
             };
-            
             hostEventSource.onerror = (error) => {
                 console.error('❌ Host SSE Connection error:', error);
                 if (hostEventSource) {
                     hostEventSource.close();
                     hostEventSource = null;
                 }
-                
                 // Retry connection after 5 seconds
                 console.log('Retrying Host SSE connection in 5 seconds...');
                 setTimeout(() => {
@@ -689,15 +680,13 @@
             const progressBar = document.getElementById('progressBar');
             const progressStatus = document.getElementById('progressStatus');
             const progressPercent = document.getElementById('progressPercent');
-            
             // Show progress bar
             progressDiv.style.display = 'block';
-            
             // Update progress
             progressBar.style.width = progress + '%';
             progressStatus.textContent = status;
             progressPercent.textContent = progress + '%';
-            
+
             // Hide when complete
             if (progress >= 100) {
                 setTimeout(() => {
@@ -713,18 +702,16 @@
             document.getElementById('statRound').textContent = stats.current_round;
             document.getElementById('statTotalRounds').textContent = stats.total_rounds;
             // statFollowers no viene en stats
-            
             const statusBadge = document.getElementById('statusBadge');
             statusBadge.textContent = stats.status.toUpperCase().replace('_', ' ');
             statusBadge.className = `status-badge ${stats.status}`;
-            
             // Update progress bar
             const totalQuestions = stats.total_rounds * stats.questions_per_round;
             const answeredQuestions = ((stats.current_round - 1) * stats.questions_per_round) + (stats.current_question - 1);
             const percentage = Math.min(100, Math.round((answeredQuestions / totalQuestions) * 100));
             document.getElementById('progressBarFill').style.width = `${percentage}%`;
             document.getElementById('progressText').textContent = `${percentage}%`;
-            
+
             questionsGenerated = stats.questions_generated;
             updateButtonStates(stats.status);
         }
@@ -754,19 +741,17 @@
                 number: question.number,
                 status: status
             });
-            
             // Check if this is a new question
             const isNewQuestion = !currentQuestion || currentQuestion.id !== question.id;
-            
+
             currentQuestion = question;
             const wasShowingAnswer = showingAnswer;
             showingAnswer = (status === 'revealing_answer');
-            
+
             document.getElementById('questionText').textContent = question.text;
             document.getElementById('currentGenre').textContent = `Round ${question.round} - Q${question.number} (${question.points}pts)`;
-            
+
             const answerDiv = document.getElementById('answerDisplay');
-            
             // Only update answer display if it's a new question or status changed
             if (isNewQuestion || showingAnswer !== wasShowingAnswer) {
                 if (showingAnswer && question.answer) {
@@ -780,14 +765,14 @@
                     document.getElementById('btnShowAnswer').innerHTML = '<span>👁️ Show Answer</span>';
                 }
             }
-            
+
             // Auto-play TTS for new questions (not when revealing answer, not during welcome)
             if (isNewQuestion && !showingAnswer && !isPlayingWelcomeMessage && question.id !== lastSpokenQuestionId) {
                 lastSpokenQuestionId = question.id;
                 console.log('[TTS] Auto-playing question:', question.text);
                 playTTS(question.text, 'daniel');
             }
-            
+
             console.log('[SSE_UPDATE] ✅ Question display updated');
         }
 
@@ -803,7 +788,7 @@
 
             console.log(`[BUTTON_CONTROL] Updating buttons for status: ${status}, questionsGenerated: ${questionsGenerated}`);
 
-            switch(status) {
+            switch (status) {
                 case 'registration':
                     // Phase 1: REGISTRATION - only QR and Generate are available
                     btnStart.disabled = true;
@@ -868,21 +853,19 @@
                 }
                 return;
             }
-            
             try {
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-data`);
-                
+
                 if (!response.ok) {
                     throw new Error(`Session not found (${response.status})`);
                 }
-                
+
                 const data = await response.json();
 
                 document.getElementById('venueName').textContent = data.session.venue_name;
-                
+
                 // Connect to SSE stream for real-time updates
                 connectHostSSE();
-                
             } catch (error) {
                 console.error('Error initializing host view:', error);
                 alert('Error loading session. Please check the session ID or create a new session.');
@@ -902,7 +885,7 @@
                 alert('⚠️ Please generate questions first by clicking the "🔄 Generate" button!');
                 return;
             }
-            
+
             try {
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start`, {
                     method: 'POST'
@@ -913,24 +896,20 @@
                     document.getElementById('btnStart').disabled = true;
                     document.getElementById('btnShowAnswer').disabled = false;
                     document.getElementById('btnNext').disabled = false;
-                    
                     // Bloquear TTS automático de preguntas durante el mensaje de bienvenida
                     isPlayingWelcomeMessage = true;
-                    
                     // Reproducir mensaje de bienvenida primero
                     if (data.welcome_message) {
                         await playTTS(data.welcome_message, 'daniel');
                     }
-                    
                     // Desbloquear TTS automático
                     isPlayingWelcomeMessage = false;
-                    
                     // Reproducir la primera pregunta si ya está disponible
                     if (currentQuestion) {
                         lastSpokenQuestionId = currentQuestion.id;
                         await playTTS(currentQuestion.text, 'daniel');
                     }
-                    
+
                     console.log('✅ Quiz started - SSE will update the question display');
                 } else {
                     alert('Error: ' + (data.error || 'Could not start quiz'));
@@ -951,15 +930,13 @@
                 document.getElementById('progressBar').style.width = '0%';
                 document.getElementById('progressStatus').textContent = 'Starting generation...';
                 document.getElementById('progressPercent').textContent = '0%';
-                
                 const includeMultipleChoice = document.getElementById('includeMultipleChoice').checked;
                 const includeWritten = document.getElementById('includeWritten').checked;
-                
                 if (!includeMultipleChoice && !includeWritten) {
                     alert('Please select at least one question type!');
                     return;
                 }
-                
+
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/generate-questions`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -969,13 +946,15 @@
                     })
                 });
                 const data = await response.json();
-                
+
+                console.log('[GENERATE] Response:', response.status, data);
+
                 console.log('[GENERATE] Response:', response.status, data);
 
                 if (data.success) {
                     questionsGenerated = true;
                     alert(`Quiz generated! Genres: ${data.selected_genres.join(', ')}`);
-                    
+
                     // El SSE actualizará automáticamente los stats y botones
                     console.log('✅ Questions generated - SSE will update the display');
                 } else {
@@ -989,23 +968,21 @@
 
         async function loadCurrentQuestion() {
             console.log(`[LOAD_QUESTION] Loading current question from session data`);
-            
+
             try {
                 // Get session data instead of current-question endpoint
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-data`);
                 console.log(`[LOAD_QUESTION] Response status: ${response.status}`);
-                
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
-                
                 const data = await response.json();
                 const session = data.session;
 
                 // Check if there are questions
                 if (!data.questions || data.questions.length === 0) {
                     console.log('[LOAD_QUESTION] 📝 No questions yet - showing registration phase message');
-                    document.getElementById('questionText').innerHTML = 
+                    document.getElementById('questionText').innerHTML =
                         '📝 Registration Phase<br><br>' +
                         '<small style="font-size: 0.5em; opacity: 0.8; line-height: 1.6;">' +
                         '1️⃣ Teams register and vote for genres<br>' +
@@ -1017,8 +994,8 @@
                 }
 
                 // Find current question based on session.current_round and session.current_question
-                const question = data.questions.find(q => 
-                    q.round_number === session.current_round && 
+                const question = data.questions.find(q =>
+                    q.round_number === session.current_round &&
                     q.question_number === session.current_question
                 );
 
@@ -1075,7 +1052,7 @@
         async function playTTS(text, voiceId) {
             const txt = text || document.getElementById('questionText').textContent;
             const voice = voiceId || document.getElementById('ttsVoice').value;
-            
+
             return new Promise(async (resolve, reject) => {
                 try {
                     const response = await fetch(`${BASE_URL}/api/pub-quiz/tts`, {
@@ -1083,23 +1060,23 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ text: txt, voice_id: voice })
                     });
-                    
+
                     if (response.ok) {
                         const audioBlob = await response.blob();
                         const audioUrl = URL.createObjectURL(audioBlob);
                         const audio = new Audio(audioUrl);
-                        
+
                         // Wait for audio to finish playing
                         audio.onended = () => {
                             URL.revokeObjectURL(audioUrl);
                             resolve();
                         };
-                        
+
                         audio.onerror = (e) => {
                             console.error('Audio playback error:', e);
                             reject(e);
                         };
-                        
+
                         audio.play();
                     } else {
                         console.error('TTS failed:', response.status);
@@ -1136,12 +1113,10 @@
         async function speakAnswer() {
             const answer = document.getElementById('correctAnswer').textContent;
             const funFact = document.getElementById('funFact').textContent;
-            
             if (answer && answer !== '-') {
-                const textToSpeak = funFact 
+                const textToSpeak = funFact
                     ? `The correct answer is: ${answer}. ${funFact}`
                     : `The correct answer is: ${answer}`;
-                
                 await playTTS(textToSpeak, 'daniel');
             }
         }
@@ -1217,13 +1192,11 @@
         function showQR() {
             const qrContainer = document.getElementById('qrcode');
             const urlDisplay = document.getElementById('qrUrl');
-            
             // Build the registration URL with session parameter
             const registrationUrl = `${window.location.origin}/pub-quiz-register.html?session=${SESSION_ID}`;
-            
+
             // Clear previous QR code
             qrContainer.innerHTML = '';
-            
             // Generate new QR code
             new QRCode(qrContainer, {
                 text: registrationUrl,
@@ -1233,10 +1206,8 @@
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
             });
-            
             // Display URL
             urlDisplay.textContent = registrationUrl;
-            
             // Show modal
             document.getElementById('qrModal').style.display = 'flex';
         }
@@ -1249,13 +1220,13 @@
             if (!confirm('⚠️ Are you sure you want to RESET the entire quiz? This will:\n\n- Delete all questions\n- Delete all answers\n- Reset all team scores to 0\n- Return to REGISTRATION status\n\nThis action CANNOT be undone!')) {
                 return;
             }
-            
+
             try {
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/reset`, {
                     method: 'POST'
                 });
                 const data = await response.json();
-                
+
                 if (data.success) {
                     alert('✅ Quiz reset successfully! Reloading page...');
                     window.location.reload();

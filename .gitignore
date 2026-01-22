@@ -22,7 +22,7 @@ data/logos/*.jpeg
 data/logos/*.svg
 data/logos/*.gif
 data/logos/*.webp
-
+do.json
 # Keep example files
 !data/announcements.json
 !data/cards/.gitkeep
@@ -32,6 +32,7 @@ data/logos/*.webp
 .env
 .env.local
 .env.production
+.env.dotoken
 backend/.env
 frontend/.env
 
@@ -72,3 +73,6 @@ htmlcov/
 api_keys.txt
 secrets.json
 credentials.json
+
+# Project CLI
+do.py

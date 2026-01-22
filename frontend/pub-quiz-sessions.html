@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -297,6 +298,7 @@
     </style>
     <script src="/config.js"></script>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -361,7 +363,8 @@
                     </select>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="hideCreateModal()" style="flex: 1;">Cancel</button>
+                    <button type="button" class="btn btn-secondary" onclick="hideCreateModal()"
+                        style="flex: 1;">Cancel</button>
                     <button type="submit" class="btn btn-primary" style="flex: 2;">🚀 Create & Start</button>
                 </div>
             </form>
@@ -369,7 +372,24 @@
     </div>
 
     <script>
-        const BASE_URL = window.BACKEND_URL || (window.location.hostname === 'localhost' ? 'http://localhost:8001' : '');
+        const BASE_URL = (() => {
+            const frontendUrl = `${window.location.protocol}//${window.location.host}`;
+
+            // Check if already set by server-side injection
+            if (window.BACKEND_URL) {
+                if (window.BACKEND_URL === frontendUrl || window.BACKEND_URL === window.location.origin) {
+                    return ''; // Use relative paths for ingress
+                }
+                return window.BACKEND_URL;
+            }
+
+            // Local development
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                return 'http://localhost:8001';
+            }
+
+            return '';
+        })();
         let currentFilter = 'all';
 
         // Load sessions on page load
@@ -392,13 +412,13 @@
 
         async function loadSessions() {
             try {
-                const url = currentFilter === 'all' 
+                const url = currentFilter === 'all'
                     ? `${BASE_URL}/api/pub-quiz/sessions`
                     : `${BASE_URL}/api/pub-quiz/sessions?status=${currentFilter}`;
-                
+
                 const response = await fetch(url);
                 const data = await response.json();
-                
+
                 displaySessions(data.sessions || []);
             } catch (error) {
                 console.error('Error loading sessions:', error);
@@ -420,14 +440,14 @@
 
             container.innerHTML = sessions.map(session => {
                 const date = new Date(session.date);
-                const dateStr = date.toLocaleDateString('es-ES', { 
-                    day: 'numeric', 
+                const dateStr = date.toLocaleDateString('es-ES', {
+                    day: 'numeric',
                     month: 'short',
                     hour: '2-digit',
                     minute: '2-digit'
                 });
 
-                const progress = session.total_rounds > 0 
+                const progress = session.total_rounds > 0
                     ? `${session.current_round}/${session.total_rounds}`
                     : '0/0';
 
@@ -490,14 +510,14 @@
 
         async function createSession(event) {
             event.preventDefault();
-            
+
             const submitBtn = event.target.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
-            
+
             // Mostrar loading
             submitBtn.disabled = true;
             submitBtn.innerHTML = '⏳ Creating Session...';
-            
+
             const formData = {
                 venue_name: document.getElementById('venueName').value,
                 host_name: document.getElementById('hostName').value || 'Perfect DJ',
@@ -517,7 +537,7 @@
 
                 if (data.success) {
                     submitBtn.innerHTML = '✅ Session Created!';
-                    
+
                     // Pequeño delay para mostrar el mensaje
                     setTimeout(() => {
                         hideCreateModal();
@@ -550,4 +570,5 @@
         }
     </script>
 </body>
+
 </html>

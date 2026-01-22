@@ -5,25 +5,22 @@
 
 // Detect backend URL
 const BACKEND_URL = (() => {
-    // Local development
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        return 'http://localhost:8001';
-    }
-    
-    // Production with App Platform ingress
-    // If window.BACKEND_URL is set and equals the frontend URL, use empty string for ingress routing
-    // Otherwise, use the injected value (for cases where backend has different domain)
+    // Check if already set by server-side injection
     if (window.BACKEND_URL) {
         const frontendUrl = `${window.location.protocol}//${window.location.host}`;
+        // If BACKEND_URL is equal to the URL of the frontend, use relative paths
         if (window.BACKEND_URL === frontendUrl || window.BACKEND_URL === window.location.origin) {
-            // Backend URL same as frontend = using ingress rules
             return '';
         }
         return window.BACKEND_URL;
     }
-    
-    // Default: Production with App Platform ingress - use empty string for relative paths
-    // Digital Ocean App Platform routes /api/* to backend automatically
+
+    // Local development
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:8001';
+    }
+
+    // Production default fallback - use empty string for relative paths
     return '';
 })();
 
@@ -36,24 +33,24 @@ const CONFIG = {
     // Backend API URL
     API_URL: BACKEND_URL,
     BACKEND_URL: BACKEND_URL,
-    
+
     // ElevenLabs API (not used in frontend, kept for compatibility)
     ELEVENLABS_API_KEY: '',
     VOICE_ID: '21m00Tcm4TlvDq8ikWAM',
-    
+
     // Game settings
     PREVIEW_DURATION_MS: 15000,  // 15 seconds of song preview
     AUTO_NEXT_DELAY_MS: 15000,   // 15 seconds between songs
-    
+
     // Audio settings
     BACKGROUND_MUSIC_VOLUME: 0.15,  // Background music volume (15%)
     TTS_VOLUME: 1.0,  // TTS announcement volume (100%)
     BACKGROUND_MUSIC_URL: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-    
+
     // Data files
     POOL_FILE: '../data/pool.json',
     ANNOUNCEMENTS_FILE: '../data/announcements.json',
-    
+
     // Debug
     DEBUG_MODE: false
 };
