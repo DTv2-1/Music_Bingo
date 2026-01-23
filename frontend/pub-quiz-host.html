@@ -961,48 +961,72 @@
         }
 
         async function generateQuestions() {
-            if (!confirm('Generate quiz questions based on team votes?')) return;
+            console.log('🎯 [FE_GENERATE] Button clicked - starting generation process');
+            
+            if (!confirm('Generate quiz questions based on team votes?')) {
+                console.log('❌ [FE_GENERATE] User cancelled');
+                return;
+            }
 
             try {
+                console.log('📊 [FE_GENERATE] Checking question type preferences...');
+                const includeMultipleChoice = document.getElementById('includeMultipleChoice').checked;
+                const includeWritten = document.getElementById('includeWritten').checked;
+                console.log(`   - Multiple Choice: ${includeMultipleChoice}`);
+                console.log(`   - Written: ${includeWritten}`);
+                
+                if (!includeMultipleChoice && !includeWritten) {
+                    console.error('❌ [FE_GENERATE] No question types selected');
+                    alert('Please select at least one question type!');
+                    return;
+                }
+
                 // Show progress bar initially
+                console.log('📈 [FE_GENERATE] Showing progress bar...');
                 const progressDiv = document.getElementById('generationProgress');
                 progressDiv.style.display = 'block';
                 document.getElementById('progressBar').style.width = '0%';
                 document.getElementById('progressStatus').textContent = 'Starting generation...';
                 document.getElementById('progressPercent').textContent = '0%';
-                const includeMultipleChoice = document.getElementById('includeMultipleChoice').checked;
-                const includeWritten = document.getElementById('includeWritten').checked;
-                if (!includeMultipleChoice && !includeWritten) {
-                    alert('Please select at least one question type!');
-                    return;
-                }
 
+                const requestBody = {
+                    include_multiple_choice: includeMultipleChoice,
+                    include_written: includeWritten
+                };
+                console.log('📤 [FE_GENERATE] Sending POST request to backend:', requestBody);
+                console.log(`   URL: ${BASE_URL}/api/pub-quiz/${SESSION_ID}/generate-questions`);
+
+                const startTime = performance.now();
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/generate-questions`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        include_multiple_choice: includeMultipleChoice,
-                        include_written: includeWritten
-                    })
+                    body: JSON.stringify(requestBody)
                 });
+                const responseTime = performance.now() - startTime;
+                
+                console.log(`📥 [FE_GENERATE] Response received in ${responseTime.toFixed(0)}ms`);
+                console.log(`   Status: ${response.status} ${response.statusText}`);
+                
                 const data = await response.json();
-
-                console.log('[GENERATE] Response:', response.status, data);
-
-                console.log('[GENERATE] Response:', response.status, data);
+                console.log('📦 [FE_GENERATE] Response data:', data);
 
                 if (data.success) {
+                    console.log('✅ [FE_GENERATE] Generation successful!');
+                    console.log(`   Selected genres: ${data.selected_genres.join(', ')}`);
                     questionsGenerated = true;
                     alert(`Quiz generated! Genres: ${data.selected_genres.join(', ')}`);
 
                     // El SSE actualizará automáticamente los stats y botones
-                    console.log('✅ Questions generated - SSE will update the display');
+                    console.log('🔄 [FE_GENERATE] Waiting for SSE to update display...');
                 } else {
+                    console.error('❌ [FE_GENERATE] Generation failed:', data.error);
                     alert('Error: ' + data.error);
                 }
             } catch (error) {
-                console.error('Error generating questions:', error);
-                alert('Error generating questions');
+                console.error('❌ [FE_GENERATE] Exception caught:', error);
+                console.error('   Error message:', error.message);
+                console.error('   Error stack:', error.stack);
+                alert('Error generating questions: ' + error.message);
             }
         }
 

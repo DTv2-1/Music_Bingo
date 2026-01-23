@@ -286,9 +286,14 @@ def generate_qr_code(request, session_id):
 def generate_quiz_questions(request, session_id):
     """Genera preguntas para el quiz basado en votación de géneros"""
     from django.core.cache import cache
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"🎯 [GENERATE_QUESTIONS] Starting generation for session {session_id}")
     
     try:
         session = get_object_or_404(PubQuizSession, id=session_id)
+        logger.info(f"✅ [GENERATE_QUESTIONS] Session found: {session.session_code}, rounds: {session.total_rounds}, questions/round: {session.questions_per_round}")
         
         # Initialize progress
         cache.set(f'quiz_generation_progress_{session_id}', {'progress': 0, 'status': 'starting'}, 300)
@@ -296,6 +301,7 @@ def generate_quiz_questions(request, session_id):
         # Get question type preferences from request body (DRF parses automatically)
         include_mc = request.data.get('include_multiple_choice', True)
         include_written = request.data.get('include_written', True)
+        logger.info(f"📋 [GENERATE_QUESTIONS] Question types - Multiple Choice: {include_mc}, Written: {include_written}")
         
         # Calculate ratios
         question_types = {}
@@ -314,10 +320,12 @@ def generate_quiz_questions(request, session_id):
         ).order_by('-vote_count')
         
         votes_dict = {v['genre_id']: v['vote_count'] for v in genre_votes}
+        logger.info(f"🗳️ [GENERATE_QUESTIONS] Genre votes collected: {len(votes_dict)} genres voted")
         
         # Usar generador para seleccionar géneros
         generator = PubQuizGenerator()
         selected_genres = generator.select_genres_by_votes(votes_dict, session.total_rounds)
+        logger.info(f"✅ [GENERATE_QUESTIONS] Selected {len(selected_genres)} genres: {[g['name'] for g in selected_genres]}")
         
         cache.set(f'quiz_generation_progress_{session_id}', {'progress': 10, 'status': 'Selecting genres...'}, 300)
         
@@ -355,6 +363,7 @@ def generate_quiz_questions(request, session_id):
             })
         
         cache.set(f'quiz_generation_progress_{session_id}', {'progress': 30, 'status': 'Generating all questions (this may take 1-2 minutes)...'}, 300)
+        logger.info(f"🤖 [GENERATE_QUESTIONS] Starting parallel question generation for {len(rounds_to_generate)} rounds")
         
         # Generar todas las preguntas en paralelo usando threading
         from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -390,7 +399,9 @@ def generate_quiz_questions(request, session_id):
         
         # Save all questions to database
         cache.set(f'quiz_generation_progress_{session_id}', {'progress': 92, 'status': 'Saving questions to database...'}, 300)
+        logger.info(f"💾 [GENERATE_QUESTIONS] Saving questions to database...")
         
+        total_questions_saved = 0
         for round_data in all_round_questions:
             for q_data in round_data['questions']:
                 QuizQuestion.objects.create(
@@ -408,12 +419,15 @@ def generate_quiz_questions(request, session_id):
                     fun_fact=q_data.get('fun_fact', ''),
                     hints=q_data.get('hints', ''),
                 )
+                total_questions_saved += 1
         
+        logger.info(f"✅ [GENERATE_QUESTIONS] Saved {total_questions_saved} questions to database")
         cache.set(f'quiz_generation_progress_{session_id}', {'progress': 90, 'status': 'Finalizing quiz...'}, 300)
         
         # Actualizar estado de sesión
         session.status = 'ready'
         session.save()
+        logger.info(f"✅ [GENERATE_QUESTIONS] Session status updated to 'ready'")
         
         # Agregar géneros seleccionados a la sesión
         for genre_data in selected_genres:
@@ -421,6 +435,7 @@ def generate_quiz_questions(request, session_id):
             session.selected_genres.add(genre)
         
         cache.set(f'quiz_generation_progress_{session_id}', {'progress': 100, 'status': 'Complete!'}, 300)
+        logger.info(f"🎉 [GENERATE_QUESTIONS] Quiz generation completed successfully!")
         
         return Response({
             'success': True,
@@ -430,6 +445,7 @@ def generate_quiz_questions(request, session_id):
         })
     
     except Exception as e:
+        logger.error(f"❌ [GENERATE_QUESTIONS] Error: {str(e)}", exc_info=True)
         cache.delete(f'quiz_generation_progress_{session_id}')
         return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
