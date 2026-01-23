@@ -77,7 +77,7 @@ class PubQuizSession(models.Model):
         verbose_name_plural = "Pub Quiz Sessions"
     
     def save(self, *args, **kwargs):
-        if not self.session_code:
+        if not self.session_code or self.session_code == 'TEMP0000':
             # Generate unique 8-character alphanumeric code (uppercase)
             while True:
                 code = secrets.token_urlsafe(6)[:8].upper().replace('-', '0').replace('_', '1')
