@@ -676,9 +676,19 @@
                     
                     // Load session info (venue name) separately - non-blocking
                     fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`)
-                        .then(response => response.json())
+                        .then(response => {
+                            if (!response.ok) {
+                                if (response.status === 404) {
+                                    throw new Error('Session not found');
+                                }
+                                throw new Error(`HTTP ${response.status}`);
+                            }
+                            return response.json();
+                        })
                         .then(data => {
-                            document.getElementById('venueName').innerHTML = `📍 <span class="venue-badge">${data.session.venue_name}</span>`;
+                            if (data && data.session && data.session.venue_name) {
+                                document.getElementById('venueName').innerHTML = `📍 <span class="venue-badge">${data.session.venue_name}</span>`;
+                            }
                         })
                         .catch(err => console.warn('Could not load venue name:', err));
 
@@ -787,9 +797,26 @@
         async function checkSessionStatus() {
             try {
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        showScreen('waitingScreen');
+                        alert('This quiz session does not exist or has been deleted.');
+                        setTimeout(() => window.location.href = '/pub-quiz-sessions.html', 2000);
+                        return;
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                
+                if (!data || !data.session) {
+                    throw new Error('Invalid session data received');
+                }
+                
                 const status = data.session.status;
                 console.log(`Session status: ${status}`);
+                
                 if (status === 'in_progress' || status === 'halftime' || status === 'revealing_answer') {
                     // Quiz is active - connect to SSE
                     connectSSE();
@@ -803,6 +830,8 @@
                 }
             } catch (error) {
                 console.error('Error checking session status:', error);
+                showScreen('waitingScreen');
+                alert('Error loading quiz session: ' + error.message);
             }
         }
 
@@ -812,7 +841,25 @@
             statusPollInterval = setInterval(async () => {
                 try {
                     const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/details`);
+                    
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            clearInterval(statusPollInterval);
+                            statusPollInterval = null;
+                            alert('This quiz session has been deleted.');
+                            window.location.href = '/pub-quiz-sessions.html';
+                            return;
+                        }
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
                     const data = await response.json();
+                    
+                    if (!data || !data.session) {
+                        console.warn('Invalid session data in status poll');
+                        return;
+                    }
+                    
                     const status = data.session.status;
 
                     if (status === 'in_progress' || status === 'halftime') {
