@@ -57,30 +57,42 @@
         }
 
         .dashboard-container {
-            display: grid;
-            grid-template-columns: 280px 1fr 300px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
             min-height: 100vh;
-            gap: 16px;
-            padding: 16px;
+            padding: 20px;
             box-sizing: border-box;
         }
 
-        .side-panel {
+        .main-panel {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            max-height: calc(100vh - 32px);
+            padding: 24px;
+            max-width: 1000px;
+            width: 100%;
         }
 
-        .main-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        .section {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.7;
+            margin-bottom: 12px;
         }
 
         .card {
@@ -93,7 +105,7 @@
 
         .stat-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin-bottom: 16px;
         }
@@ -245,9 +257,27 @@
 
         .host-controls {
             display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .leaderboard-compact {
+            display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
-            margin-top: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .leaderboard-compact .leaderboard-item {
+            background: rgba(255,255,255,0.03);
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0;
         }
 
         .btn {
@@ -430,34 +460,71 @@
         ← Sessions
     </a>
     <div class="dashboard-container">
-        <!-- Left Panel: Stats & Controls -->
-        <div class="side-panel">
+        <div class="main-panel">
             <div class="quiz-header">
                 <h1>PERFECT DJ PUB QUIZ</h1>
                 <div class="venue-name" id="venueName">Loading...</div>
                 <div class="status-badge" id="statusBadge">REGISTRATION</div>
             </div>
 
-            <div class="stat-grid">
-                <div class="stat-item">
-                    <div class="stat-label">Teams</div>
-                    <div class="stat-value" id="statTeams">0</div>
+            <!-- Stats Section -->
+            <div class="section">
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Teams</div>
+                        <div class="stat-value" id="statTeams">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Round</div>
+                        <div class="stat-value"><span id="statRound">0</span>/<span id="statTotalRounds">0</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Progress</div>
+                        <div class="stat-value" id="progressText">0%</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value" style="font-size: 1em;">⏸️</div>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">Round</div>
-                    <div class="stat-value"><span id="statRound">0</span>/<span id="statTotalRounds">0</span></div>
-                </div>
-            </div>
 
-            <div class="progress-section">
-                <div class="stat-label">Quiz Progress <span id="progressText" style="float: right;">0%</span></div>
-                <div class="progress-bar-container">
+                <div class="progress-section">
+                    <div class="progress-bar-container">
                     <div class="progress-bar-fill" id="progressBarFill"></div>
                 </div>
             </div>
+            </div>
 
-            <!-- Difficulty Breakdown -->
-            <div id="difficultyBreakdown" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none;">
+            <!-- Settings Section -->
+            <div class="section">
+                <div class="section-title">⚙️ Quiz Settings</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 12px;">
+                    <div>
+                        <div class="stat-label" style="margin-bottom: 8px;">🎙️ TTS Voice</div>
+                        <select id="ttsVoice" class="btn btn-secondary" style="width: 100%; text-align: left; padding: 8px;">
+                            <option value="daniel">Daniel</option>
+                            <option value="charlotte">Charlotte</option>
+                            <option value="callum">Callum</option>
+                            <option value="alice">Alice</option>
+                        </select>
+                    </div>
+                    <div>
+                        <div class="stat-label" style="margin-bottom: 8px;">📝 Question Types</div>
+                        <div style="display: flex; gap: 10px; padding-top: 4px;">
+                            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.85em;">
+                                <input type="checkbox" id="includeMultipleChoice" checked style="width: 16px; height: 16px;">
+                                <span>Multiple</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.85em;">
+                                <input type="checkbox" id="includeWritten" checked style="width: 16px; height: 16px;">
+                                <span>Written</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div></div>
+                </div>
+
+            <div id="difficultyBreakdown" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; display: none;">
                 <div class="stat-label" style="margin-bottom: 10px;">📊 Current Round Difficulty</div>
                 <div style="display: flex; gap: 8px; margin-bottom: 8px;">
                     <div style="flex: 1; background: #4ade80; height: 8px; border-radius: 4px;"></div>
@@ -472,61 +539,48 @@
                     <span style="font-size: 0.85em; opacity: 0.8;">Hard: <span id="hardCount">0</span></span>
                 </div>
             </div>
-
-            <div class="stat-label" style="margin-bottom: 10px;">🎙️ TTS Voice</div>
-            <select id="ttsVoice" class="btn btn-secondary" style="width: 100%; margin-bottom: 20px; text-align: left;">
-                <option value="daniel">Daniel (Male British)</option>
-                <option value="charlotte">Charlotte (Female British)</option>
-                <option value="callum">Callum (Male British)</option>
-                <option value="alice">Alice (Female British)</option>
-            </select>
-
-            <div class="stat-label" style="margin-bottom: 10px;">📝 Question Types Mix</div>
-            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer;">
-                    <input type="checkbox" id="includeMultipleChoice" checked style="width: 20px; height: 20px;">
-                    <span>Multiple Choice (70%)</span>
-                </label>
-                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                    <input type="checkbox" id="includeWritten" checked style="width: 20px; height: 20px;">
-                    <span>Written Answer (30%)</span>
-                </label>
             </div>
 
-            <div class="host-controls">
-                <button onclick="startQuiz()" class="btn btn-primary" id="btnStart">
-                    <span>▶️ Start Quiz</span>
-                </button>
-                <button onclick="showQR()" class="btn btn-primary">
-                    <span>📱 Show QR Code</span>
-                </button>
-                <button onclick="printAnswerSheets()" class="btn btn-primary">
-                    <span>🖨️ Print Answer Sheets</span>
-                </button>
-                <button onclick="generateQuestions()" class="btn btn-secondary">
-                    <span>🔄 Generate</span>
-                </button>
-                <button onclick="toggleAnswer()" class="btn btn-secondary" id="btnShowAnswer" disabled>
-                    <span>👁️ Show Answer</span>
-                </button>
-                <button onclick="nextQuestion()" class="btn btn-primary" id="btnNext" disabled>
-                    <span>⏭️ Next</span>
-                </button>
-                <button onclick="playTTS()" class="btn btn-secondary">
-                    <span>🔊 Speak Q</span>
-                </button>
-                <button onclick="resetQuiz()" class="btn btn-danger">
-                    <span>🔄 Reset Quiz</span>
-                </button>
-                <button onclick="endQuiz()" class="btn btn-danger">
-                    <span>⏹️ End Quiz</span>
-                </button>
+            <!-- Controls Section -->
+            <div class="section">
+                <div class="section-title">🎮 Quiz Controls</div>
+                <div class="host-controls">
+                    <button onclick="startQuiz()" class="btn btn-primary" id="btnStart">
+                        <span>▶️ Start</span>
+                    </button>
+                    <button onclick="showQR()" class="btn btn-primary">
+                        <span>📱 QR</span>
+                    </button>
+                    <button onclick="printAnswerSheets()" class="btn btn-primary">
+                        <span>🖨️ Print</span>
+                    </button>
+                    <button onclick="generateQuestions()" class="btn btn-secondary">
+                        <span>🔄 Generate</span>
+                    </button>
+                    <button onclick="toggleAnswer()" class="btn btn-secondary" id="btnShowAnswer" disabled>
+                        <span>👁️ Answer</span>
+                    </button>
+                    <button onclick="nextQuestion()" class="btn btn-primary" id="btnNext" disabled>
+                        <span>⏭️ Next</span>
+                    </button>
+                    <button onclick="playTTS()" class="btn btn-secondary">
+                        <span>🔊 Speak</span>
+                    </button>
+                    <button onclick="resetQuiz()" class="btn btn-danger">
+                        <span>🔄 Reset</span>
+                    </button>
+                    <button onclick="endQuiz()" class="btn btn-danger">
+                        <span>⏹️ End</span>
+                    </button>
+                    <div></div> <!-- Empty space for grid alignment -->
+                </div>
             </div>
 
-            <!-- Auto-Advance Timer Controls -->
-            <div style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+            <!-- Timer Section -->
+            <div class="section">
+                <div class="section-title">⏱️ Auto-Advance Timer</div>
+            <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <div style="font-weight: 600;">⏱️ Auto-Advance Timer</div>
                     <button onclick="toggleAutoAdvance()" class="btn btn-secondary" id="btnToggleAuto" style="padding: 5px 15px; font-size: 0.8em;">
                         <span id="autoAdvanceLabel">Enable</span>
                     </button>
@@ -556,9 +610,10 @@
                     </div>
                 </div>
             </div>
+            </div>
 
-            <!-- Progress Bar for Question Generation -->
-            <div id="generationProgress" style="display: none; margin-top: 15px;">
+            <!-- Generation Progress -->
+            <div id="generationProgress" style="display: none; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-top: 15px;">
                 <div style="font-size: 0.8em; margin-bottom: 5px; opacity: 0.8;">
                     <span id="progressStatus">Generating questions...</span>
                     <span id="progressPercent" style="float: right;">0%</span>
@@ -569,39 +624,30 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Right Panel: Leaderboard -->
-        <div class="side-panel">
             <!-- Leaderboard Section -->
-            <div class="card" style="margin-top: 25px;">
-                <div class="card-header">
-                    <h2 class="card-title">🏆 Leaderboard</h2>
-                    <span class="stat-badge">Live</span>
-                </div>
-                <ul class="leaderboard-list" id="leaderboardList">
+            <div class="section">
+                <div class="section-title">🏆 Leaderboard</div>
+                <div class="leaderboard-compact" id="leaderboardList">
                     <!-- Loaded via JS -->
-                </ul>
+                </div>
             </div>
 
-            <!-- Live Responses (Buzzer/Submission) -->
-            <div class="card" id="responsesCard" style="margin-top: 25px; display: none;">
-                <div class="card-header">
-                    <h2 class="card-title">🚨 Live Responses</h2>
+            <!-- Live Responses -->
+            <div class="section" id="responsesCard" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div class="section-title" style="margin: 0;">🚨 Live Responses</div>
                     <span id="responsesCount" class="stat-badge">0/0</span>
                 </div>
-                <div id="responsesList" style="margin-top: 15px;">
+                <div id="responsesList">
                     <!-- Teams that buzzed/submitted will appear here -->
                 </div>
             </div>
 
-            <!-- Genre Popularity (Voting phase) -->
-            <div class="card" id="genreVotesCard" style="margin-top: 25px;">
-                <div class="card-header">
-                    <h2 class="card-title">📊 Popular Genres</h2>
-                    <span class="stat-badge">Top Votes</span>
-                </div>
-                <div id="genreVotesList" style="margin-top: 15px;">
+            <!-- Genre Votes -->
+            <div class="section" id="genreVotesCard">
+                <div class="section-title">📊 Popular Genres</div>
+                <div id="genreVotesList">
                     <p style="opacity: 0.5; font-size: 0.9em;">Wait for teams to vote...</p>
                 </div>
             </div>
@@ -818,17 +864,19 @@
             const list = document.getElementById('leaderboardList');
             if (leaderboard && leaderboard.length > 0) {
                 list.innerHTML = leaderboard.map((team, idx) => `
-                    <li class="leaderboard-item ${idx < 3 ? 'top-3' : ''}">
-                        <span class="rank">${idx + 1}</span>
-                        <div class="team-info">
-                            <span class="team-name-label">${team.team_name}</span>
-                            <span class="team-table-label">Table ${team.table_number || '-'}</span>
+                    <div class="leaderboard-item ${idx < 3 ? 'top-3' : ''}">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="rank">${idx + 1}</span>
+                            <div>
+                                <div class="team-name-label" style="font-weight: 600;">${team.team_name}</div>
+                                <div class="team-table-label" style="font-size: 0.75em; opacity: 0.6;">Table ${team.table_number || '-'}</div>
+                            </div>
                         </div>
-                        <span class="team-total-score">${team.total_score}</span>
-                    </li>
+                        <span class="team-total-score" style="font-weight: 800; font-size: 1.2em;">${team.total_score}</span>
+                    </div>
                 `).join('');
             } else {
-                list.innerHTML = '<li style="opacity: 0.5; padding: 20px; text-align: center;">No teams registered yet</li>';
+                list.innerHTML = '<div style="grid-column: 1 / -1; opacity: 0.5; padding: 20px; text-align: center;">No teams registered yet</div>';
             }
         }
 
