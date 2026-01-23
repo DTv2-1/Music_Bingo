@@ -455,7 +455,6 @@ def generate_quiz_questions(request, session_id):
 # ============================================================================
 
 @api_view(['GET'])
-@api_view(['GET'])
 def quiz_host_data(request, session_id):
     """Obtiene datos para la vista del host"""
     import logging
