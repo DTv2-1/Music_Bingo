@@ -29,12 +29,14 @@ DATA_DIR = BASE_DIR / 'data'  # /app/data
 
 # Serve home page at root URL
 def index_view(request):
-    from django.http import FileResponse
-    return FileResponse(open(FRONTEND_DIR / 'index.html', 'rb'))
+    from django.http import HttpResponse
+    with open(FRONTEND_DIR / 'index.html', 'rb') as f:
+        return HttpResponse(f.read(), content_type='text/html')
 
 def jingle_view(request):
-    from django.http import FileResponse
-    return FileResponse(open(FRONTEND_DIR / 'jingle.html', 'rb'))
+    from django.http import HttpResponse
+    with open(FRONTEND_DIR / 'jingle.html', 'rb') as f:
+        return HttpResponse(f.read(), content_type='text/html')
 
 def jingle_manager_view(request):
     from django.http import FileResponse, HttpResponse
@@ -59,28 +61,52 @@ def jingle_manager_view(request):
     return FileResponse(open(file_path, 'rb'))
 
 def pub_quiz_register_view(request):
-    from django.http import FileResponse
-    return FileResponse(open(FRONTEND_DIR / 'pub-quiz-register.html', 'rb'))
+    import logging
+    import time
+    logger = logging.getLogger(__name__)
+    
+    start = time.time()
+    logger.info(f"🔵 START pub_quiz_register_view at {start}")
+    
+    from django.http import HttpResponse
+    logger.info(f"⏱️ Imported HttpResponse in {time.time()-start:.3f}s")
+    
+    file_start = time.time()
+    with open(FRONTEND_DIR / 'pub-quiz-register.html', 'rb') as f:
+        content = f.read()
+    logger.info(f"⏱️ Read file in {time.time()-file_start:.3f}s (total: {time.time()-start:.3f}s)")
+    
+    response_start = time.time()
+    response = HttpResponse(content, content_type='text/html')
+    logger.info(f"⏱️ Created response in {time.time()-response_start:.3f}s (total: {time.time()-start:.3f}s)")
+    
+    logger.info(f"✅ FINISH pub_quiz_register_view in {time.time()-start:.3f}s")
+    return response
 
 def pub_quiz_host_view(request):
-    from django.http import FileResponse
-    return FileResponse(open(FRONTEND_DIR / 'pub-quiz-host.html', 'rb'))
+    from django.http import HttpResponse
+    with open(FRONTEND_DIR / 'pub-quiz-host.html', 'rb') as f:
+        return HttpResponse(f.read(), content_type='text/html')
 
 def pub_quiz_sessions_view(request):
-    from django.http import FileResponse
-    return FileResponse(open(FRONTEND_DIR / 'pub-quiz-sessions.html', 'rb'))
+    from django.http import HttpResponse
+    with open(FRONTEND_DIR / 'pub-quiz-sessions.html', 'rb') as f:
+        return HttpResponse(f.read(), content_type='text/html')
 
 def game_view(request):
-    from django.http import FileResponse
-    return FileResponse(open(FRONTEND_DIR / 'game.html', 'rb'))
+    from django.http import HttpResponse
+    with open(FRONTEND_DIR / 'game.html', 'rb') as f:
+        return HttpResponse(f.read(), content_type='text/html')
 
 def karaoke_view(request):
-    from django.http import FileResponse
-    return FileResponse(open(FRONTEND_DIR / 'karaoke.html', 'rb'))
+    from django.http import HttpResponse
+    with open(FRONTEND_DIR / 'karaoke.html', 'rb') as f:
+        return HttpResponse(f.read(), content_type='text/html')
 
 def karaoke_host_view(request):
-    from django.http import FileResponse
-    return FileResponse(open(FRONTEND_DIR / 'karaoke-host.html', 'rb'))
+    from django.http import HttpResponse
+    with open(FRONTEND_DIR / 'karaoke-host.html', 'rb') as f:
+        return HttpResponse(f.read(), content_type='text/html')
 
 urlpatterns = [
     path("admin/", admin.site.urls),
