@@ -585,9 +585,6 @@ def delete_session(request, session_id):
         'success': True, 
         'message': f'Session "{venue_name}" deleted successfully'
     })
-    
-    return Response({
-        'success': True,
         'message': 'Quiz reset successfully',
         'status': 'registration'
     })

@@ -591,6 +591,13 @@
                 return;
             }
 
+            // Disable delete button to prevent double-clicks
+            const deleteBtn = event.target;
+            const originalText = deleteBtn.textContent;
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = 'Deleting...';
+            deleteBtn.style.opacity = '0.5';
+
             try {
                 console.log(`📤 [DELETE] Sending DELETE request for session ${sessionId}...`);
                 const response = await fetch(`${BASE_URL}/api/pub-quiz/${sessionId}/delete`, {
@@ -601,18 +608,30 @@
                 const data = await response.json();
                 console.log(`📥 [DELETE] Response:`, response.status, data);
 
-                if (data.success) {
+                if (response.ok && data.success) {
                     console.log(`✅ [DELETE] Session deleted successfully`);
                     alert(`Session "${venueName}" deleted successfully!`);
                     // Reload sessions list
                     loadSessions();
+                } else if (response.status === 404) {
+                    console.warn(`⚠️ [DELETE] Session already deleted`);
+                    alert('This session has already been deleted.');
+                    loadSessions(); // Refresh list
                 } else {
-                    console.error(`❌ [DELETE] Failed:`, data.error);
-                    alert('Error deleting session: ' + data.error);
+                    console.error(`❌ [DELETE] Failed:`, data.error || data.detail);
+                    alert('Error deleting session: ' + (data.error || data.detail || 'Unknown error'));
+                    // Re-enable button on error
+                    deleteBtn.disabled = false;
+                    deleteBtn.textContent = originalText;
+                    deleteBtn.style.opacity = '1';
                 }
             } catch (error) {
                 console.error('❌ [DELETE] Exception:', error);
                 alert('Failed to delete session: ' + error.message);
+                // Re-enable button on error
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = originalText;
+                deleteBtn.style.opacity = '1';
             }
         }
     </script>
