@@ -585,9 +585,6 @@ def delete_session(request, session_id):
         'success': True, 
         'message': f'Session "{venue_name}" deleted successfully'
     })
-        'message': 'Quiz reset successfully',
-        'status': 'registration'
-    })
 
 
 @api_view(['POST'])
