@@ -786,6 +786,7 @@ def quiz_stream(request, session_id):
                                     'number': question.question_number,
                                     'points': question.points,
                                     'type': question.question_type,
+                                    'genre': question.genre.name if question.genre else 'General',
                                     'hints': question.hints,
                                     'options': question.options if question.question_type == 'multiple_choice' else None,
                                     'is_last': (question.question_number == session.questions_per_round)
@@ -934,6 +935,7 @@ def host_stream(request, session_id):
                                 'number': question.question_number,
                                 'type': question.question_type,
                                 'points': question.points,
+                                'genre': question.genre.name if question.genre else 'General',
                                 'options': question.options if question.question_type == 'multiple_choice' else None
                             }
                     

@@ -631,6 +631,8 @@
         let hostEventSource = null;
         let lastSpokenQuestionId = null; // Track last spoken question to avoid repetition
         let isPlayingWelcomeMessage = false; // Flag to prevent question TTS during welcome
+        let currentRound = 0; // Track current round number
+        let roundGenres = {}; // Store round -> genre mapping
 
         // SSE connection for host panel
         function connectHostSSE() {
@@ -764,17 +766,25 @@
                 text: question.text,
                 round: question.round,
                 number: question.number,
+                genre: question.genre,
                 status: status
             });
             // Check if this is a new question
             const isNewQuestion = !currentQuestion || currentQuestion.id !== question.id;
+            
+            // Check if round changed
+            const roundChanged = currentRound !== question.round;
+            if (roundChanged) {
+                currentRound = question.round;
+                roundGenres[question.round] = question.genre;
+            }
 
             currentQuestion = question;
             const wasShowingAnswer = showingAnswer;
             showingAnswer = (status === 'revealing_answer');
 
             document.getElementById('questionText').textContent = question.text;
-            document.getElementById('currentGenre').textContent = `Round ${question.round} - Q${question.number} (${question.points}pts)`;
+            document.getElementById('currentGenre').textContent = `${question.genre || 'General'} - Round ${question.round}, Q${question.number} (${question.points}pts)`;
 
             const answerDiv = document.getElementById('answerDisplay');
             // Only update answer display if it's a new question or status changed
@@ -791,11 +801,27 @@
                 }
             }
 
-            // Auto-play TTS for new questions (not when revealing answer, not during welcome)
+            // Auto-play TTS for new questions
             if (isNewQuestion && !showingAnswer && !isPlayingWelcomeMessage && question.id !== lastSpokenQuestionId) {
                 lastSpokenQuestionId = question.id;
-                console.log('[TTS] Auto-playing question:', question.text);
-                playTTS(question.text, 'daniel');
+                
+                // If round changed, announce the round first, then the question
+                if (roundChanged) {
+                    console.log('[TTS] Announcing new round:', question.round, '-', question.genre);
+                    const roundAnnouncement = `Round ${question.round}: ${question.genre}`;
+                    playTTS(roundAnnouncement, 'daniel').then(() => {
+                        console.log('[TTS] Auto-playing question:', question.text);
+                        playTTS(question.text, 'daniel');
+                    }).catch(err => {
+                        console.error('[TTS] Error playing round announcement:', err);
+                        // Still play the question even if round announcement fails
+                        playTTS(question.text, 'daniel');
+                    });
+                } else {
+                    // Just play the question
+                    console.log('[TTS] Auto-playing question:', question.text);
+                    playTTS(question.text, 'daniel');
+                }
             }
 
             console.log('[SSE_UPDATE] ✅ Question display updated');
