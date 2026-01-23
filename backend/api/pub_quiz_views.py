@@ -353,6 +353,7 @@ def generate_quiz_questions(request, session_id):
         
         # Initialize progress
         cache.set(f'quiz_generation_progress_{session_id}', {'progress': 0, 'status': 'starting'}, 300)
+        logger.info(f"📊 [PROGRESS] 0% - starting (session: {session_id})")
         
         # Get question type preferences from request body (DRF parses automatically)
         include_mc = request.data.get('include_multiple_choice', True)
@@ -384,6 +385,7 @@ def generate_quiz_questions(request, session_id):
         logger.info(f"✅ [GENERATE_QUESTIONS] Selected {len(selected_genres)} genres: {[g['name'] for g in selected_genres]}")
         
         cache.set(f'quiz_generation_progress_{session_id}', {'progress': 10, 'status': 'Selecting genres...'}, 300)
+        logger.info(f"📊 [PROGRESS] 10% - Selecting genres... (session: {session_id})")
         
         # Crear estructura de rondas
         structure = generator.create_quiz_structure(
@@ -394,6 +396,7 @@ def generate_quiz_questions(request, session_id):
         )
         
         cache.set(f'quiz_generation_progress_{session_id}', {'progress': 20, 'status': 'Creating quiz structure...'}, 300)
+        logger.info(f"📊 [PROGRESS] 20% - Creating quiz structure... (session: {session_id})")
         
         # Crear rondas en DB primero (sin preguntas)
         total_rounds = len(structure['rounds'])
@@ -419,6 +422,7 @@ def generate_quiz_questions(request, session_id):
             })
         
         cache.set(f'quiz_generation_progress_{session_id}', {'progress': 30, 'status': 'Generating all questions (this may take 1-2 minutes)...'}, 300)
+        logger.info(f"📊 [PROGRESS] 30% - Generating all questions (this may take 1-2 minutes)... (session: {session_id})")
         logger.info(f"🤖 [GENERATE_QUESTIONS] Starting parallel question generation for {len(rounds_to_generate)} rounds")
         
         # Generar todas las preguntas en paralelo usando threading
@@ -447,14 +451,17 @@ def generate_quiz_questions(request, session_id):
                 
                 # Update progress
                 progress = 30 + int(((idx + 1) / total_rounds) * 60)
+                status_msg = f'Generated {idx+1}/{total_rounds} rounds...'
                 cache.set(f'quiz_generation_progress_{session_id}', 
-                         {'progress': progress, 'status': f'Generated {idx+1}/{total_rounds} rounds...'}, 300)
+                         {'progress': progress, 'status': status_msg}, 300)
+                logger.info(f"📊 [PROGRESS] {progress}% - {status_msg} (session: {session_id})")
         
         # Sort by round number
         all_round_questions.sort(key=lambda x: x['round_number'])
         
         # Save all questions to database
         cache.set(f'quiz_generation_progress_{session_id}', {'progress': 92, 'status': 'Saving questions to database...'}, 300)
+        logger.info(f"📊 [PROGRESS] 92% - Saving questions to database... (session: {session_id})")
         logger.info(f"💾 [GENERATE_QUESTIONS] Saving questions to database...")
         
         total_questions_saved = 0
@@ -478,7 +485,8 @@ def generate_quiz_questions(request, session_id):
                 total_questions_saved += 1
         
         logger.info(f"✅ [GENERATE_QUESTIONS] Saved {total_questions_saved} questions to database")
-        cache.set(f'quiz_generation_progress_{session_id}', {'progress': 90, 'status': 'Finalizing quiz...'}, 300)
+        cache.set(f'quiz_generation_progress_{session_id}', {'progress': 95, 'status': 'Finalizing quiz...'}, 300)
+        logger.info(f"📊 [PROGRESS] 95% - Finalizing quiz... (session: {session_id})")
         
         # Actualizar estado de sesión
         session.status = 'ready'
@@ -491,6 +499,7 @@ def generate_quiz_questions(request, session_id):
             session.selected_genres.add(genre)
         
         cache.set(f'quiz_generation_progress_{session_id}', {'progress': 100, 'status': 'Complete!'}, 300)
+        logger.info(f"📊 [PROGRESS] 100% - Complete! (session: {session_id})")
         logger.info(f"🎉 [GENERATE_QUESTIONS] Quiz generation completed successfully!")
         
         return Response({
