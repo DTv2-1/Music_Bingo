@@ -359,7 +359,12 @@ def generate_quiz_questions(request, session_id):
         # Get question type preferences from request body (DRF parses automatically)
         include_mc = request.data.get('include_multiple_choice', True)
         include_written = request.data.get('include_written', True)
+        easy_count = request.data.get('easy_count', 3)
+        medium_count = request.data.get('medium_count', 4)
+        hard_count = request.data.get('hard_count', 3)
+        
         logger.info(f"📋 [GENERATE_QUESTIONS] Question types - Multiple Choice: {include_mc}, Written: {include_written}")
+        logger.info(f"📊 [GENERATE_QUESTIONS] Difficulty distribution - Easy: {easy_count}, Medium: {medium_count}, Hard: {hard_count}")
         
         # Calculate ratios
         question_types = {}
@@ -371,6 +376,13 @@ def generate_quiz_questions(request, session_id):
             question_types = {'multiple_choice': 0.0, 'written': 1.0}
         else:
             question_types = {'multiple_choice': 0.7, 'written': 0.3}
+        
+        # Difficulty distribution
+        difficulty_mix = {
+            'easy': easy_count,
+            'medium': medium_count,
+            'hard': hard_count
+        }
         
         # Contar votos por género
         genre_votes = GenreVote.objects.filter(team__session=session).values('genre_id').annotate(
@@ -440,7 +452,8 @@ def generate_quiz_questions(request, session_id):
                 'questions': generator.generate_sample_questions(
                     round_info['genre_name'],
                     round_info['questions_per_round'],
-                    question_types=question_types
+                    question_types=question_types,
+                    difficulty_mix=difficulty_mix
                 )
             }
         

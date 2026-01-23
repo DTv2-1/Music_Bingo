@@ -525,18 +525,24 @@
                 </div>
 
                 <div id="difficultyBreakdown" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-top: 12px;">
-                    <div class="stat-label" style="margin-bottom: 10px;">📊 Round Difficulty Mix</div>
+                    <div class="stat-label" style="margin-bottom: 10px;">📊 Difficulty Mix (per round)</div>
                     <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
                         <div style="width: 40px; background: #4ade80; height: 6px; border-radius: 3px;"></div>
-                        <span style="font-size: 0.8em; opacity: 0.8;">Easy: <span id="easyCount">0</span></span>
+                        <span style="font-size: 0.8em; opacity: 0.8; flex: 1;">Easy:</span>
+                        <input type="number" id="easyCount" value="3" min="0" max="10" 
+                               style="width: 50px; padding: 4px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; color: white; text-align: center; font-size: 0.85em;">
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
                         <div style="width: 40px; background: #fbbf24; height: 6px; border-radius: 3px;"></div>
-                        <span style="font-size: 0.8em; opacity: 0.8;">Medium: <span id="mediumCount">0</span></span>
+                        <span style="font-size: 0.8em; opacity: 0.8; flex: 1;">Medium:</span>
+                        <input type="number" id="mediumCount" value="4" min="0" max="10" 
+                               style="width: 50px; padding: 4px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; color: white; text-align: center; font-size: 0.85em;">
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <div style="width: 40px; background: #f87171; height: 6px; border-radius: 3px;"></div>
-                        <span style="font-size: 0.8em; opacity: 0.8;">Hard: <span id="hardCount">0</span></span>
+                        <span style="font-size: 0.8em; opacity: 0.8; flex: 1;">Hard:</span>
+                        <input type="number" id="hardCount" value="3" min="0" max="10" 
+                               style="width: 50px; padding: 4px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; color: white; text-align: center; font-size: 0.85em;">
                     </div>
                 </div>
             </div>
@@ -969,7 +975,7 @@
                 // Filter questions for current round
                 const roundQuestions = data.questions.filter(q => q.round_number === roundNumber);
                 
-                // Count difficulties
+                // Count difficulties (just for display in console)
                 let easy = 0, medium = 0, hard = 0;
                 roundQuestions.forEach(q => {
                     if (q.difficulty === 'easy') easy++;
@@ -977,10 +983,7 @@
                     else medium++; // default medium
                 });
                 
-                // Update UI
-                document.getElementById('easyCount').textContent = easy;
-                document.getElementById('mediumCount').textContent = medium;
-                document.getElementById('hardCount').textContent = hard;
+                console.log(`[DIFFICULTY] Round ${roundNumber} breakdown: Easy=${easy}, Medium=${medium}, Hard=${hard}`);
                 
             } catch (error) {
                 console.error('Error updating difficulty breakdown:', error);
@@ -1158,12 +1161,23 @@
                 console.log('📊 [FE_GENERATE] Checking question type preferences...');
                 const includeMultipleChoice = document.getElementById('includeMultipleChoice').checked;
                 const includeWritten = document.getElementById('includeWritten').checked;
+                const easyCount = parseInt(document.getElementById('easyCount').value) || 0;
+                const mediumCount = parseInt(document.getElementById('mediumCount').value) || 0;
+                const hardCount = parseInt(document.getElementById('hardCount').value) || 0;
+                
                 console.log(`   - Multiple Choice: ${includeMultipleChoice}`);
                 console.log(`   - Written: ${includeWritten}`);
+                console.log(`   - Easy: ${easyCount}, Medium: ${mediumCount}, Hard: ${hardCount}`);
                 
                 if (!includeMultipleChoice && !includeWritten) {
                     console.error('❌ [FE_GENERATE] No question types selected');
                     alert('Please select at least one question type!');
+                    return;
+                }
+
+                if (easyCount + mediumCount + hardCount === 0) {
+                    console.error('❌ [FE_GENERATE] No difficulty levels selected');
+                    alert('Please select at least one difficulty level with count > 0!');
                     return;
                 }
 
@@ -1177,7 +1191,10 @@
 
                 const requestBody = {
                     include_multiple_choice: includeMultipleChoice,
-                    include_written: includeWritten
+                    include_written: includeWritten,
+                    easy_count: easyCount,
+                    medium_count: mediumCount,
+                    hard_count: hardCount
                 };
                 console.log('📤 [FE_GENERATE] Sending POST request to backend:', requestBody);
                 console.log(`   URL: ${BASE_URL}/api/pub-quiz/${SESSION_ID}/generate-questions`);

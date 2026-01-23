@@ -215,14 +215,19 @@ Generate exactly {num_questions} questions now.
             "rounds": rounds,
         }
     
-    def generate_sample_questions(self, genre_name: str, count: int = 10, question_types: dict = None) -> List[Dict]:
+    def generate_sample_questions(self, genre_name: str, count: int = 10, question_types: dict = None, difficulty_mix: dict = None) -> List[Dict]:
         """
         Genera preguntas usando OpenAI GPT-4
         question_types: {'multiple_choice': 0.7, 'written': 0.3}
+        difficulty_mix: {'easy': 3, 'medium': 4, 'hard': 3}
         """
         # Default to 70% multiple choice, 30% written
         if question_types is None:
             question_types = {'multiple_choice': 0.7, 'written': 0.3}
+        
+        # Default difficulty mix
+        if difficulty_mix is None:
+            difficulty_mix = {'easy': 3, 'medium': 4, 'hard': 3}
         
         # Calculate how many of each type
         num_mc = int(count * question_types.get('multiple_choice', 0.7))
@@ -235,7 +240,8 @@ Generate exactly {num_questions} questions now.
             mc_questions = self._generate_openai_questions(
                 genre_name, 
                 num_mc, 
-                'multiple_choice'
+                'multiple_choice',
+                difficulty_mix
             )
             questions.extend(mc_questions)
         
@@ -244,7 +250,8 @@ Generate exactly {num_questions} questions now.
             written_questions = self._generate_openai_questions(
                 genre_name, 
                 num_written, 
-                'written'
+                'written',
+                difficulty_mix
             )
             questions.extend(written_questions)
         
@@ -255,9 +262,10 @@ Generate exactly {num_questions} questions now.
         
         return questions
     
-    def _generate_openai_questions(self, genre_name: str, count: int, question_type: str) -> List[Dict]:
+    def _generate_openai_questions(self, genre_name: str, count: int, question_type: str, difficulty_mix: dict = None) -> List[Dict]:
         """
         Generate questions using OpenAI API
+        difficulty_mix: {'easy': 3, 'medium': 4, 'hard': 3}
         """
         api_key = os.getenv('OPENAI_API_KEY', '')
         
@@ -265,12 +273,26 @@ Generate exactly {num_questions} questions now.
             # Fallback to sample questions if no API key
             return self._get_fallback_questions(genre_name, count, question_type)
         
+        # Default difficulty mix
+        if difficulty_mix is None:
+            difficulty_mix = {'easy': 3, 'medium': 4, 'hard': 3}
+        
+        # Build difficulty instruction for prompt
+        total = sum(difficulty_mix.values())
+        easy_count = difficulty_mix.get('easy', 0)
+        medium_count = difficulty_mix.get('medium', 0)
+        hard_count = difficulty_mix.get('hard', 0)
+        
+        difficulty_instruction = f"Generate exactly {easy_count} easy questions, {medium_count} medium questions, and {hard_count} hard questions."
+        
         try:
             # Initialize OpenAI client
             client = OpenAI(api_key=api_key)
             
             if question_type == 'multiple_choice':
                 prompt = f"""Generate {count} multiple choice trivia questions about {genre_name}.
+
+{difficulty_instruction}
 
 For each question, provide:
 - A clear, engaging question
@@ -280,7 +302,6 @@ For each question, provide:
 - Difficulty level (easy, medium, or hard)
 
 Make questions diverse, interesting, and appropriate for a pub quiz audience.
-Mix difficulty levels naturally.
 
 Return ONLY a valid JSON array with this exact structure:
 [
@@ -296,6 +317,8 @@ Return ONLY a valid JSON array with this exact structure:
             else:  # written
                 prompt = f"""Generate {count} written answer trivia questions about {genre_name}.
 
+{difficulty_instruction}
+
 For each question, provide:
 - A clear, engaging question that requires a specific written answer
 - The correct answer
@@ -304,7 +327,6 @@ For each question, provide:
 - Difficulty level (easy, medium, or hard)
 
 Make questions diverse, interesting, and appropriate for a pub quiz audience.
-Mix difficulty levels naturally.
 
 Return ONLY a valid JSON array with this exact structure:
 [
