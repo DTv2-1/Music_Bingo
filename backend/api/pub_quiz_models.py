@@ -47,7 +47,7 @@ class PubQuizSession(models.Model):
     duration_minutes = models.IntegerField(default=120, help_text="90-180 minutos típico")
     
     # Auto-advance settings
-    auto_advance_enabled = models.BooleanField(default=False, help_text="Auto-advance to next question")
+    auto_advance_enabled = models.BooleanField(default=True, help_text="Auto-advance to next question")
     auto_advance_seconds = models.IntegerField(default=15, help_text="Seconds before auto-advancing")
     auto_advance_paused = models.BooleanField(default=False, help_text="Timer is paused")
     question_started_at = models.DateTimeField(null=True, blank=True, help_text="When current question started")

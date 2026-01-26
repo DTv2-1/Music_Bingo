@@ -749,7 +749,7 @@
         let roundGenres = {}; // Store round -> genre mapping
         
         // Auto-advance timer variables
-        let autoAdvanceEnabled = false;
+        let autoAdvanceEnabled = true; // Always enabled by default
         let autoAdvancePaused = false;
         let autoAdvanceSeconds = 15;
         let questionStartedAt = null;
@@ -1579,6 +1579,8 @@
             console.log('   - autoAdvancePaused:', autoAdvancePaused);
             console.log('   - questionStartedAt:', questionStartedAt);
             
+            let hasAutoAdvanced = false; // Track if we've already auto-advanced
+            
             countdownInterval = setInterval(() => {
                 if (!questionStartedAt) {
                     document.getElementById('countdown').textContent = '--';
@@ -1605,8 +1607,10 @@
                     countdownEl.style.color = 'var(--accent)';
                 }
                 
-                // Auto-advance when time is up (only if enabled and not paused)
-                if (remaining === 0) {
+                // Auto-advance when time is up (only if enabled and not paused, and only once)
+                if (remaining === 0 && !hasAutoAdvanced) {
+                    hasAutoAdvanced = true; // Prevent multiple calls
+                    
                     if (autoAdvanceEnabled && !autoAdvancePaused) {
                         console.log('⏰ [COUNTDOWN] Timer reached 0 - auto-advancing to next question');
                         console.log('   - autoAdvanceEnabled:', autoAdvanceEnabled);

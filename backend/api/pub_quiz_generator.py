@@ -265,7 +265,7 @@ Generate exactly {num_questions} questions now.
     def _generate_openai_questions(self, genre_name: str, count: int, question_type: str, difficulty_mix: dict = None) -> List[Dict]:
         """
         Generate questions using OpenAI API
-        difficulty_mix: {'easy': 3, 'medium': 4, 'hard': 3}
+        difficulty_mix: {'easy': 3, 'medium': 4, 'hard': 3} - desired counts per round
         """
         api_key = os.getenv('OPENAI_API_KEY', '')
         
@@ -277,13 +277,23 @@ Generate exactly {num_questions} questions now.
         if difficulty_mix is None:
             difficulty_mix = {'easy': 3, 'medium': 4, 'hard': 3}
         
-        # Build difficulty instruction for prompt
-        total = sum(difficulty_mix.values())
-        easy_count = difficulty_mix.get('easy', 0)
-        medium_count = difficulty_mix.get('medium', 0)
-        hard_count = difficulty_mix.get('hard', 0)
+        # Calculate proportional distribution for this batch
+        total_desired = sum(difficulty_mix.values())
+        if total_desired == 0:
+            total_desired = count
+            difficulty_mix = {'easy': count // 3, 'medium': count // 3, 'hard': count - 2 * (count // 3)}
         
-        difficulty_instruction = f"Generate exactly {easy_count} easy questions, {medium_count} medium questions, and {hard_count} hard questions."
+        # Scale to match the requested count
+        ratio = count / total_desired
+        easy_count = round(difficulty_mix.get('easy', 0) * ratio)
+        medium_count = round(difficulty_mix.get('medium', 0) * ratio)
+        hard_count = count - easy_count - medium_count  # Remainder goes to hard
+        
+        # Ensure we have at least some questions
+        if easy_count + medium_count + hard_count != count:
+            hard_count = count - easy_count - medium_count
+        
+        difficulty_instruction = f"Generate exactly {easy_count} easy questions, {medium_count} medium questions, and {hard_count} hard questions (total {count})."
         
         try:
             # Initialize OpenAI client
