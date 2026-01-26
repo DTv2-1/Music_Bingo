@@ -919,8 +919,16 @@
             const wasShowingAnswer = showingAnswer;
             showingAnswer = (status === 'revealing_answer');
 
-            document.getElementById('questionText').textContent = question.text;
-            document.getElementById('currentGenre').textContent = `${question.genre || 'General'} - Round ${question.round}, Q${question.number} (${question.points}pts)`;
+            // Update question display (optional elements for host view)
+            const questionText = document.getElementById('questionText');
+            const currentGenre = document.getElementById('currentGenre');
+            
+            if (questionText) {
+                questionText.textContent = question.text;
+            }
+            if (currentGenre) {
+                currentGenre.textContent = `${question.genre || 'General'} - Round ${question.round}, Q${question.number} (${question.points}pts)`;
+            }
 
             // Update difficulty badge (optional element)
             const difficultyBadge = document.getElementById('difficultyBadge');
@@ -935,17 +943,27 @@
             }
 
             const answerDiv = document.getElementById('answerDisplay');
-            // Only update answer display if it's a new question or status changed
-            if (isNewQuestion || showingAnswer !== wasShowingAnswer) {
+            const correctAnswer = document.getElementById('correctAnswer');
+            const funFact = document.getElementById('funFact');
+            const btnShowAnswer = document.getElementById('btnShowAnswer');
+            
+            // Only update answer display if elements exist and if it's a new question or status changed
+            if (answerDiv && correctAnswer && (isNewQuestion || showingAnswer !== wasShowingAnswer)) {
                 if (showingAnswer && question.answer) {
                     answerDiv.style.display = 'block';
-                    document.getElementById('correctAnswer').textContent = question.answer;
-                    document.getElementById('funFact').textContent = question.fun_fact || '';
-                    document.getElementById('btnShowAnswer').innerHTML = '<span>🙈 Hide Answer</span>';
+                    correctAnswer.textContent = question.answer;
+                    if (funFact) {
+                        funFact.textContent = question.fun_fact || '';
+                    }
+                    if (btnShowAnswer) {
+                        btnShowAnswer.innerHTML = '<span>🙈 Hide Answer</span>';
+                    }
                 } else if (isNewQuestion) {
                     // Only hide if it's a new question
                     answerDiv.style.display = 'none';
-                    document.getElementById('btnShowAnswer').innerHTML = '<span>👁️ Show Answer</span>';
+                    if (btnShowAnswer) {
+                        btnShowAnswer.innerHTML = '<span>👁️ Show Answer</span>';
+                    }
                 }
             }
 
@@ -1588,11 +1606,19 @@
                 }
                 
                 // Auto-advance when time is up (only if enabled and not paused)
-                if (autoAdvanceEnabled && !autoAdvancePaused && remaining === 0) {
-                    console.log('⏰ [COUNTDOWN] Timer reached 0 - auto-advancing to next question');
-                    console.log('   - autoAdvanceEnabled:', autoAdvanceEnabled);
-                    console.log('   - autoAdvancePaused:', autoAdvancePaused);
-                    nextQuestion();
+                if (remaining === 0) {
+                    if (autoAdvanceEnabled && !autoAdvancePaused) {
+                        console.log('⏰ [COUNTDOWN] Timer reached 0 - auto-advancing to next question');
+                        console.log('   - autoAdvanceEnabled:', autoAdvanceEnabled);
+                        console.log('   - autoAdvancePaused:', autoAdvancePaused);
+                        nextQuestion();
+                    } else {
+                        if (!autoAdvanceEnabled) {
+                            console.log('⏸️ [COUNTDOWN] Timer at 0, but auto-advance is DISABLED. Click "Enable Auto-Advance" to automatically move to next question.');
+                        } else if (autoAdvancePaused) {
+                            console.log('⏸️ [COUNTDOWN] Timer at 0, but auto-advance is PAUSED. Click "▶️ Resume" to continue.');
+                        }
+                    }
                 }
             }, 1000);
         }
