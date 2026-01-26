@@ -53,6 +53,7 @@ def find_logo() -> Optional[Path]:
 def generate_quiz_answer_sheet(
     venue_name: str = "Perfect DJ Pub Quiz",
     session_date: str = "",
+    questions_by_round: List[Dict] = None,
     total_rounds: int = 6,
     questions_per_round: int = 10,
     team_name: str = "",
@@ -65,8 +66,9 @@ def generate_quiz_answer_sheet(
     Args:
         venue_name: Name of the venue
         session_date: Date of the quiz
-        total_rounds: Number of rounds
-        questions_per_round: Questions per round
+        questions_by_round: List of dicts with actual questions (if available)
+        total_rounds: Number of rounds (fallback if no questions)
+        questions_per_round: Questions per round (fallback if no questions)
         team_name: Team name (if pre-filled, otherwise blank)
         output_path: Where to save PDF (if None, returns BytesIO)
         include_mc_bubbles: Include multiple choice bubbles
@@ -85,10 +87,10 @@ def generate_quiz_answer_sheet(
     doc = SimpleDocTemplate(
         buffer,
         pagesize=A4,
-        rightMargin=20*mm,
-        leftMargin=20*mm,
-        topMargin=15*mm,
-        bottomMargin=15*mm,
+        rightMargin=15*mm,
+        leftMargin=15*mm,
+        topMargin=12*mm,
+        bottomMargin=12*mm,
         title=f"{venue_name} - Answer Sheet"
     )
     
@@ -167,71 +169,110 @@ def generate_quiz_answer_sheet(
     ]))
     
     elements.append(team_table)
-    elements.append(Spacer(1, 8*mm))
+    elements.append(Spacer(1, 6*mm))
+    
+    # Determine rounds to generate
+    if questions_by_round:
+        # Use actual questions
+        rounds_to_generate = questions_by_round
+    else:
+        # Generate blank template
+        rounds_to_generate = [
+            {
+                'round_number': i,
+                'genre': 'General',
+                'questions': [{'number': j, 'text': '', 'type': 'written'} for j in range(1, questions_per_round + 1)]
+            }
+            for i in range(1, total_rounds + 1)
+        ]
     
     # Generate answer sections for each round
-    for round_num in range(1, total_rounds + 1):
-        # Round header
-        round_header = Paragraph(f"Round {round_num}", round_title_style)
-        round_header_table = Table([[round_header]], colWidths=[170*mm])
+    for round_data in rounds_to_generate:
+        round_num = round_data['round_number']
+        genre = round_data.get('genre', 'General')
+        questions = round_data.get('questions', [])
+        
+        # Round header with genre
+        round_title_text = f"Round {round_num} - {genre}"
+        round_header = Paragraph(round_title_text, round_title_style)
+        round_header_table = Table([[round_header]], colWidths=[165*mm])
         round_header_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#667eea')),
             ('LEFTPADDING', (0, 0), (-1, -1), 5),
             ('RIGHTPADDING', (0, 0), (-1, -1), 5),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
         ]))
         
         elements.append(round_header_table)
         elements.append(Spacer(1, 2*mm))
         
         # Questions for this round
-        question_rows = []
+        question_style = ParagraphStyle(
+            'QuestionText',
+            parent=styles['Normal'],
+            fontSize=8,
+            textColor=colors.HexColor('#1a1a2e'),
+            fontName='Helvetica',
+            leading=10
+        )
         
-        for q_num in range(1, questions_per_round + 1):
-            if include_mc_bubbles:
-                # Multiple choice bubbles: A B C D
-                bubbles = "○ A    ○ B    ○ C    ○ D"
-                question_rows.append([
-                    f"Q{q_num}",
-                    bubbles,
-                    '_' * 40
-                ])
+        for q_data in questions:
+            q_num = q_data['number']
+            q_text = q_data.get('text', '')
+            q_type = q_data.get('type', 'written')
+            q_options = q_data.get('options', {})
+            
+            # Question text with number
+            if q_text:
+                question_para = Paragraph(f"<b>Q{q_num}:</b> {q_text}", question_style)
             else:
-                # Just answer space
-                question_rows.append([
-                    f"Q{q_num}",
-                    '_' * 70
-                ])
-        
-        if include_mc_bubbles:
-            col_widths = [12*mm, 35*mm, 123*mm]
-        else:
-            col_widths = [12*mm, 158*mm]
-        
-        questions_table = Table(question_rows, colWidths=col_widths)
-        questions_table.setStyle(TableStyle([
-            ('FONT', (0, 0), (-1, -1), 'Helvetica', 9),
-            ('FONT', (0, 0), (0, -1), 'Helvetica-Bold', 9),
-            ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#1a1a2e')),
-            ('ALIGN', (0, 0), (0, -1), 'CENTER'),
-            ('ALIGN', (1, 0), (-1, -1), 'LEFT'),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
-            ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.HexColor('#f8f9fa')]),
-            ('LEFTPADDING', (0, 0), (-1, -1), 4),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 4),
-            ('TOPPADDING', (0, 0), (-1, -1), 5),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ]))
-        
-        elements.append(questions_table)
+                question_para = Paragraph(f"<b>Q{q_num}:</b>", question_style)
+            
+            # Build answer row based on question type
+            if q_type == 'multiple_choice' and q_options:
+                # Multiple choice with actual options
+                options_text = "   ".join([f"○ {key}) {value}" for key, value in sorted(q_options.items())])
+                options_para = Paragraph(options_text, question_style)
+                
+                answer_row = [[question_para], [options_para], ['Answer: _____________']]
+                question_table = Table(answer_row, colWidths=[165*mm])
+                question_table.setStyle(TableStyle([
+                    ('FONT', (0, 0), (-1, -1), 'Helvetica', 8),
+                    ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#1a1a2e')),
+                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 5),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+                    ('TOPPADDING', (0, 0), (-1, -1), 4),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                    ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8f9fa') if q_num % 2 == 0 else colors.white),
+                    ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
+                ]))
+            else:
+                # Written answer
+                answer_row = [[question_para], ['Answer: __________________________________________']]
+                question_table = Table(answer_row, colWidths=[165*mm])
+                question_table.setStyle(TableStyle([
+                    ('FONT', (0, 0), (-1, -1), 'Helvetica', 8),
+                    ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#1a1a2e')),
+                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 5),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+                    ('TOPPADDING', (0, 0), (-1, -1), 4),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                    ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8f9fa') if q_num % 2 == 0 else colors.white),
+                    ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
+                ]))
+            
+            elements.append(question_table)
         
         # Add page break after every 2 rounds (except last)
-        if round_num % 2 == 0 and round_num < total_rounds:
+        if round_num % 2 == 0 and round_num < len(rounds_to_generate):
             elements.append(PageBreak())
         else:
-            elements.append(Spacer(1, 5*mm))
+            elements.append(Spacer(1, 4*mm))
     
     # Footer
     elements.append(Spacer(1, 5*mm))
@@ -260,20 +301,22 @@ def generate_quiz_answer_sheet(
 def generate_blank_templates(
     venue_name: str = "Perfect DJ Pub Quiz",
     session_date: str = "",
+    questions_by_round: List[Dict] = None,
     total_rounds: int = 6,
     questions_per_round: int = 10,
     num_sheets: int = 30,
     output_path: Optional[Path] = None
 ) -> BytesIO:
     """
-    Generate multiple blank answer sheets
+    Generate multiple answer sheets (with or without actual questions)
     
     Args:
         venue_name: Venue name
         session_date: Quiz date
-        total_rounds: Number of rounds
-        questions_per_round: Questions per round
-        num_sheets: How many blank sheets to generate
+        questions_by_round: Actual questions data (if available)
+        total_rounds: Number of rounds (fallback)
+        questions_per_round: Questions per round (fallback)
+        num_sheets: How many sheets to generate
         output_path: Output file path
     
     Returns:
@@ -285,6 +328,7 @@ def generate_blank_templates(
     template_buffer = generate_quiz_answer_sheet(
         venue_name=venue_name,
         session_date=session_date,
+        questions_by_round=questions_by_round,
         total_rounds=total_rounds,
         questions_per_round=questions_per_round,
         team_name="",
