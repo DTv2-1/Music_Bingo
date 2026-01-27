@@ -941,6 +941,7 @@ def host_stream(request, session_id):
         last_round = session.current_round
         last_question = session.current_question
         last_progress = None
+        last_keepalive = timezone.now()  # Track last keepalive message
         
         # Send initial connection message
         yield f"data: {json.dumps({'type': 'connected', 'session_id': session_id})}\n\n"
@@ -1057,7 +1058,15 @@ def host_stream(request, session_id):
                     last_round = session.current_round
                     last_question = session.current_question
                 
-                # Heartbeat
+                # Send keepalive message every 30 seconds to prevent Cloud Run timeout
+                # This is crucial for long-lived SSE connections
+                time_since_keepalive = (current_time - last_keepalive).total_seconds()
+                if time_since_keepalive >= 30:
+                    yield f"data: {json.dumps({'type': 'keepalive', 'timestamp': current_time.isoformat()})}\n\n"
+                    last_keepalive = current_time
+                    logger.debug(f"💓 [SSE] Keepalive sent for session {session_id}")
+                
+                # Lightweight heartbeat comment (doesn't reset Cloud Run timeout, but helps browsers)
                 yield f": heartbeat\n\n"
                 
                 # Wait 1 second before next check

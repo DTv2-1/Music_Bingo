@@ -754,6 +754,7 @@
         let autoAdvanceSeconds = 15;
         let questionStartedAt = null;
         let countdownInterval = null;
+        let lastQuestionStartedAt = null; // Track last question start to avoid restarting countdown
 
         // SSE connection for host panel
         function connectHostSSE() {
@@ -774,6 +775,10 @@
                     switch (data.type) {
                         case 'connected':
                             console.log(`Connected to session ${data.session_id}`);
+                            break;
+                        case 'keepalive':
+                            // Keepalive message to prevent Cloud Run timeout - no action needed
+                            console.log('💓 [SSE] Keepalive received');
                             break;
                         case 'generation_progress':
                             // Update progress bar
@@ -979,28 +984,20 @@
                         console.log('[TTS] Auto-playing question:', question.text);
                         return playTTS(question.text, 'daniel');
                     }).then(() => {
-                        // Start countdown after TTS completes
-                        console.log('[COUNTDOWN] Starting countdown after round announcement + question');
-                        return fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
-                            method: 'POST'
-                        });
+                        // Countdown already started by backend when question began
+                        console.log('[TTS] ✅ TTS completed - countdown already running from backend');
                     }).catch(err => {
                         console.error('[TTS] Error playing round announcement:', err);
                         // Still play the question even if round announcement fails
                         playTTS(question.text, 'daniel').then(() => {
-                            return fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
-                                method: 'POST'
-                            });
+                            console.log('[TTS] ✅ Question TTS completed - countdown already running from backend');
                         });
                     });
                 } else {
-                    // Just play the question, then start countdown
+                    // Just play the question - countdown already running from backend
                     console.log('[TTS] Auto-playing question:', question.text);
                     playTTS(question.text, 'daniel').then(() => {
-                        console.log('[COUNTDOWN] Starting countdown after question');
-                        return fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
-                            method: 'POST'
-                        });
+                        console.log('[TTS] ✅ Question TTS completed - countdown already running from backend');
                     });
                 }
             }
@@ -1191,13 +1188,11 @@
                         lastSpokenQuestionId = currentQuestion.id;
                         await playTTS(currentQuestion.text, 'daniel');
                         
-                        // AHORA iniciar el countdown después de que todo el TTS terminó
-                        await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
-                            method: 'POST'
-                        });
+                        // Countdown ya fue iniciado por el backend al empezar el quiz
+                        console.log('[TTS] ✅ Welcome sequence completed - countdown already running from backend');
                     }
 
-                    console.log('✅ Quiz started - countdown will begin after TTS');
+                    console.log('✅ Quiz started - countdown already running from backend');
                 } else {
                     alert('Error: ' + (data.error || 'Could not start quiz'));
                 }
@@ -1571,9 +1566,22 @@
         }
 
         function startCountdown() {
-            stopCountdown(); // Clear any existing interval
+            // Only restart countdown if the questionStartedAt has changed
+            // This prevents multiple timers from starting for the same question
+            if (questionStartedAt === lastQuestionStartedAt && countdownInterval !== null) {
+                console.log('[COUNTDOWN] ✋ Already running for this question, skipping restart');
+                console.log('   - Current questionStartedAt:', questionStartedAt);
+                console.log('   - Last questionStartedAt:', lastQuestionStartedAt);
+                return;
+            }
             
-            console.log('[COUNTDOWN] Starting countdown interval');
+            // IMPORTANT: Stop any existing interval before starting a new one
+            stopCountdown();
+            
+            // Remember this question's start time to prevent duplicate timers
+            lastQuestionStartedAt = questionStartedAt;
+            
+            console.log('[COUNTDOWN] ▶️ Starting NEW countdown interval');
             console.log('   - autoAdvanceEnabled:', autoAdvanceEnabled);
             console.log('   - autoAdvanceSeconds:', autoAdvanceSeconds);
             console.log('   - autoAdvancePaused:', autoAdvancePaused);
@@ -1610,9 +1618,13 @@
                 // Auto-advance when time is up (only if enabled and not paused, and only once)
                 if (remaining === 0 && !hasAutoAdvanced) {
                     hasAutoAdvanced = true; // Prevent multiple calls
+                    console.log('⏰ [COUNTDOWN] Timer reached 0!');
+                    
+                    // CRITICAL: Stop the countdown IMMEDIATELY to prevent more logs
+                    stopCountdown();
                     
                     if (autoAdvanceEnabled && !autoAdvancePaused) {
-                        console.log('⏰ [COUNTDOWN] Timer reached 0 - auto-advancing to next question');
+                        console.log('✅ [COUNTDOWN] Auto-advancing to next question');
                         console.log('   - autoAdvanceEnabled:', autoAdvanceEnabled);
                         console.log('   - autoAdvancePaused:', autoAdvancePaused);
                         nextQuestion();
@@ -1628,7 +1640,8 @@
         }
 
         function stopCountdown() {
-            if (countdownInterval) {
+            if (countdownInterval !== null) {
+                console.log('[COUNTDOWN] 🛑 Stopping countdown interval');
                 clearInterval(countdownInterval);
                 countdownInterval = null;
             }
