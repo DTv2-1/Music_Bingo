@@ -450,6 +450,121 @@
             font-size: 0.8em;
             border-radius: 8px;
         }
+
+        /* 🎨 CUSTOM MODAL STYLES */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .custom-modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .custom-modal {
+            background: linear-gradient(135deg, rgba(26, 31, 41, 0.98), rgba(11, 14, 20, 0.98));
+            border: 2px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                        0 0 0 1px rgba(79, 172, 254, 0.1);
+            transform: scale(0.9) translateY(-20px);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .custom-modal-overlay.show .custom-modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .custom-modal-icon {
+            font-size: 3em;
+            text-align: center;
+            margin-bottom: 16px;
+            animation: modalIconBounce 0.6s ease;
+        }
+
+        @keyframes modalIconBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .custom-modal-title {
+            font-size: 1.5em;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 12px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .custom-modal-message {
+            font-size: 1em;
+            text-align: center;
+            opacity: 0.9;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            white-space: pre-line;
+        }
+
+        .custom-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .custom-modal-btn {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .custom-modal-btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .custom-modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(79, 172, 254, 0.5);
+        }
+
+        .custom-modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid var(--border);
+        }
+
+        .custom-modal-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Modal types */
+        .custom-modal.success .custom-modal-icon { color: #00f2fe; }
+        .custom-modal.error .custom-modal-icon { color: #ff4b2b; }
+        .custom-modal.warning .custom-modal-icon { color: #ffc107; }
+        .custom-modal.info .custom-modal-icon { color: #4facfe; }
     </style>
     <script src="/config.js"></script>
 </head>
@@ -1180,10 +1295,9 @@
                 console.timeEnd('init-total');
             } catch (error) {
                 console.error('Error initializing host view:', error);
-                alert('Error loading session. Please check the session ID or create a new session.');
-                if (confirm('Go to Session Manager?')) {
+                showModal('error', 'Session Error', 'Error loading session. Please check the session ID or create a new session.', 'Go to Sessions', () => {
                     window.location.href = '/pub-quiz-sessions.html';
-                }
+                });
                 console.timeEnd('init-total');
             }
         }
@@ -1195,7 +1309,7 @@
             // Validar que haya preguntas generadas
             const btn = document.getElementById('btnStart');
             if (btn.disabled) {
-                alert('⚠️ Please generate questions first by clicking the "🔄 Generate" button!');
+                showModal('warning', 'Generate Questions First', 'Please generate questions first by clicking the "🔄 Generate" button!');
                 return;
             }
 
@@ -1231,11 +1345,11 @@
 
                     console.log('✅ Quiz started');
                 } else {
-                    alert('Error: ' + (data.error || 'Could not start quiz'));
+                    showModal('error', 'Start Error', data.error || 'Could not start quiz');
                 }
             } catch (error) {
                 console.error('Error starting quiz:', error);
-                alert('Error starting quiz');
+                showModal('error', 'Start Error', 'Error starting quiz');
             }
         }
 
@@ -1245,7 +1359,7 @@
             // Check if there are registered teams
             const teamsCount = parseInt(document.getElementById('statTeams').textContent) || 0;
             if (teamsCount === 0) {
-                alert('⚠️ You need at least one registered team before generating questions!\n\nPlease wait for teams to register and vote for genres.');
+                showModal('warning', 'No Teams Registered', 'You need at least one registered team before generating questions!\n\nPlease wait for teams to register and vote for genres.');
                 return;
             }
             
@@ -1268,13 +1382,13 @@
                 
                 if (!includeMultipleChoice && !includeWritten) {
                     console.error('❌ [FE_GENERATE] No question types selected');
-                    alert('Please select at least one question type!');
+                    showModal('warning', 'Select Question Type', 'Please select at least one question type!');
                     return;
                 }
 
                 if (easyCount + mediumCount + hardCount === 0) {
                     console.error('❌ [FE_GENERATE] No difficulty levels selected');
-                    alert('Please select at least one difficulty level with count > 0!');
+                    showModal('warning', 'Select Difficulty', 'Please select at least one difficulty level with count > 0!');
                     return;
                 }
 
@@ -1314,19 +1428,19 @@
                     console.log('✅ [FE_GENERATE] Generation successful!');
                     console.log(`   Selected genres: ${data.selected_genres.join(', ')}`);
                     questionsGenerated = true;
-                    alert(`Quiz generated! Genres: ${data.selected_genres.join(', ')}`);
+                    showModal('success', 'Quiz Generated!', `Genres: ${data.selected_genres.join(', ')}`, 'OK', () => location.reload());
 
                     // El SSE actualizará automáticamente los stats y botones
                     console.log('🔄 [FE_GENERATE] Waiting for SSE to update display...');
                 } else {
                     console.error('❌ [FE_GENERATE] Generation failed:', data.error);
-                    alert('Error: ' + data.error);
+                    showModal('error', 'Generation Error', data.error);
                 }
             } catch (error) {
                 console.error('❌ [FE_GENERATE] Exception caught:', error);
                 console.error('   Error message:', error.message);
                 console.error('   Error stack:', error.stack);
-                alert('Error generating questions: ' + error.message);
+                showModal('error', 'Generation Error', 'Error generating questions: ' + error.message);
             }
         }
 
@@ -1535,13 +1649,13 @@
                     if (data.status === 'halftime') {
                         console.log('[HALFTIME] 🍻 DETECTED! Round:', data.current_round, 'Question:', data.current_question);
                         console.log('[HALFTIME] 🔔 Showing alert to user...');
-                        alert('🍻 HALFTIME! Take a short break!');
+                        showModal('info', '🍻 HALFTIME!', 'Take a short break! Click OK to continue when ready.', 'Ready!');
                         console.log('[HALFTIME] ✅ Alert shown, updating UI...');
                         document.getElementById('questionText').textContent = 'HALFTIME BREAK 🍻';
                         document.getElementById('currentGenre').textContent = 'BREAK';
                         console.log('[HALFTIME] ✅ UI updated');
                     } else if (data.status === 'completed') {
-                        alert('🎉 Quiz completed! Check the final leaderboard!');
+                        showModal('success', '🎉 Quiz Completed!', 'Check the final leaderboard!');
                         document.getElementById('questionText').textContent = 'QUIZ COMPLETED! 🎉';
                         document.getElementById('currentGenre').textContent = 'FINISH';
                     }
@@ -1589,7 +1703,7 @@
         async function updateTimerDuration() {
             const seconds = parseInt(document.getElementById('timerSeconds').value);
             if (seconds < 5 || seconds > 120) {
-                alert('Timer must be between 5 and 120 seconds');
+                showModal('warning', 'Invalid Timer', 'Timer must be between 5 and 120 seconds');
                 return;
             }
             
@@ -1822,7 +1936,7 @@
                         console.log('✅ URL copied to clipboard via execCommand');
                     } catch (err) {
                         console.error('❌ Failed to copy:', err);
-                        alert('❌ Could not copy. Please copy manually.');
+                        showModal('error', 'Copy Failed', 'Could not copy. Please copy manually.');
                         return;
                     } finally {
                         document.body.removeChild(textArea);
@@ -1841,7 +1955,7 @@
                 
             } catch (err) {
                 console.error('❌ Copy failed:', err);
-                alert('❌ Could not copy to clipboard. Please copy manually.');
+                showModal('error', 'Copy Failed', 'Could not copy to clipboard. Please copy manually.');
             }
         }
 
@@ -1857,14 +1971,13 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    alert('✅ Quiz reset successfully! Reloading page...');
-                    window.location.reload();
+                    showModal('success', 'Reset Successful', 'Quiz reset successfully! Reloading page...', 'OK', () => window.location.reload());
                 } else {
-                    alert('❌ Error: ' + (data.error || 'Could not reset quiz'));
+                    showModal('error', 'Reset Error', data.error || 'Could not reset quiz');
                 }
             } catch (error) {
                 console.error('Error resetting quiz:', error);
-                alert('❌ Error resetting quiz');
+                showModal('error', 'Reset Error', 'Error resetting quiz');
             }
         }
 
@@ -1878,7 +1991,7 @@
         async function printAnswerSheets() {
             // Check if questions have been generated
             if (!questionsGenerated) {
-                alert('⚠️ Please generate quiz questions first!\n\nClick the "🔄 Generate" button to create questions before printing answer sheets.');
+                showModal('warning', 'Generate Questions First', 'Please generate quiz questions first!\n\nClick the "🔄 Generate" button to create questions before printing answer sheets.');
                 return;
             }
             
@@ -1888,7 +2001,7 @@
             
             const sheets = parseInt(numSheets);
             if (isNaN(sheets) || sheets <= 0 || sheets > 100) {
-                alert('❌ Please enter a number between 1 and 100');
+                showModal('warning', 'Invalid Number', 'Please enter a number between 1 and 100');
                 return;
             }
 
@@ -1925,16 +2038,71 @@
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
 
-                alert(`✅ Downloaded ${sheets} answer sheets!`);
+                showModal('success', 'Download Complete', `Downloaded ${sheets} answer sheets!`);
 
             } catch (error) {
                 console.error('Error generating answer sheets:', error);
-                alert('❌ Error: ' + error.message);
+                showModal('error', 'Error', error.message);
             } finally {
                 // Restore button
                 event.target.innerHTML = '<span>🖨️ Print Answer Sheets</span>';
                 event.target.disabled = false;
             }
+        }
+
+        // 🎨 CUSTOM MODAL SYSTEM
+        function showModal(type = 'info', title = '', message = '', confirmText = 'OK', onConfirm = null) {
+            // Remove existing modal if any
+            const existingModal = document.getElementById('customModalOverlay');
+            if (existingModal) existingModal.remove();
+
+            // Icon mapping
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+
+            // Create modal
+            const modalHTML = `
+                <div class="custom-modal-overlay" id="customModalOverlay">
+                    <div class="custom-modal ${type}">
+                        <div class="custom-modal-icon">${icons[type] || icons.info}</div>
+                        <div class="custom-modal-title">${title}</div>
+                        <div class="custom-modal-message">${message}</div>
+                        <div class="custom-modal-buttons">
+                            <button class="custom-modal-btn custom-modal-btn-primary" onclick="closeModal('customModalOverlay', ${onConfirm ? 'true' : 'false'})">${confirmText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            // Store callback
+            if (onConfirm) {
+                window.customModalCallback = onConfirm;
+            }
+
+            // Animate in
+            setTimeout(() => {
+                document.getElementById('customModalOverlay').classList.add('show');
+            }, 10);
+        }
+
+        function closeModal(modalId, executeCallback = false) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.remove();
+                if (executeCallback && window.customModalCallback) {
+                    window.customModalCallback();
+                    window.customModalCallback = null;
+                }
+            }, 300);
         }
     </script>
 </body>
