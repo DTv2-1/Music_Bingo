@@ -1187,17 +1187,19 @@
                     isPlayingWelcomeMessage = true;
                     isPlayingQuestionTTS = true; // También bloquear auto-play de preguntas
                     
-                    // Reproducir mensaje de bienvenida primero
-                    if (data.welcome_message) {
-                        await playTTS(data.welcome_message, 'daniel');
-                    }
+                    console.log('[TTS] 🎬 Starting welcome sequence');
                     
-                    // Desbloquear TTS automático
-                    isPlayingWelcomeMessage = false;
-                    
-                    // Anunciar género de la primera ronda
-                    if (currentQuestion) {
-                        try {
+                    try {
+                        // Reproducir mensaje de bienvenida primero
+                        if (data.welcome_message) {
+                            await playTTS(data.welcome_message, 'daniel');
+                        }
+                        
+                        // Desbloquear TTS automático
+                        isPlayingWelcomeMessage = false;
+                        
+                        // Anunciar género de la primera ronda
+                        if (currentQuestion) {
                             const genre = currentQuestion.genre || 'General';
                             await playTTS(`Round 1: ${genre}`, 'daniel');
                             
@@ -1206,12 +1208,18 @@
                             await playTTS(currentQuestion.text, 'daniel');
                             
                             console.log('[TTS] ✅ Welcome sequence completed');
-                        } catch (err) {
-                            console.error('[TTS] ❌ Error in welcome sequence:', err);
-                        } finally {
-                            // Always start countdown and unlock TTS
+                        } else {
+                            console.log('[TTS] ⚠️ No currentQuestion yet, will auto-play when SSE updates');
+                        }
+                    } catch (err) {
+                        console.error('[TTS] ❌ Error in welcome sequence:', err);
+                    } finally {
+                        // ALWAYS unlock TTS and start countdown
+                        console.log('[TTS] 🔓 Unlocking TTS for future questions');
+                        isPlayingQuestionTTS = false; // Unlock for future questions
+                        
+                        if (currentQuestion) {
                             console.log('[TTS] ✅ Starting countdown now');
-                            isPlayingQuestionTTS = false; // Unlock for future questions
                             await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
                                 method: 'POST'
                             });
