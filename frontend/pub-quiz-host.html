@@ -980,33 +980,35 @@
                 if (roundChanged) {
                     console.log('[TTS] Announcing new round:', question.round, '-', question.genre);
                     const roundAnnouncement = `Round ${question.round}: ${question.genre}`;
-                    playTTS(roundAnnouncement, 'daniel').then(() => {
-                        console.log('[TTS] Auto-playing question:', question.text);
-                        return playTTS(question.text, 'daniel');
-                    }).then(async () => {
-                        console.log('[TTS] ✅ TTS completed - starting countdown now');
-                        await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
-                            method: 'POST'
-                        });
-                    }).catch(err => {
-                        console.error('[TTS] Error playing round announcement:', err);
-                        // Still play the question even if round announcement fails
-                        playTTS(question.text, 'daniel').then(async () => {
-                            console.log('[TTS] ✅ Question TTS completed - starting countdown now');
+                    playTTS(roundAnnouncement, 'daniel')
+                        .then(() => {
+                            console.log('[TTS] Auto-playing question:', question.text);
+                            return playTTS(question.text, 'daniel');
+                        })
+                        .catch(err => {
+                            console.error('[TTS] Error playing TTS:', err);
+                        })
+                        .finally(async () => {
+                            // Always start countdown, even if TTS failed
+                            console.log('[TTS] Starting countdown (TTS may have failed)');
                             await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
                                 method: 'POST'
                             });
                         });
-                    });
                 } else {
                     // Just play the question, then start countdown
                     console.log('[TTS] Auto-playing question:', question.text);
-                    playTTS(question.text, 'daniel').then(async () => {
-                        console.log('[TTS] ✅ Question TTS completed - starting countdown now');
-                        await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
-                            method: 'POST'
+                    playTTS(question.text, 'daniel')
+                        .catch(err => {
+                            console.error('[TTS] Error playing question:', err);
+                        })
+                        .finally(async () => {
+                            // Always start countdown, even if TTS failed
+                            console.log('[TTS] Starting countdown (TTS may have failed)');
+                            await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
+                                method: 'POST'
+                            });
                         });
-                    });
                 }
             }
 
@@ -1189,21 +1191,27 @@
                     
                     // Anunciar género de la primera ronda
                     if (currentQuestion) {
-                        const genre = currentQuestion.genre || 'General';
-                        await playTTS(`Round 1: ${genre}`, 'daniel');
-                        
-                        // Reproducir la primera pregunta
-                        lastSpokenQuestionId = currentQuestion.id;
-                        await playTTS(currentQuestion.text, 'daniel');
-                        
-                        // NOW start the countdown after all TTS is done
-                        console.log('[TTS] ✅ Welcome sequence completed - starting countdown now');
-                        await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
-                            method: 'POST'
-                        });
+                        try {
+                            const genre = currentQuestion.genre || 'General';
+                            await playTTS(`Round 1: ${genre}`, 'daniel');
+                            
+                            // Reproducir la primera pregunta
+                            lastSpokenQuestionId = currentQuestion.id;
+                            await playTTS(currentQuestion.text, 'daniel');
+                            
+                            console.log('[TTS] ✅ Welcome sequence completed');
+                        } catch (err) {
+                            console.error('[TTS] Error in welcome sequence:', err);
+                        } finally {
+                            // Always start countdown, even if TTS failed
+                            console.log('[TTS] Starting countdown now');
+                            await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
+                                method: 'POST'
+                            });
+                        }
                     }
 
-                    console.log('✅ Quiz started - countdown begins after TTS');
+                    console.log('✅ Quiz started');
                 } else {
                     alert('Error: ' + (data.error || 'Could not start quiz'));
                 }
