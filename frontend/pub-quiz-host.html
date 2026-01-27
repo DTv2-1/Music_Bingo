@@ -745,6 +745,7 @@
         let hostEventSource = null;
         let lastSpokenQuestionId = null; // Track last spoken question to avoid repetition
         let isPlayingWelcomeMessage = false; // Flag to prevent question TTS during welcome
+        let isPlayingQuestionTTS = false; // Flag to prevent multiple TTS from firing simultaneously
         let currentRound = 0; // Track current round number
         let roundGenres = {}; // Store round -> genre mapping
         
@@ -973,8 +974,10 @@
             }
 
             // Auto-play TTS for new questions
-            if (isNewQuestion && !showingAnswer && !isPlayingWelcomeMessage && question.id !== lastSpokenQuestionId) {
+            if (isNewQuestion && !showingAnswer && !isPlayingWelcomeMessage && !isPlayingQuestionTTS && question.id !== lastSpokenQuestionId) {
                 lastSpokenQuestionId = question.id;
+                isPlayingQuestionTTS = true;
+                console.log('[TTS] 🎤 Starting TTS sequence for question', question.id);
                 
                 // If round changed, announce the round first, then the question
                 if (roundChanged) {
@@ -986,11 +989,11 @@
                             return playTTS(question.text, 'daniel');
                         })
                         .catch(err => {
-                            console.error('[TTS] Error playing TTS:', err);
+                            console.error('[TTS] ❌ Error playing TTS:', err);
                         })
                         .finally(async () => {
-                            // Always start countdown, even if TTS failed
-                            console.log('[TTS] Starting countdown (TTS may have failed)');
+                            console.log('[TTS] ✅ TTS sequence complete, starting countdown');
+                            isPlayingQuestionTTS = false;
                             await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
                                 method: 'POST'
                             });
@@ -1000,16 +1003,18 @@
                     console.log('[TTS] Auto-playing question:', question.text);
                     playTTS(question.text, 'daniel')
                         .catch(err => {
-                            console.error('[TTS] Error playing question:', err);
+                            console.error('[TTS] ❌ Error playing question:', err);
                         })
                         .finally(async () => {
-                            // Always start countdown, even if TTS failed
-                            console.log('[TTS] Starting countdown (TTS may have failed)');
+                            console.log('[TTS] ✅ TTS complete, starting countdown');
+                            isPlayingQuestionTTS = false;
                             await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
                                 method: 'POST'
                             });
                         });
                 }
+            } else if (isNewQuestion && isPlayingQuestionTTS) {
+                console.log('[TTS] ⏸️ Skipping TTS - already playing for another question');
             }
 
             console.log('[SSE_UPDATE] ✅ Question display updated');
@@ -1180,6 +1185,7 @@
                     document.getElementById('btnNext').disabled = false;
                     // Bloquear TTS automático de preguntas durante el mensaje de bienvenida
                     isPlayingWelcomeMessage = true;
+                    isPlayingQuestionTTS = true; // También bloquear auto-play de preguntas
                     
                     // Reproducir mensaje de bienvenida primero
                     if (data.welcome_message) {
@@ -1201,10 +1207,11 @@
                             
                             console.log('[TTS] ✅ Welcome sequence completed');
                         } catch (err) {
-                            console.error('[TTS] Error in welcome sequence:', err);
+                            console.error('[TTS] ❌ Error in welcome sequence:', err);
                         } finally {
-                            // Always start countdown, even if TTS failed
-                            console.log('[TTS] Starting countdown now');
+                            // Always start countdown and unlock TTS
+                            console.log('[TTS] ✅ Starting countdown now');
+                            isPlayingQuestionTTS = false; // Unlock for future questions
                             await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
                                 method: 'POST'
                             });
