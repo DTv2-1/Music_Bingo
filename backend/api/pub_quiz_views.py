@@ -558,6 +558,15 @@ def quiz_host_data(request, session_id):
     questions = QuizQuestion.objects.filter(session=session).order_by('round_number', 'question_number')
     
     logger.info(f"✅ [HOST_DATA] Found {teams.count()} teams, {rounds.count()} rounds, {questions.count()} questions")
+    logger.info(f"⏱️ [HOST_DATA] question_started_at: {session.question_started_at}")
+    
+    # Get current question details
+    current_question_obj = None
+    if session.current_round and session.current_question:
+        current_question_obj = questions.filter(
+            round_number=session.current_round,
+            question_number=session.current_question
+        ).first()
     
     return Response({
         'session': {
@@ -569,6 +578,11 @@ def quiz_host_data(request, session_id):
             'total_rounds': session.total_rounds,
             'questions_per_round': session.questions_per_round,
         },
+        'current_question': {
+            'number': session.current_question,
+            'text': current_question_obj.question_text if current_question_obj else None,
+            'question_started_at': session.question_started_at.isoformat() if session.question_started_at else None,
+        } if current_question_obj else None,
         'teams': [{
             'id': t.id,
             'team_name': t.team_name,
