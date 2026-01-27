@@ -6,8 +6,12 @@ Basado en los 50 géneros extraídos de los PDFs
 import json
 import random
 import os
+import logging
 from typing import List, Dict, Any
 from openai import OpenAI
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 
 # 50 géneros extraídos del PDF 4
