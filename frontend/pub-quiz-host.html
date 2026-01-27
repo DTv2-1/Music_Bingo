@@ -815,6 +815,12 @@
             };
             hostEventSource.onerror = (error) => {
                 console.error('❌ Host SSE Connection error:', error);
+                
+                // 🔧 FIX: Clean up TTS state when SSE disconnects
+                console.log('[SSE_ERROR] Cleaning up TTS state');
+                isPlayingWelcomeMessage = false;
+                isPlayingQuestionTTS = false;
+                
                 if (hostEventSource) {
                     hostEventSource.close();
                     hostEventSource = null;
@@ -1403,7 +1409,15 @@
             const voice = voiceId || document.getElementById('ttsVoice').value;
 
             return new Promise(async (resolve, reject) => {
+                let timeoutId;
+                
                 try {
+                    // 🔧 FIX: Add 30-second timeout
+                    timeoutId = setTimeout(() => {
+                        console.error('[TTS] ⏱️ Timeout after 30 seconds');
+                        reject(new Error('TTS timeout'));
+                    }, 30000);
+                    
                     const response = await fetch(`${BASE_URL}/api/pub-quiz/tts`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1417,21 +1431,25 @@
 
                         // Wait for audio to finish playing
                         audio.onended = () => {
+                            clearTimeout(timeoutId);
                             URL.revokeObjectURL(audioUrl);
                             resolve();
                         };
 
                         audio.onerror = (e) => {
+                            clearTimeout(timeoutId);
                             console.error('Audio playback error:', e);
                             reject(e);
                         };
 
                         audio.play();
                     } else {
+                        clearTimeout(timeoutId);
                         console.error('TTS failed:', response.status);
                         reject(new Error('TTS failed'));
                     }
                 } catch (e) {
+                    clearTimeout(timeoutId);
                     console.error('TTS failed:', e);
                     reject(e);
                 }
