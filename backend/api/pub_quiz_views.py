@@ -599,7 +599,8 @@ def start_quiz(request, session_id):
     session.status = 'in_progress'
     session.current_round = 1
     session.current_question = 1
-    # question_started_at will be set by start_countdown endpoint after TTS completes
+    # Set question_started_at immediately so countdown begins
+    session.question_started_at = timezone.now()
     session.save()
     
     # Marcar primera ronda como iniciada
