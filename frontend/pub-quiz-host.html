@@ -1188,11 +1188,14 @@
                         lastSpokenQuestionId = currentQuestion.id;
                         await playTTS(currentQuestion.text, 'daniel');
                         
-                        // Countdown ya fue iniciado por el backend al empezar el quiz
-                        console.log('[TTS] ✅ Welcome sequence completed - countdown already running from backend');
+                        // NOW start the countdown after all TTS is done
+                        console.log('[TTS] ✅ Welcome sequence completed - starting countdown now');
+                        await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
+                            method: 'POST'
+                        });
                     }
 
-                    console.log('✅ Quiz started - countdown already running from backend');
+                    console.log('✅ Quiz started - countdown begins after TTS');
                 } else {
                     alert('Error: ' + (data.error || 'Could not start quiz'));
                 }
