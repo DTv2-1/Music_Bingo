@@ -627,16 +627,26 @@ def start_quiz(request, session_id):
 @api_view(['POST'])
 def start_countdown(request, session_id):
     """Marca el inicio del countdown después de que TTS termine"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     session = get_session_by_code_or_id(session_id)
     if not session:
         return Response({"error": "Session not found"}, status=404)
     
+    logger.info(f"⏱️ [START_COUNTDOWN] Setting question_started_at for session {session_id}")
     session.question_started_at = timezone.now()
-    session.save()
+    logger.info(f"⏱️ [START_COUNTDOWN] Before save: {session.question_started_at}")
+    session.save(update_fields=['question_started_at'])
+    logger.info(f"⏱️ [START_COUNTDOWN] After save: {session.question_started_at}")
+    
+    # Verificar que se guardó
+    session.refresh_from_db()
+    logger.info(f"⏱️ [START_COUNTDOWN] After refresh_from_db: {session.question_started_at}")
     
     return Response({
         'success': True,
-        'question_started_at': session.question_started_at.isoformat()
+        'question_started_at': session.question_started_at.isoformat() if session.question_started_at else None
     })
 
 

@@ -1183,47 +1183,24 @@
                     document.getElementById('btnStart').disabled = true;
                     document.getElementById('btnShowAnswer').disabled = false;
                     document.getElementById('btnNext').disabled = false;
-                    // Bloquear TTS automático de preguntas durante el mensaje de bienvenida
-                    isPlayingWelcomeMessage = true;
-                    isPlayingQuestionTTS = true; // También bloquear auto-play de preguntas
                     
                     console.log('[TTS] 🎬 Starting welcome sequence');
                     
+                    // Solo bloquear durante el welcome message
+                    isPlayingWelcomeMessage = true;
+                    
                     try {
-                        // Reproducir mensaje de bienvenida primero
+                        // Reproducir mensaje de bienvenida
                         if (data.welcome_message) {
                             await playTTS(data.welcome_message, 'daniel');
-                        }
-                        
-                        // Desbloquear TTS automático
-                        isPlayingWelcomeMessage = false;
-                        
-                        // Anunciar género de la primera ronda
-                        if (currentQuestion) {
-                            const genre = currentQuestion.genre || 'General';
-                            await playTTS(`Round 1: ${genre}`, 'daniel');
-                            
-                            // Reproducir la primera pregunta
-                            lastSpokenQuestionId = currentQuestion.id;
-                            await playTTS(currentQuestion.text, 'daniel');
-                            
-                            console.log('[TTS] ✅ Welcome sequence completed');
-                        } else {
-                            console.log('[TTS] ⚠️ No currentQuestion yet, will auto-play when SSE updates');
+                            console.log('[TTS] ✅ Welcome message completed');
                         }
                     } catch (err) {
-                        console.error('[TTS] ❌ Error in welcome sequence:', err);
+                        console.error('[TTS] ❌ Error in welcome message:', err);
                     } finally {
-                        // ALWAYS unlock TTS and start countdown
-                        console.log('[TTS] 🔓 Unlocking TTS for future questions');
-                        isPlayingQuestionTTS = false; // Unlock for future questions
-                        
-                        if (currentQuestion) {
-                            console.log('[TTS] ✅ Starting countdown now');
-                            await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
-                                method: 'POST'
-                            });
-                        }
+                        // Desbloquear - el auto-play se encargará de la primera pregunta
+                        isPlayingWelcomeMessage = false;
+                        console.log('[TTS] 🔓 Welcome done, auto-play will handle first question');
                     }
 
                     console.log('✅ Quiz started');
