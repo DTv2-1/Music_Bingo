@@ -980,6 +980,16 @@
             }
 
             // Auto-play TTS for new questions
+            console.log('[TTS] 🔍 Checking TTS conditions for question', question.id, {
+                isNewQuestion,
+                showingAnswer,
+                isPlayingWelcomeMessage,
+                isPlayingQuestionTTS,
+                lastSpokenQuestionId,
+                currentQuestionId: question.id,
+                willPlay: isNewQuestion && !showingAnswer && !isPlayingWelcomeMessage && !isPlayingQuestionTTS && question.id !== lastSpokenQuestionId
+            });
+            
             if (isNewQuestion && !showingAnswer && !isPlayingWelcomeMessage && !isPlayingQuestionTTS && question.id !== lastSpokenQuestionId) {
                 lastSpokenQuestionId = question.id;
                 isPlayingQuestionTTS = true;
@@ -987,40 +997,50 @@
                 
                 // If round changed, announce the round first, then the question
                 if (roundChanged) {
-                    console.log('[TTS] Announcing new round:', question.round, '-', question.genre);
+                    console.log('[TTS] 📢 Announcing new round:', question.round, '-', question.genre);
                     const roundAnnouncement = `Round ${question.round}: ${question.genre}`;
+                    console.log('[TTS] 🎙️ Playing round announcement:', roundAnnouncement);
                     playTTS(roundAnnouncement, 'daniel')
                         .then(() => {
-                            console.log('[TTS] Auto-playing question:', question.text);
+                            console.log('[TTS] ✅ Round announcement complete');
+                            console.log('[TTS] 🎙️ Now playing question:', question.text);
                             return playTTS(question.text, 'daniel');
                         })
                         .catch(err => {
-                            console.error('[TTS] ❌ Error playing TTS:', err);
+                            console.error('[TTS] ❌ Error in TTS chain:', err);
+                            console.error('[TTS] ❌ Error stack:', err.stack);
                         })
                         .finally(async () => {
                             console.log('[TTS] ✅ TTS sequence complete, starting countdown');
                             isPlayingQuestionTTS = false;
+                            console.log('[TTS] 🏁 Calling start-countdown API');
                             await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
                                 method: 'POST'
                             });
+                            console.log('[TTS] ✅ start-countdown API called');
                         });
                 } else {
                     // Just play the question, then start countdown
-                    console.log('[TTS] Auto-playing question:', question.text);
+                    console.log('[TTS] 🎙️ Playing question (no round change):', question.text);
                     playTTS(question.text, 'daniel')
                         .catch(err => {
                             console.error('[TTS] ❌ Error playing question:', err);
+                            console.error('[TTS] ❌ Error stack:', err.stack);
                         })
                         .finally(async () => {
                             console.log('[TTS] ✅ TTS complete, starting countdown');
                             isPlayingQuestionTTS = false;
+                            console.log('[TTS] 🏁 Calling start-countdown API');
                             await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/start-countdown`, {
                                 method: 'POST'
                             });
+                            console.log('[TTS] ✅ start-countdown API called');
                         });
                 }
             } else if (isNewQuestion && isPlayingQuestionTTS) {
                 console.log('[TTS] ⏸️ Skipping TTS - already playing for another question');
+            } else if (isNewQuestion) {
+                console.log('[TTS] ⏭️ Skipping TTS - conditions not met (see check above)');
             }
 
             console.log('[SSE_UPDATE] ✅ Question display updated');
@@ -1407,6 +1427,8 @@
         async function playTTS(text, voiceId) {
             const txt = text || document.getElementById('questionText').textContent;
             const voice = voiceId || document.getElementById('ttsVoice').value;
+            
+            console.log('[TTS] 📞 Calling TTS API for text:', txt.substring(0, 50) + '...');
 
             return new Promise(async (resolve, reject) => {
                 let timeoutId;
@@ -1414,35 +1436,42 @@
                 try {
                     // 🔧 FIX: Add 30-second timeout
                     timeoutId = setTimeout(() => {
-                        console.error('[TTS] ⏱️ Timeout after 30 seconds');
+                        console.error('[TTS] ⏱️ Timeout after 30 seconds for text:', txt.substring(0, 50));
                         reject(new Error('TTS timeout'));
                     }, 30000);
                     
+                    console.log('[TTS] 📡 Fetching audio from API...');
                     const response = await fetch(`${BASE_URL}/api/pub-quiz/tts`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ text: txt, voice_id: voice })
                     });
+                    console.log('[TTS] 📡 API response status:', response.status);
 
                     if (response.ok) {
+                        console.log('[TTS] 🎵 Creating audio blob...');
                         const audioBlob = await response.blob();
+                        console.log('[TTS] 🎵 Blob size:', audioBlob.size, 'bytes');
                         const audioUrl = URL.createObjectURL(audioBlob);
                         const audio = new Audio(audioUrl);
 
                         // Wait for audio to finish playing
                         audio.onended = () => {
+                            console.log('[TTS] 🎵 Audio playback ended');
                             clearTimeout(timeoutId);
                             URL.revokeObjectURL(audioUrl);
                             resolve();
                         };
 
                         audio.onerror = (e) => {
+                            console.error('[TTS] 🎵 Audio playback error:', e);
                             clearTimeout(timeoutId);
-                            console.error('Audio playback error:', e);
                             reject(e);
                         };
 
+                        console.log('[TTS] 🎵 Starting audio playback...');
                         audio.play();
+                        console.log('[TTS] 🎵 Audio.play() called successfully');
                     } else {
                         clearTimeout(timeoutId);
                         console.error('TTS failed:', response.status);

@@ -1243,9 +1243,13 @@ def generate_quiz_tts(request):
         text = request.data.get('text', '')
         voice_id = request.data.get('voice_id', ELEVENLABS_VOICE_ID)
         
+        logger.info(f"🎤 [TTS] Received request for text: {text[:100]}... (voice: {voice_id})")
+        
         if not text:
+            logger.error("❌ [TTS] No text provided")
             return Response({'error': 'No text provided'}, status=400)
         
+        logger.info(f"🎙️ [TTS] Calling ElevenLabs API...")
         url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
         
         response = requests.post(
@@ -1268,15 +1272,22 @@ def generate_quiz_tts(request):
             }
         )
         
+        logger.info(f"📡 [TTS] ElevenLabs response status: {response.status_code}")
+        
         if not response.ok:
+            logger.error(f"❌ [TTS] ElevenLabs API error: {response.status_code}")
+            logger.error(f"❌ [TTS] Error details: {response.text}")
             return Response({
                 'error': f'ElevenLabs API error: {response.status_code}',
                 'details': response.text
             }, status=response.status_code)
         
+        logger.info(f"✅ [TTS] ElevenLabs returned {len(response.content)} bytes")
         return HttpResponse(response.content, content_type='audio/mpeg')
         
     except Exception as e:
+        logger.error(f"❌ [TTS] Error generating audio: {str(e)}")
+        logger.error(f"❌ [TTS] Error type: {type(e).__name__}")
         return Response({'error': str(e)}, status=500)
 
 
