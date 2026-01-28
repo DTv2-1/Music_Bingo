@@ -866,6 +866,9 @@ def quiz_stream(request, session_id):
         last_question = session.current_question
         last_status = session.status
         
+        # Keepalive tracking - send data keepalive every 30s to prevent timeout
+        last_keepalive = timezone.now()
+        
         # Send initial connection message
         yield f"data: {json.dumps({'type': 'connected', 'session_id': session_id})}\n\n"
         
@@ -954,7 +957,14 @@ def quiz_stream(request, session_id):
                         last_status = session.status
                         initial_state_sent = True
                 
-                # Send heartbeat every 15 seconds to keep connection alive
+                # Check if data keepalive is needed (every 30 seconds)
+                current_time = timezone.now()
+                time_since_keepalive = (current_time - last_keepalive).total_seconds()
+                if time_since_keepalive >= 30:
+                    yield f"data: {json.dumps({'type': 'keepalive', 'timestamp': current_time.isoformat()})}\n\n"
+                    last_keepalive = current_time
+                
+                # Send comment-based heartbeat (lightweight, doesn't trigger client events)
                 yield f": heartbeat\n\n"
                 
                 # Wait before checking again (1 second)
@@ -1109,15 +1119,17 @@ def host_stream(request, session_id):
                     last_round = session.current_round
                     last_question = session.current_question
                 
-                # Send keepalive message every 30 seconds to prevent Cloud Run timeout
-                # This is crucial for long-lived SSE connections
+                # SSE keepalive strategy (best practices):
+                # 1. Comment lines (:) every 15s - prevents timeouts, no client traffic
+                # 2. Data messages every 30s - for monitoring/debugging
                 time_since_keepalive = (current_time - last_keepalive).total_seconds()
                 if time_since_keepalive >= 30:
                     yield f"data: {json.dumps({'type': 'keepalive', 'timestamp': current_time.isoformat()})}\n\n"
                     last_keepalive = current_time
-                    logger.debug(f"💓 [SSE] Keepalive sent for session {session_id}")
+                    logger.debug(f"💓 [SSE] Data keepalive sent for session {session_id}")
                 
-                # Lightweight heartbeat comment (doesn't reset Cloud Run timeout, but helps browsers)
+                # Lightweight comment keepalive (every iteration = ~1s)
+                # This prevents proxy/Cloud Run timeouts without generating client events
                 yield f": heartbeat\n\n"
                 
                 # Wait 1 second before next check

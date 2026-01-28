@@ -728,7 +728,7 @@ async function generateJingle() {
 async function pollTaskStatus(taskId) {
     console.log('📊 Polling task status:', taskId);
 
-    const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL || 'http://localhost:8080';
+    const apiUrl = window.BACKEND_URL || '';
     const endpoint = apiUrl.includes('/api') ? `${apiUrl}/jingle-tasks/${taskId}` : `${apiUrl}/api/jingle-tasks/${taskId}`;
 
     pollingInterval = setInterval(async () => {
@@ -796,7 +796,7 @@ function showCompletedJingle(result) {
     document.getElementById('audioPlayer').classList.remove('hidden');
 
     // Set audio source
-    const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL || 'http://localhost:8080';
+    const apiUrl = window.BACKEND_URL || '';
     // result.audio_url already includes /api/jingles/filename
     const audioUrl = result.audio_url.startsWith('http')
         ? result.audio_url
@@ -1022,7 +1022,7 @@ function addToPlaylist() {
 let audioPreview = null;
 
 function playJingle(filename) {
-    const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL || 'http://localhost:8080';
+    const apiUrl = window.BACKEND_URL || '';
     const url = apiUrl.endsWith('/api')
         ? `${apiUrl}/jingles/${filename}`
         : `${apiUrl}/api/jingles/${filename}`;
@@ -1039,7 +1039,7 @@ function playJingle(filename) {
 }
 
 function downloadJingle(filename) {
-    const apiUrl = CONFIG.API_URL || CONFIG.BACKEND_URL || 'http://localhost:8080';
+    const apiUrl = window.BACKEND_URL || '';
     const url = apiUrl.endsWith('/api')
         ? `${apiUrl}/jingles/${filename}`
         : `${apiUrl}/api/jingles/${filename}`;
