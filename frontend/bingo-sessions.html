@@ -205,22 +205,228 @@
 
     <!-- Create Session Modal -->
     <div id="createModal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <h2>✨ Create New Bingo Session</h2>
-            <form id="createForm" onsubmit="createSession(event)">
-                <div class="form-group">
-                    <label for="venueName">Venue Name *</label>
-                    <input type="text" id="venueName" required placeholder="The Admiral Rodney">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="hideCreateModal()" title="Close">✕</button>
+            <div class="modal-header">
+                <img src="assets/perfect-dj-logo.png" alt="Perfect DJ" class="modal-logo">
+                <h2>🎵 Music Bingo Setup</h2>
+                <p>Configure your game before starting</p>
+            </div>
+            
+            <div class="modal-body">
+                <div class="setup-field">
+                    <label for="setupVenueName">🏠 Venue Name *</label>
+                    <input type="text" id="setupVenueName" placeholder="e.g., The Admiral Rodney Southwell" required>
+                    <small>Enter the pub or venue name (required)</small>
                 </div>
-                <div class="form-group">
-                    <label for="hostName">Host Name (Optional)</label>
-                    <input type="text" id="hostName" placeholder="Philip Hill">
+                
+                <div class="setup-field">
+                    <label for="setupNumPlayers">👥 Number of Players *</label>
+                    <input type="number" id="setupNumPlayers" value="25" min="5" max="100" required>
+                    <small>How many people will play? (affects song selection)</small>
                 </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="hideCreateModal()" style="flex: 1;">Cancel</button>
-                    <button type="submit" class="btn btn-primary" style="flex: 2;">🚀 Create & Start</button>
+                
+                <div class="setup-field">
+                    <label>🎵 Music Era (Decades) *</label>
+                    <small>Select the decades you want to include. Default: 60s-90s for mature audiences.</small>
+                    
+                    <div class="decades-grid">
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="decades" value="1950s">
+                            <span class="decade-label">1950s<br><small>Rock & Roll</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="decades" value="1960s" checked>
+                            <span class="decade-label">1960s<br><small>Swinging Sixties</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="decades" value="1970s" checked>
+                            <span class="decade-label">1970s<br><small>Disco & Glam</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="decades" value="1980s" checked>
+                            <span class="decade-label">1980s<br><small>Pop & New Wave</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="decades" value="1990s" checked>
+                            <span class="decade-label">1990s<br><small>Britpop & Dance</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="decades" value="2000s">
+                            <span class="decade-label">2000s<br><small>Modern Classics</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="decades" value="2010s">
+                            <span class="decade-label">2010s<br><small>Contemporary</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="decades" value="2020s">
+                            <span class="decade-label">2020s<br><small>Latest Hits</small></span>
+                        </label>
+                    </div>
                 </div>
-            </form>
+                
+                <div class="setup-field voice-selector">
+                    <label>🎤️ DJ Voice (British) *</label>
+                    <small>Choose your announcer voice and preview it</small>
+                    
+                    <div class="voice-cards">
+                        <div class="voice-card" data-voice-id="XrExE9yKIg1WjnnlVkGX" data-voice-name="Charlotte">
+                            <div class="voice-icon female">♀️</div>
+                            <div class="voice-info">
+                                <strong>Charlotte</strong>
+                                <span>Warm & Professional</span>
+                            </div>
+                            <button type="button" class="preview-btn" onclick="previewVoice('XrExE9yKIg1WjnnlVkGX', 'Charlotte')">
+                                🔊 Preview
+                            </button>
+                        </div>
+                        
+                        <div class="voice-card selected" data-voice-id="JBFqnCBsd6RMkjVDRZzb" data-voice-name="George">
+                            <div class="voice-icon male">♂️</div>
+                            <div class="voice-info">
+                                <strong>George</strong>
+                                <span>Deep & Authoritative</span>
+                            </div>
+                            <button type="button" class="preview-btn" onclick="previewVoice('JBFqnCBsd6RMkjVDRZzb', 'George')">
+                                🔊 Preview
+                            </button>
+                        </div>
+                        
+                        <div class="voice-card" data-voice-id="pFZP5JQG7iQjIQuC4Bku" data-voice-name="Lily">
+                            <div class="voice-icon female">♀️</div>
+                            <div class="voice-info">
+                                <strong>Lily</strong>
+                                <span>Young & Energetic</span>
+                            </div>
+                            <button type="button" class="preview-btn" onclick="previewVoice('pFZP5JQG7iQjIQuC4Bku', 'Lily')">
+                                🔊 Preview
+                            </button>
+                        </div>
+                        
+                        <div class="voice-card" data-voice-id="nPczCjzI2devNBz1zQrb" data-voice-name="Brian">
+                            <div class="voice-icon male">♂️</div>
+                            <div class="voice-info">
+                                <strong>Brian</strong>
+                                <span>News Presenter</span>
+                            </div>
+                            <button type="button" class="preview-btn" onclick="previewVoice('nPczCjzI2devNBz1zQrb', 'Brian')">
+                                🔊 Preview
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="setupVoice" value="JBFqnCBsd6RMkjVDRZzb" required>
+                </div>
+                
+                <!-- Marketing & Branding Section -->
+                <div class="setup-section-divider">
+                    <h3>📣 Marketing & Branding (Optional)</h3>
+                    <p class="section-description">Add your pub's branding to the bingo cards</p>
+                </div>
+                
+                <div class="setup-field">
+                    <label for="setupPubLogo">🖼️ Pub Logo</label>
+                    <div class="logo-input-group">
+                        <input type="url" id="setupPubLogo" placeholder="https://example.com/logo.png">
+                        <button type="button" class="upload-btn" onclick="document.getElementById('logoFileInput').click()">
+                            📤 Upload
+                        </button>
+                        <input type="file" id="logoFileInput" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
+                    </div>
+                    <small>Enter a URL or upload your logo (PNG, JPG, or SVG)</small>
+                    <div id="logoPreview" class="logo-preview" style="display: none;">
+                        <img id="logoPreviewImg" src="" alt="Logo preview">
+                        <button type="button" class="remove-btn" onclick="removeLogo()">✕</button>
+                    </div>
+                </div>
+                
+                <div class="setup-field">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="setupIncludeQR" onchange="toggleSocialMediaField()">
+                        <span>📲 Include QR code for customers to follow your social media</span>
+                    </label>
+                    <small>Customers can scan the QR code on their bingo cards to follow you</small>
+                </div>
+                
+                <div class="setup-field" id="socialMediaField" style="display: none; margin-top: 15px; padding-left: 35px;">
+                    <label for="setupSocialMedia">📱 Social Media</label>
+                    <div class="social-input-group">
+                        <select id="socialPlatform" class="platform-selector" onchange="updateSocialPreview()">
+                            <option value="instagram">Instagram</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="twitter">Twitter/X</option>
+                            <option value="custom">Custom URL</option>
+                        </select>
+                        <input type="text" id="setupSocialMedia" placeholder="yourpubname" oninput="updateSocialPreview()">
+                    </div>
+                    <small id="socialPreview" class="social-preview">QR will link to: https://instagram.com/yourpubname</small>
+                </div>
+                
+                <div class="setup-field">
+                    <label>🏆 Prizes (Optional)</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px;">
+                        <div>
+                            <label for="prize4Corners" style="font-size: 12px; color: #666;">All 4 Corners</label>
+                            <input type="text" id="prize4Corners" placeholder="e.g., £10 voucher" style="margin-top: 3px;">
+                        </div>
+                        <div>
+                            <label for="prizeFirstLine" style="font-size: 12px; color: #666;">First Line</label>
+                            <input type="text" id="prizeFirstLine" placeholder="e.g., £15 voucher" style="margin-top: 3px;">
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <label for="prizeFullHouse" style="font-size: 12px; color: #666;">Full House</label>
+                            <input type="text" id="prizeFullHouse" placeholder="e.g., £50 cash prize" style="margin-top: 3px;">
+                        </div>
+                    </div>
+                    <small>These will appear on the generated bingo cards</small>
+                </div>
+                
+                <div class="setup-estimation" id="setupEstimation">
+                    📊 Estimated: ~75 songs, 38 minutes
+                </div>
+                
+                <div class="setup-field" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <label style="color: white; font-weight: 600; margin: 0;">🎵 Create Custom Jingles</label>
+                            <small style="color: rgba(255,255,255,0.9); display: block; margin-top: 5px;">
+                                Generate professional ad jingles to play during your game
+                            </small>
+                        </div>
+                        <a href="/jingle" target="_blank" class="btn-secondary" style="background: white; color: #667eea; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: 600; white-space: nowrap;">
+                            Open Jingle Generator →
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="setup-field" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 15px; border-radius: 10px; margin-top: 15px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <label style="color: white; font-weight: 600; margin: 0;">📅 Schedule Jingles</label>
+                            <small style="color: rgba(255,255,255,0.9); display: block; margin-top: 5px;">
+                                Set when jingles play based on date, time, and day of week
+                            </small>
+                        </div>
+                        <a href="/jingle-manager" target="_blank" class="btn-secondary" style="background: white; color: #11998e; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: 600; white-space: nowrap;">
+                            Open Jingle Manager →
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-primary" onclick="createSession(event)">🎮 Create & Start Session</button>
+                <p class="modal-note">You can change these settings later</p>
+            </div>
         </div>
     </div>
 
@@ -312,8 +518,49 @@
         async function createSession(event) {
             event.preventDefault();
             
-            const venueName = document.getElementById('venueName').value.trim();
-            const hostName = document.getElementById('hostName').value.trim();
+            // Collect all form data
+            const venueName = document.getElementById('setupVenueName').value.trim();
+            const numPlayers = parseInt(document.getElementById('setupNumPlayers').value);
+            const voiceId = document.getElementById('setupVoice').value;
+            
+            // Get selected decades
+            const decades = Array.from(document.querySelectorAll('input[name="decades"]:checked'))
+                .map(cb => cb.value);
+            
+            if (decades.length === 0) {
+                alert('Please select at least one decade');
+                return;
+            }
+            
+            // Get branding data
+            const logoUrl = document.getElementById('setupPubLogo').value.trim();
+            const includeQr = document.getElementById('setupIncludeQR').checked;
+            let socialMedia = null;
+            
+            if (includeQr) {
+                const platform = document.getElementById('socialPlatform').value;
+                const handle = document.getElementById('setupSocialMedia').value.trim();
+                if (handle) {
+                    if (platform === 'custom') {
+                        socialMedia = handle;
+                    } else {
+                        const urls = {
+                            instagram: `https://instagram.com/${handle}`,
+                            facebook: `https://facebook.com/${handle}`,
+                            tiktok: `https://tiktok.com/@${handle}`,
+                            twitter: `https://twitter.com/${handle}`
+                        };
+                        socialMedia = urls[platform];
+                    }
+                }
+            }
+            
+            // Get prizes
+            const prizes = {
+                four_corners: document.getElementById('prize4Corners').value.trim() || null,
+                first_line: document.getElementById('prizeFirstLine').value.trim() || null,
+                full_house: document.getElementById('prizeFullHouse').value.trim() || null
+            };
 
             try {
                 const response = await fetch(`${API_URL}/api/bingo/sessions`, {
@@ -321,10 +568,13 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         venue_name: venueName,
-                        host_name: hostName,
-                        num_players: 25,
-                        voice_id: 'JBFqnCBsd6RMkjVDRZzb',
-                        decades: ['1960s', '1970s', '1980s', '1990s']
+                        num_players: numPlayers,
+                        voice_id: voiceId,
+                        decades: decades,
+                        logo_url: logoUrl || null,
+                        social_media: socialMedia,
+                        include_qr: includeQr,
+                        prizes: prizes
                     })
                 });
 
@@ -339,6 +589,91 @@
                 console.error('Error creating session:', error);
                 alert('Failed to create session');
             }
+        }
+
+        // Voice preview functionality
+        let currentAudio = null;
+        async function previewVoice(voiceId, voiceName) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+
+            // Select the voice card
+            document.querySelectorAll('.voice-card').forEach(card => card.classList.remove('selected'));
+            event.target.closest('.voice-card').classList.add('selected');
+            document.getElementById('setupVoice').value = voiceId;
+
+            // Play preview
+            const sampleText = `Hello! I'm ${voiceName}, and I'll be your music bingo host tonight!`;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/tts/preview`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: sampleText,
+                        voice_id: voiceId
+                    })
+                });
+
+                if (!response.ok) throw new Error('Preview failed');
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                currentAudio = new Audio(url);
+                currentAudio.play();
+            } catch (error) {
+                console.error('Error previewing voice:', error);
+            }
+        }
+
+        // Logo upload functionality
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('setupPubLogo').value = e.target.result;
+                document.getElementById('logoPreviewImg').src = e.target.result;
+                document.getElementById('logoPreview').style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeLogo() {
+            document.getElementById('setupPubLogo').value = '';
+            document.getElementById('logoPreview').style.display = 'none';
+            document.getElementById('logoFileInput').value = '';
+        }
+
+        // Social media functionality
+        function toggleSocialMediaField() {
+            const field = document.getElementById('socialMediaField');
+            const checkbox = document.getElementById('setupIncludeQR');
+            field.style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function updateSocialPreview() {
+            const platform = document.getElementById('socialPlatform').value;
+            const handle = document.getElementById('setupSocialMedia').value.trim();
+            const preview = document.getElementById('socialPreview');
+
+            if (!handle) {
+                preview.textContent = 'QR will link to: (enter your handle)';
+                return;
+            }
+
+            const urls = {
+                instagram: `https://instagram.com/${handle}`,
+                facebook: `https://facebook.com/${handle}`,
+                tiktok: `https://tiktok.com/@${handle}`,
+                twitter: `https://twitter.com/${handle}`,
+                custom: handle
+            };
+
+            preview.textContent = `QR will link to: ${urls[platform]}`;
         }
 
         function continueSession(sessionId) {
