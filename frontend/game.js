@@ -215,7 +215,20 @@ let backgroundMusic = null;  // Background music player
 let gameInitialized = false;
 
 window.addEventListener('DOMContentLoaded', async () => {
-    console.log('🎮 Music Bingo - Waiting for setup...');
+    console.log('🎮 Music Bingo - Initializing...');
+
+    // Check if we're loading from a session
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session');
+
+    if (sessionId) {
+        console.log(`📦 Loading session: ${sessionId}`);
+        await loadSessionAndStart(sessionId);
+        return;
+    }
+
+    // No session parameter - show setup modal
+    console.log('⚙️ No session found, showing setup modal');
 
     // Always show setup modal on page load
     // This allows users to see their saved configuration
@@ -241,6 +254,88 @@ window.addEventListener('DOMContentLoaded', async () => {
         await initializeSetupModal();
     }
 });
+
+/**
+ * Load session data and start the game automatically
+ */
+async function loadSessionAndStart(sessionId) {
+    try {
+        const API_URL = CONFIG.API_URL || '';
+        const response = await fetch(`${API_URL}/api/bingo/session/${sessionId}`);
+        
+        if (!response.ok) {
+            throw new Error('Session not found');
+        }
+
+        const session = await response.json();
+        console.log('✅ Session loaded:', session);
+
+        // Hide setup modal
+        document.getElementById('setupModal').style.display = 'none';
+
+        // Apply session configuration to game state
+        gameState.venueName = session.venue_name;
+        gameState.sessionId = sessionId;
+
+        // Save to localStorage for backwards compatibility
+        localStorage.setItem('venueName', session.venue_name);
+
+        // Store configuration
+        const config = {
+            numPlayers: session.num_players,
+            decades: session.decades,
+            voiceId: session.voice_id,
+            logoUrl: session.logo_url,
+            socialMedia: session.social_media,
+            includeQr: session.include_qr,
+            prizes: session.prizes
+        };
+
+        await saveVenueConfig(session.venue_name, config);
+
+        // Update UI with venue name
+        const venueNameInput = document.getElementById('venueName');
+        if (venueNameInput) {
+            venueNameInput.value = session.venue_name;
+        }
+
+        // Start the game with the session configuration
+        console.log('🚀 Starting game with session configuration...');
+        await startGameFromConfig(config);
+
+    } catch (error) {
+        console.error('❌ Error loading session:', error);
+        alert('Failed to load session. Please try again or create a new session.');
+        // Redirect to sessions page
+        window.location.href = '/bingo-sessions.html';
+    }
+}
+
+/**
+ * Start game with provided configuration (bypassing setup modal)
+ */
+async function startGameFromConfig(config) {
+    console.log('🎵 Starting game from config:', config);
+
+    // Set selected decades in gameState
+    gameState.selectedDecades = config.decades;
+    localStorage.setItem('selectedDecades', JSON.stringify(config.decades));
+
+    // Set voice
+    if (config.voiceId) {
+        gameState.voiceId = config.voiceId;
+    }
+
+    // Store prizes if any
+    if (config.prizes) {
+        gameState.prizes = config.prizes;
+    }
+
+    // Initialize the game (this will load pool, announcements, etc.)
+    await initializeGame();
+
+    console.log('✅ Game started successfully from session!');
+}
 
 /**
  * Initialize the setup modal with event listeners
