@@ -1895,6 +1895,15 @@
         }
 
         function startCountdown() {
+            // If questionStartedAt is null, stop any existing countdown and wait for TTS to finish
+            if (!questionStartedAt) {
+                console.log('[COUNTDOWN] ⏸️ questionStartedAt is null, stopping countdown (waiting for TTS to finish)');
+                stopCountdown();
+                lastQuestionStartedAt = null;
+                document.getElementById('countdown').textContent = '--';
+                return;
+            }
+            
             // Only restart countdown if the questionStartedAt has changed
             // This prevents multiple timers from starting for the same question
             if (questionStartedAt === lastQuestionStartedAt && countdownInterval !== null) {

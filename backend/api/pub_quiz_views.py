@@ -752,8 +752,10 @@ def next_question(request, session_id):
     
     if session.current_question < total_questions_in_round:
         session.current_question += 1
-        session.question_started_at = None  # Will be set by frontend after TTS
-        logger.info(f"➡️ [NEXT] Moving to question {session.current_question}")
+        # Keep question_started_at as None - frontend will set it after TTS via start-countdown
+        # DO NOT reset to timezone.now() here as it would start countdown before TTS finishes
+        session.question_started_at = None
+        logger.info(f"➡️ [NEXT] Moving to question {session.current_question}, question_started_at reset to None (will be set after TTS)")
     else:
         # Siguiente ronda
         current_round = session.rounds.filter(round_number=session.current_round).first()
