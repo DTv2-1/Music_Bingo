@@ -1801,11 +1801,26 @@ function updateCurrentTrackDisplay(track) {
     const title = document.getElementById('trackTitle');
     const artist = document.getElementById('trackArtist');
 
+    // Validate all elements exist before updating
+    if (!container) {
+        console.warn('⚠️ currentTrack container not found in DOM');
+        return;
+    }
+
     container.style.display = 'flex';
-    artwork.src = track.artwork_url || '';
-    artwork.alt = `${track.title} artwork`;
-    title.textContent = track.title;
-    artist.textContent = track.artist;
+    
+    if (artwork) {
+        artwork.src = track.artwork_url || '';
+        artwork.alt = `${track.title} artwork`;
+    }
+    
+    if (title) {
+        title.textContent = track.title;
+    }
+    
+    if (artist) {
+        artist.textContent = track.artist;
+    }
 }
 
 /**
@@ -1813,6 +1828,11 @@ function updateCurrentTrackDisplay(track) {
  */
 function updateCalledList() {
     const listEl = document.getElementById('calledList');
+
+    if (!listEl) {
+        console.warn('⚠️ calledList element not found in DOM');
+        return;
+    }
 
     if (gameState.called.length === 0) {
         listEl.innerHTML = `
@@ -1851,11 +1871,19 @@ function updateStats() {
     const estimatedMinutes = estimateGameDuration(totalSongs);
 
     // Update the stats counters
-    document.getElementById('calledCount').textContent = gameState.called.length;
-    document.getElementById('remainingCount').textContent = gameState.remaining.length;
+    const calledCount = document.getElementById('calledCount');
+    const remainingCount = document.getElementById('remainingCount');
+    const estimatedSongsEl = document.getElementById('estimatedSongs');
+
+    if (calledCount) {
+        calledCount.textContent = gameState.called.length;
+    }
+    
+    if (remainingCount) {
+        remainingCount.textContent = gameState.remaining.length;
+    }
 
     // Update the top estimation text to show actual game total
-    const estimatedSongsEl = document.getElementById('estimatedSongs');
     if (estimatedSongsEl) {
         estimatedSongsEl.textContent = `~${totalSongs} songs, ${estimatedMinutes} min`;
     }
