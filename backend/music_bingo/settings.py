@@ -83,19 +83,19 @@ WSGI_APPLICATION = "music_bingo.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# Use PostgreSQL in production (Cloud SQL), SQLite for local dev
 import os
+import dj_database_url
 
+# Use PostgreSQL in production (Cloud SQL), SQLite for local dev
 if os.getenv('DATABASE_URL'):
-    # Cloud SQL PostgreSQL connection via Unix socket
+    # Parse DATABASE_URL with dj-database-url (supports Cloud SQL Unix socket)
     DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("DB_NAME", "music_bingo"),
-            "USER": os.getenv("DB_USER", "postgres"),
-            "PASSWORD": os.getenv("DB_PASSWORD"),
-            "HOST": f"/cloudsql/{os.getenv('CLOUD_SQL_CONNECTION_NAME', '')}",
-        }
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,  # Connection pooling
+            conn_health_checks=True,  # Health checks for connections
+            ssl_require=False  # Cloud SQL via Unix socket no necesita SSL
+        )
     }
 else:
     # Local SQLite for development
