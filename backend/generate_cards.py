@@ -248,7 +248,20 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
         spaceAfter=2*mm,  # Reduced from 3mm to 2mm
     )
     
-    # --- HEADER SECTION WITH LOGO ON TOP LEFT ---
+    # --- HEADER SECTION WITH LOGOS ---
+    # Always try to load Perfect DJ logo first
+    perfect_dj_logo = None
+    try:
+        for logo_path in PERFECT_DJ_LOGO_PATHS:
+            if logo_path.exists():
+                perfect_dj_logo = Image(str(logo_path), width=20*mm, height=20*mm)
+                print(f"✅ Loaded Perfect DJ logo from: {logo_path}")
+                break
+    except Exception as e:
+        print(f"⚠️ Warning: Could not load Perfect DJ logo: {e}")
+    
+    # Load pub logo if provided
+    pub_logo = None
     if pub_logo_path:
         try:
             from PIL import Image as PILImage
@@ -270,54 +283,58 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
                 new_width = (max_height * aspect) * mm
             
             pub_logo = Image(pub_logo_path, width=new_width, height=new_height)
-            
-            # Perfect DJ logo on right (optimized 0.11MB version)
-            perfect_dj_logo = None
-            try:
-                # Try multiple paths for Docker compatibility
-                for logo_path in PERFECT_DJ_LOGO_PATHS:
-                    if logo_path.exists():
-                        perfect_dj_logo = Image(str(logo_path), width=20*mm, height=20*mm)
-                        break
-            except Exception as e:
-                print(f"Warning: Could not load Perfect DJ logo: {e}")
-            
-            # Create header with logos on left and right, title centered
-            if perfect_dj_logo:
-                header_table = Table(
-                    [[pub_logo, Paragraph(f"<b>MUSIC BINGO</b><br/><font size='8'>{venue_name}</font>", header_style), perfect_dj_logo]], 
-                    colWidths=[40*mm, 110*mm, 40*mm]
-                )
-                header_table.setStyle(TableStyle([
-                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                    ('ALIGN', (0, 0), (0, 0), 'LEFT'),      # Pub logo izquierda
-                    ('ALIGN', (1, 0), (1, 0), 'CENTER'),    # Título centrado
-                    ('ALIGN', (2, 0), (2, 0), 'RIGHT'),     # Perfect DJ derecha
-                ]))
-            else:
-                # Fallback sin Perfect DJ logo
-                header_table = Table(
-                    [[pub_logo, Paragraph(f"<b>MUSIC BINGO</b><br/><font size='8'>{venue_name}</font>", header_style), '']], 
-                    colWidths=[40*mm, 110*mm, 40*mm]
-                )
-                header_table.setStyle(TableStyle([
-                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                    ('ALIGN', (0, 0), (0, 0), 'LEFT'),
-                    ('ALIGN', (1, 0), (1, 0), 'CENTER'),
-                    ('ALIGN', (2, 0), (2, 0), 'RIGHT'),
-                ]))
-            
-            elements.append(header_table)
-            elements.append(Spacer(1, 1*mm))  # Reduced from 2mm to 1mm
+            print(f"✅ Loaded pub logo from: {pub_logo_path}")
         except Exception as e:
-            print(f"Error adding pub logo: {e}")
-            # Fallback to text-only title
-            title = Paragraph(f"<b>MUSIC BINGO</b><br/><font size='10'>{venue_name}</font>", header_style)
-            elements.append(title)
+            print(f"⚠️ Error loading pub logo: {e}")
+    
+    # Create header table based on available logos
+    if pub_logo and perfect_dj_logo:
+        # Both logos: pub left, title center, Perfect DJ right
+        header_table = Table(
+            [[pub_logo, Paragraph(f"<b>MUSIC BINGO</b><br/><font size='8'>{venue_name}</font>", header_style), perfect_dj_logo]], 
+            colWidths=[40*mm, 110*mm, 40*mm]
+        )
+        header_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+            ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+            ('ALIGN', (2, 0), (2, 0), 'RIGHT'),
+        ]))
+    elif pub_logo:
+        # Only pub logo: left side, title center
+        header_table = Table(
+            [[pub_logo, Paragraph(f"<b>MUSIC BINGO</b><br/><font size='8'>{venue_name}</font>", header_style), '']], 
+            colWidths=[40*mm, 110*mm, 40*mm]
+        )
+        header_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+            ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+        ]))
+    elif perfect_dj_logo:
+        # Only Perfect DJ logo: right side, title center
+        header_table = Table(
+            [['', Paragraph(f"<b>MUSIC BINGO</b><br/><font size='8'>{venue_name}</font>", header_style), perfect_dj_logo]], 
+            colWidths=[40*mm, 110*mm, 40*mm]
+        )
+        header_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+            ('ALIGN', (2, 0), (2, 0), 'RIGHT'),
+        ]))
     else:
-        # No pub logo - just title
-        title = Paragraph(f"<b>MUSIC BINGO</b><br/><font size='10'>{venue_name}</font>", header_style)
-        elements.append(title)
+        # No logos at all: just centered title
+        header_table = Table(
+            [['', Paragraph(f"<b>MUSIC BINGO</b><br/><font size='10'>{venue_name}</font>", header_style), '']], 
+            colWidths=[40*mm, 110*mm, 40*mm]
+        )
+        header_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+        ]))
+    
+    elements.append(header_table)
+    elements.append(Spacer(1, 1*mm))
     
     # Date and game number
     if not game_date:
