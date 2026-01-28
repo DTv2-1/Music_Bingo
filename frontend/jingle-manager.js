@@ -184,6 +184,8 @@ async function loadSchedules() {
         const data = await response.json();
         schedules = data.schedules || [];
         console.log('✅ Loaded schedules:', schedules.length, 'items');
+        console.log('📋 Schedule IDs:', schedules.map(s => s.id));
+        console.log('📋 Full schedules data:', schedules);
         renderSchedules();
     } catch (error) {
         console.error('❌ Error loading schedules:', error);
@@ -197,7 +199,10 @@ async function loadSchedules() {
 function renderSchedules() {
     const container = document.getElementById('schedulesList');
     
+    console.log('🎨 [RENDER] Starting render with', schedules.length, 'schedules');
+    
     if (schedules.length === 0) {
+        console.log('🎨 [RENDER] No schedules, showing empty state');
         container.innerHTML = `
             <div class="empty-state">
                 <p>📅 No schedules yet</p>
@@ -207,7 +212,10 @@ function renderSchedules() {
         return;
     }
     
-    container.innerHTML = schedules.map(schedule => `
+    console.log('🎨 [RENDER] Rendering', schedules.length, 'schedule cards');
+    container.innerHTML = schedules.map(schedule => {
+        console.log('🎨 [RENDER] Creating card for schedule:', schedule.id, schedule.jingle_name);
+        return `
         <div class="schedule-card ${schedule.enabled ? '' : 'disabled'}">
             <div class="schedule-header">
                 <h3>
@@ -269,7 +277,11 @@ function renderSchedules() {
                 </div>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
+    
+    console.log('🎨 [RENDER] Render complete. HTML length:', container.innerHTML.length);
+    console.log('🎨 [RENDER] Container element:', container);
 }
 
 // Format days of week for display
@@ -462,19 +474,24 @@ async function handleSubmit(e) {
             });
         } else {
             // Create new schedule
+            console.log('📤 [CREATE] Sending POST request with data:', formData);
             response = await fetch(`${CONFIG.API_URL}/api/jingle-schedules`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
+            console.log('📤 [CREATE] Response status:', response.status);
         }
         
         const data = await response.json();
+        console.log('📤 [CREATE] Response data:', data);
         
         if (response.ok) {
+            console.log('✅ [CREATE] Schedule saved successfully, reloading schedules...');
             showNotification(data.message || 'Schedule saved successfully', 'success');
             closeModal();
-            loadSchedules();
+            await loadSchedules();
+            console.log('✅ [CREATE] Schedules reloaded');
         } else {
             showNotification(data.error || 'Failed to save schedule', 'error');
         }
