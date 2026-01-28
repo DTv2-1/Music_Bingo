@@ -854,6 +854,7 @@
             return '';
         })();
         let currentQuestion = null;
+        let currentQuestionStatus = null; // Track the last known status for currentQuestion
         let showingAnswer = false;
         let updateInterval = null;
         let questionsGenerated = false;
@@ -1032,8 +1033,11 @@
                 genre: question.genre,
                 status: status
             });
-            // Check if this is a new question
-            const isNewQuestion = !currentQuestion || currentQuestion.id !== question.id;
+            // Check if this is a new question or a status transition to 'in_progress'
+            // We want to play TTS when a question becomes active (status === 'in_progress')
+            const wasSameQuestion = currentQuestion && currentQuestion.id === question.id;
+            const isNewQuestion = !currentQuestion || !wasSameQuestion;
+            const becameActive = wasSameQuestion && status === 'in_progress' && currentQuestionStatus !== 'in_progress';
             
             // Check if round changed
             const roundChanged = currentRound !== question.round;
@@ -1043,6 +1047,8 @@
             }
 
             currentQuestion = question;
+            // Update stored status for the current question after processing
+            currentQuestionStatus = status;
             const wasShowingAnswer = showingAnswer;
             showingAnswer = (status === 'revealing_answer');
 
@@ -1105,7 +1111,7 @@
                 willPlay: isNewQuestion && !showingAnswer && !isPlayingWelcomeMessage && !isPlayingQuestionTTS && question.id !== lastSpokenQuestionId
             });
             
-            if (isNewQuestion && !showingAnswer && !isPlayingWelcomeMessage && !isPlayingQuestionTTS && question.id !== lastSpokenQuestionId) {
+            if ((isNewQuestion || becameActive) && !showingAnswer && !isPlayingWelcomeMessage && !isPlayingQuestionTTS && question.id !== lastSpokenQuestionId) {
                 lastSpokenQuestionId = question.id;
                 isPlayingQuestionTTS = true;
                 console.log('[TTS] 🎤 Starting TTS sequence for question', question.id);

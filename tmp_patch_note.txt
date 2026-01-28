@@ -1,0 +1,1 @@
+patch: add currentQuestionStatus and update isNewQuestion logic in pub-quiz-host.html
