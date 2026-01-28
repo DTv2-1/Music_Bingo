@@ -23,11 +23,42 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 import requests
+from google.cloud import storage
+from datetime import timedelta
 
 # Import TaskStatus model
 from .models import TaskStatus
 
 logger = logging.getLogger(__name__)
+
+# GCS Configuration
+GCS_BUCKET_NAME = os.getenv('GCS_BUCKET_NAME', 'music-bingo-cards')
+
+def upload_to_gcs(local_file_path, destination_blob_name):
+    """
+    Upload a file to Google Cloud Storage and return a signed URL
+    """
+    try:
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(GCS_BUCKET_NAME)
+        blob = bucket.blob(destination_blob_name)
+        
+        # Upload the file
+        blob.upload_from_filename(local_file_path)
+        logger.info(f"✅ Uploaded {local_file_path} to gs://{GCS_BUCKET_NAME}/{destination_blob_name}")
+        
+        # Generate a signed URL valid for 1 hour
+        signed_url = blob.generate_signed_url(
+            version="v4",
+            expiration=timedelta(hours=1),
+            method="GET"
+        )
+        
+        return signed_url
+    except Exception as e:
+        logger.error(f"❌ Failed to upload to GCS: {e}")
+        raise
+
 
 # Configuration
 ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY', '')
@@ -222,12 +253,27 @@ def generate_cards_async(request):
                     task.save(update_fields=['status', 'error', 'completed_at'])
                     return
                 
+                # Upload PDF to GCS
+                pdf_path = DATA_DIR / 'cards' / 'music_bingo_cards.pdf'
+                if pdf_path.exists():
+                    try:
+                        # Use task_id in blob name for uniqueness
+                        blob_name = f"cards/{task_id}/music_bingo_cards.pdf"
+                        download_url = upload_to_gcs(str(pdf_path), blob_name)
+                        logger.info(f"Task {task_id}: PDF uploaded to GCS, signed URL generated")
+                    except Exception as upload_error:
+                        logger.error(f"Task {task_id}: GCS upload failed: {upload_error}")
+                        download_url = '/data/cards/music_bingo_cards.pdf'  # Fallback
+                else:
+                    logger.warning(f"Task {task_id}: PDF not found at {pdf_path}")
+                    download_url = '/data/cards/music_bingo_cards.pdf'  # Fallback
+                
                 logger.info(f"Task {task_id}: Completed successfully")
                 task.status = 'completed'
                 task.progress = 100
                 task.result = {
                     'success': True,
-                    'download_url': '/data/cards/music_bingo_cards.pdf'
+                    'download_url': download_url
                 }
                 task.completed_at = timezone.now()
                 task.save(update_fields=['status', 'progress', 'result', 'completed_at'])
