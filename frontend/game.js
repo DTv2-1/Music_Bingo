@@ -1114,7 +1114,9 @@ function restoreGameState() {
                 gameState.remaining = validRemaining;
                 gameState.called = validCalled;
                 gameState.currentTrack = state.currentTrack && validIds.has(state.currentTrack.id) ? state.currentTrack : null;
-                gameState.welcomeAnnounced = state.welcomeAnnounced || false;
+                
+                // If songs have been called, welcome announcement was already done
+                gameState.welcomeAnnounced = state.welcomeAnnounced || (validCalled.length > 0);
                 gameState.halfwayAnnounced = state.halfwayAnnounced || false;
 
                 const invalidCount = (state.remaining.length - validRemaining.length) + ((state.called?.length || 0) - validCalled.length);
