@@ -488,11 +488,10 @@ class BingoSession(models.Model):
     )
     
     # Branding (Optional)
-    logo_url = models.URLField(
-        max_length=1000,
+    logo_url = models.TextField(
         blank=True,
         null=True,
-        help_text="URL to pub logo"
+        help_text="URL to pub logo (supports data URIs for uploaded images)"
     )
     social_media = models.CharField(
         max_length=500,
