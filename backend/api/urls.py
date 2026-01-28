@@ -88,6 +88,7 @@ urlpatterns = [
     # ============================================================
     path('bingo/sessions', views.bingo_sessions, name='bingo-sessions'),  # POST: Create, GET: List
     path('bingo/session/<str:session_id>', views.bingo_session_detail, name='bingo-session-detail'),  # GET/PUT/DELETE
+    path('bingo/session/<str:session_id>/status', views.update_bingo_session_status, name='update-bingo-session-status'),  # PATCH
     
     # ============================================================
     # KARAOKE ENDPOINTS

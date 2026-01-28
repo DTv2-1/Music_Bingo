@@ -1211,6 +1211,11 @@ async function playNextTrack() {
     // Save game state to localStorage
     saveGameState();
 
+    // Update session status to 'active' on first song
+    if (gameState.called.length === 1) {
+        await updateSessionStatus('active');
+    }
+
     // Update UI immediately
     updateCurrentTrackDisplay(track);
     updateCalledList();
@@ -2623,4 +2628,29 @@ if (typeof window !== 'undefined') {
     window.addEventListener('DOMContentLoaded', () => {
         loadJinglePlaylist();
     });
+}
+
+/**
+ * Update bingo session status (pending -> active -> completed)
+ */
+async function updateSessionStatus(newStatus) {
+    const sessionId = new URLSearchParams(window.location.search).get('session');
+    if (!sessionId) return;
+    
+    try {
+        console.log(`📊 Updating session status to: ${newStatus}`);
+        const response = await fetch(`${CONFIG.API_URL}/api/bingo/session/${sessionId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        });
+        
+        if (response.ok) {
+            console.log(`✅ Session status updated to ${newStatus}`);
+        } else {
+            console.warn(`⚠️ Failed to update session status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('❌ Error updating session status:', error);
+    }
 }

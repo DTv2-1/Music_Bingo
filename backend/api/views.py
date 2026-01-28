@@ -1742,3 +1742,39 @@ def bingo_session_detail(request, session_id):
             logger.error(f"Error deleting bingo session: {e}", exc_info=True)
             return Response({'error': str(e)}, status=500)
 
+
+@api_view(['PATCH'])
+def update_bingo_session_status(request, session_id):
+    """Update bingo session status (pending -> active -> completed)"""
+    from .models import BingoSession
+    
+    try:
+        session = BingoSession.objects.get(session_id=session_id)
+        
+        new_status = request.data.get('status')
+        if not new_status:
+            return Response({'error': 'Status is required'}, status=400)
+        
+        # Validate status
+        valid_statuses = ['pending', 'active', 'completed', 'cancelled']
+        if new_status not in valid_statuses:
+            return Response({'error': f'Invalid status. Must be one of: {valid_statuses}'}, status=400)
+        
+        session.status = new_status
+        session.save(update_fields=['status'])
+        
+        logger.info(f"Updated bingo session {session_id} status to: {new_status}")
+        
+        return Response({
+            'success': True,
+            'status': new_status,
+            'message': f'Session status updated to {new_status}'
+        })
+        
+    except BingoSession.DoesNotExist:
+        return Response({'error': 'Session not found'}, status=404)
+    except Exception as e:
+        logger.error(f"Error updating session status: {e}", exc_info=True)
+        return Response({'error': str(e)}, status=500)
+
+

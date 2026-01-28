@@ -139,16 +139,16 @@ async function loadSessions() {
         const sessions = data.sessions || [];
         console.log('✅ Loaded sessions:', sessions.length, 'items');
         
-        // Filter sessions by venue if currentVenueName is set
-        const venueSessions = currentVenueName 
-            ? sessions.filter(s => s.venue_name === currentVenueName)
-            : sessions;
+        // Show all sessions regardless of venue
+        // This allows jingles to be applied to any session
+        const venueSessions = sessions;
         
         // Populate session dropdown
         const select = document.getElementById('sessionSelect');
-        select.innerHTML = currentVenueName 
-            ? `<option value="">All sessions for ${currentVenueName}</option>`
-            : '<option value="">All venues (global)</option>';
+        const defaultOption = currentVenueName 
+            ? `All sessions for ${currentVenueName}`
+            : 'All sessions (global)';
+        select.innerHTML = `<option value="">${defaultOption}</option>`;
         
         venueSessions.forEach(session => {
             const option = document.createElement('option');
