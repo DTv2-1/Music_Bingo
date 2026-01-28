@@ -36,7 +36,8 @@ GCS_BUCKET_NAME = os.getenv('GCS_BUCKET_NAME', 'music-bingo-cards')
 
 def upload_to_gcs(local_file_path, destination_blob_name):
     """
-    Upload a file to Google Cloud Storage and return a signed URL
+    Upload a file to Google Cloud Storage and return a public URL
+    Files are auto-deleted after 7 days via bucket lifecycle policy
     """
     try:
         storage_client = storage.Client()
@@ -47,14 +48,12 @@ def upload_to_gcs(local_file_path, destination_blob_name):
         blob.upload_from_filename(local_file_path)
         logger.info(f"✅ Uploaded {local_file_path} to gs://{GCS_BUCKET_NAME}/{destination_blob_name}")
         
-        # Generate a signed URL valid for 1 hour
-        signed_url = blob.generate_signed_url(
-            version="v4",
-            expiration=timedelta(hours=1),
-            method="GET"
-        )
+        # Make blob publicly readable
+        blob.make_public()
+        logger.info(f"✅ Made blob public: {blob.public_url}")
         
-        return signed_url
+        # Return public URL
+        return blob.public_url
     except Exception as e:
         logger.error(f"❌ Failed to upload to GCS: {e}")
         raise
