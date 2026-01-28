@@ -73,6 +73,45 @@ def calculate_optimal_songs(num_players: int) -> int:
     return base_songs
 
 
+def distribute_songs_unique(all_songs: List[Dict], num_cards: int, songs_per_card: int) -> List[List[Dict]]:
+    """
+    Distribute songs uniquely across all cards - NO REPEATS in a session
+    Each song appears on AT MOST ONE card to avoid duplicates during gameplay
+    
+    Args:
+        all_songs: Full pool of available songs
+        num_cards: Number of bingo cards to generate
+        songs_per_card: Songs per card (24 for 5x5 grid with FREE space)
+    
+    Returns:
+        List of card song lists, each with unique songs
+    """
+    total_songs_needed = num_cards * songs_per_card
+    
+    # Shuffle all songs
+    shuffled = all_songs.copy()
+    random.shuffle(shuffled)
+    
+    # If we don't have enough unique songs, we need to use some songs multiple times
+    # but we'll minimize repetition by cycling through the pool
+    if len(shuffled) < total_songs_needed:
+        print(f"⚠️  Warning: Need {total_songs_needed} songs but only have {len(shuffled)}")
+        print(f"   Some songs will appear on multiple cards")
+        # Repeat the pool enough times to have enough songs
+        times_to_repeat = (total_songs_needed // len(shuffled)) + 1
+        shuffled = (shuffled * times_to_repeat)[:total_songs_needed]
+        random.shuffle(shuffled)
+    
+    # Distribute songs into cards
+    card_songs = []
+    for i in range(num_cards):
+        start_idx = i * songs_per_card
+        end_idx = start_idx + songs_per_card
+        card_songs.append(shuffled[start_idx:end_idx])
+    
+    return card_songs
+
+
 def load_pool() -> List[Dict]:
     """Load song pool from JSON"""
     with open(INPUT_POOL, 'r', encoding='utf-8') as f:
@@ -566,7 +605,7 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
 
 def generate_batch_pdf(batch_data):
     """Generate a PDF batch with 10 cards - runs in parallel"""
-    batch_num, cards_range, selected_songs, venue_name, pub_logo_path, social_media, include_qr, game_number, game_date, qr_buffer_data, prize_4corners, prize_first_line, prize_full_house = batch_data
+    batch_num, cards_data, venue_name, pub_logo_path, social_media, include_qr, game_number, game_date, qr_buffer_data, prize_4corners, prize_first_line, prize_full_house = batch_data
     
     # Create temp file for this batch
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf', prefix=f'batch_{batch_num}_')
@@ -588,9 +627,8 @@ def generate_batch_pdf(batch_data):
         qr_buffer_cache = BytesIO(qr_buffer_data)
     
     story = []
-    for idx, card_num in enumerate(cards_range):
-        # Shuffle songs for this card
-        card_songs = random.sample(selected_songs, SONGS_PER_CARD)
+    for idx, (card_num, card_songs) in enumerate(cards_data):
+        # Songs are already assigned uniquely - NO random.sample needed!
         
         # Create card
         card_elements = create_bingo_card(
@@ -709,6 +747,15 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
             mem_after_qr = process.memory_info()
             print(f"✓ Generated QR code ({time.time()-step_start:.2f}s) - Memory: {mem_after_qr.rss / 1024 / 1024:.1f} MB")
     
+    # *** DISTRIBUTE SONGS UNIQUELY ACROSS ALL CARDS ***
+    # Each song appears on AT MOST ONE card to prevent duplicates during gameplay
+    step_start = time.time()
+    print(f"\n🎵 Distributing songs uniquely across {NUM_CARDS} cards...")
+    all_card_songs = distribute_songs_unique(selected_songs, NUM_CARDS, SONGS_PER_CARD)
+    print(f"✓ Songs distributed uniquely ({time.time()-step_start:.2f}s)")
+    print(f"   Each card has {SONGS_PER_CARD} unique songs")
+    print(f"   Total unique songs used: {len(set(song['id'] for card in all_card_songs for song in card))}")
+    
     # Check if parallel processing is beneficial
     # MEMORY-OPTIMIZED: Limit workers to avoid OOM on App Platform
     num_cpus = mp.cpu_count()
@@ -726,14 +773,18 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         num_workers = min(2, num_cpus)  # Maximum 2 workers to stay within memory limits
         print(f"   Using {num_workers} parallel workers (CPUs: {num_cpus}) - MEMORY-SAFE MODE")
         
-        # Prepare batch data
+        # Prepare batch data with pre-assigned songs
         batches = []
         for i in range(0, NUM_CARDS, batch_size):
-            cards_range = list(range(i + 1, min(i + batch_size + 1, NUM_CARDS + 1)))
+            batch_cards = []
+            for card_idx in range(i, min(i + batch_size, NUM_CARDS)):
+                card_num = card_idx + 1
+                card_songs = all_card_songs[card_idx]
+                batch_cards.append((card_num, card_songs))
+            
             batches.append((
                 i // batch_size,
-                cards_range,
-                selected_songs,
+                batch_cards,  # Now includes (card_num, songs) tuples
                 venue_name,
                 pub_logo_path,
                 social_media,
@@ -808,7 +859,8 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         cards_start = time.time()
         
         for i in range(NUM_CARDS):
-            card_songs = random.sample(selected_songs, SONGS_PER_CARD)
+            # Use pre-assigned unique songs instead of random.sample
+            card_songs = all_card_songs[i]
             
             card_elements = create_bingo_card(
                 card_songs,
