@@ -980,15 +980,14 @@
                             updateGenerationProgress(data.progress, data.status);
                             break;
                         case 'host_update':
-                            // Update stats
+                            // Update stats (team count, rounds, etc.)
                             updateStatsFromSSE(data.stats);
 
-                            // Update leaderboard
+                            // Update leaderboard (needed for question generation)
                             updateLeaderboardFromSSE(data.leaderboard);
-                            // Update current question if available
-                            if (data.question) {
-                                updateQuestionFromSSE(data.question, data.stats.status);
-                            }
+                            
+                            // ⚠️ Skip question updates - using local navigation
+                            // Questions managed via allQuestions array + nextQuestion()
                             break;
 
                         case 'ended':
@@ -1400,6 +1399,9 @@
 
                 // Load ALL questions at start for local navigation
                 await loadAllQuestions();
+                
+                // Connect to SSE for real-time updates (stats, leaderboard, etc.)
+                connectHostSSE();
                 
                 // Update UI with initial state
                 updateButtonStates();
