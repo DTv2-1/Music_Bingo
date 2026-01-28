@@ -115,6 +115,7 @@ urlpatterns = [
     
     # Game pages
     path("game.html", game_view, name="game"),
+    path("game", game_view, name="game-no-ext"),
     path("karaoke.html", karaoke_view, name="karaoke"),
     path("karaoke-host.html", karaoke_host_view, name="karaoke-host"),
     
