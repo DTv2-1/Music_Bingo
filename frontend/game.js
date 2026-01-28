@@ -296,6 +296,19 @@ async function loadSessionAndStart(sessionId) {
             prizes: session.prizes
         };
 
+        // Save logo and branding to localStorage for card generation
+        localStorage.setItem('pubLogo', session.logo_url || '');
+        localStorage.setItem('socialMedia', session.social_media || '');
+        localStorage.setItem('includeQR', session.include_qr ? 'true' : 'false');
+        localStorage.setItem('prize4Corners', session.prizes?.prize_4corners || '');
+        localStorage.setItem('prizeFirstLine', session.prizes?.prize_first_line || '');
+        localStorage.setItem('prizeFullHouse', session.prizes?.prize_full_house || '');
+        console.log('💾 Saved session branding to localStorage:', {
+            pubLogo: session.logo_url,
+            socialMedia: session.social_media,
+            includeQR: session.include_qr
+        });
+
         await saveVenueConfig(session.venue_name, config);
 
         // Update UI with venue name
