@@ -153,7 +153,28 @@ async function loadSessions() {
         venueSessions.forEach(session => {
             const option = document.createElement('option');
             option.value = session.session_id;
-            option.textContent = `${session.venue_name} - ${session.session_id.substring(0, 8)} (${session.status})`;
+            
+            // Format creation date
+            const createdDate = new Date(session.created_at);
+            const dateStr = createdDate.toLocaleDateString('en-GB', { 
+                day: '2-digit', 
+                month: 'short'
+            });
+            const timeStr = createdDate.toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Format status with emoji
+            const statusEmoji = {
+                'pending': '⏳',
+                'active': '▶️',
+                'completed': '✅',
+                'cancelled': '❌'
+            };
+            const emoji = statusEmoji[session.status] || '📌';
+            
+            option.textContent = `${session.venue_name} - ${dateStr} ${timeStr} ${emoji}`;
             select.appendChild(option);
         });
     } catch (error) {
