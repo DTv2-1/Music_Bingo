@@ -2287,63 +2287,158 @@
                 return;
             }
             
-            const numSheets = prompt('How many answer sheets to print?', '30');
+            // Get total number of players from teams
+            const teamsCount = parseInt(document.getElementById('statTeams').textContent) || 0;
             
-            if (numSheets === null) return; // User cancelled
-            
-            const sheets = parseInt(numSheets);
-            if (isNaN(sheets) || sheets <= 0 || sheets > 100) {
-                showModal('warning', 'Invalid Number', 'Please enter a number between 1 and 100');
-                return;
-            }
-
+            // Fetch team data to calculate total players
+            let totalPlayers = 0;
             try {
-                // Show loading message
-                const originalText = event.target.textContent;
-                event.target.innerHTML = '<span>⏳ Generating PDF...</span>';
-                event.target.disabled = true;
-
-                const response = await fetch(`${BASE_URL}/api/pub-quiz/generate-answer-sheets`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        session_code: SESSION_ID,
-                        num_sheets: sheets
-                    })
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Failed to generate PDF');
+                const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-data`);
+                const data = await response.json();
+                
+                if (data.teams && data.teams.length > 0) {
+                    // Sum up all players from all teams
+                    totalPlayers = data.teams.reduce((sum, team) => sum + (team.num_players || 0), 0);
                 }
-
-                // Download PDF
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `pub_quiz_answer_sheets_${SESSION_ID}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-
-                showModal('success', 'Download Complete', `Downloaded ${sheets} answer sheets!`);
-
             } catch (error) {
-                console.error('Error generating answer sheets:', error);
-                showModal('error', 'Error', error.message);
-            } finally {
-                // Restore button
-                event.target.innerHTML = '<span>🖨️ Print Answer Sheets</span>';
-                event.target.disabled = false;
+                console.error('Error fetching team data:', error);
             }
+            
+            // Calculate sheets needed: total players + 2 extras
+            const suggestedSheets = totalPlayers > 0 ? totalPlayers + 2 : 30;
+            
+            // Show custom modal with calculated value
+            showPrintSheetsModal(suggestedSheets, totalPlayers, async (numSheets) => {
+                try {
+                    // Show loading message
+                    const originalText = event.target.textContent;
+                    event.target.innerHTML = '<span>⏳ Generating PDF...</span>';
+                    event.target.disabled = true;
+
+                    const response = await fetch(`${BASE_URL}/api/pub-quiz/generate-answer-sheets`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            session_code: SESSION_ID,
+                            num_sheets: numSheets
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || 'Failed to generate PDF');
+                    }
+
+                    // Download PDF
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `pub_quiz_answer_sheets_${SESSION_ID}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                    showModal('success', 'Download Complete', `Downloaded ${numSheets} answer sheets!`);
+
+                } catch (error) {
+                    console.error('Error generating answer sheets:', error);
+                    showModal('error', 'Error', error.message);
+                } finally {
+                    // Restore button
+                    event.target.innerHTML = '<span>🖨️ Print Answer Sheets</span>';
+                    event.target.disabled = false;
+                }
+            });
         }
 
         // 🎨 HALFTIME COUNTDOWN SYSTEM
         let halftimeInterval = null;
+        
+        function showPrintSheetsModal(suggestedSheets, totalPlayers, onConfirm) {
+            // Remove existing modal if any
+            const existingModal = document.getElementById('customModalOverlay');
+            if (existingModal) existingModal.remove();
+
+            const playerInfo = totalPlayers > 0 ? `${totalPlayers} players registered + 2 extra sheets` : 'Default amount';
+
+            // Create print sheets modal with input
+            const modalHTML = `
+                <div class="custom-modal-overlay" id="customModalOverlay">
+                    <div class="custom-modal info">
+                        <div class="custom-modal-icon">🖨️</div>
+                        <div class="custom-modal-title">Print Answer Sheets</div>
+                        <div class="custom-modal-message" style="margin-bottom: 20px;">
+                            ${playerInfo}<br><br>
+                            How many answer sheets to print?
+                        </div>
+                        <input type="number" 
+                               id="modalSheetCount" 
+                               value="${suggestedSheets}" 
+                               min="1" 
+                               max="100"
+                               style="width: 120px; padding: 12px; background: rgba(255,255,255,0.1); border: 2px solid var(--primary); border-radius: 8px; color: white; text-align: center; font-size: 1.2em; font-weight: bold; margin-bottom: 20px;">
+                        <div class="custom-modal-buttons">
+                            <button class="custom-modal-btn custom-modal-btn-secondary" onclick="closePrintSheetsModal(false)">Cancel</button>
+                            <button class="custom-modal-btn custom-modal-btn-primary" onclick="closePrintSheetsModal(true)">Print 🖨️</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            // Store callback
+            window.printSheetsCallback = onConfirm;
+
+            // Focus input and select all
+            setTimeout(() => {
+                document.getElementById('customModalOverlay').classList.add('show');
+                const input = document.getElementById('modalSheetCount');
+                input.focus();
+                input.select();
+                
+                // Allow Enter key to confirm
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        closePrintSheetsModal(true);
+                    }
+                });
+            }, 10);
+        }
+
+        function closePrintSheetsModal(confirmed = false) {
+            const modal = document.getElementById('customModalOverlay');
+            if (!modal) return;
+
+            if (confirmed) {
+                const input = document.getElementById('modalSheetCount');
+                const numSheets = parseInt(input.value);
+                
+                if (isNaN(numSheets) || numSheets <= 0 || numSheets > 100) {
+                    showModal('warning', 'Invalid Number', 'Please enter a number between 1 and 100');
+                    return;
+                }
+                
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.remove();
+                    if (window.printSheetsCallback) {
+                        window.printSheetsCallback(numSheets);
+                        window.printSheetsCallback = null;
+                    }
+                }, 300);
+            } else {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.remove();
+                    window.printSheetsCallback = null;
+                }, 300);
+            }
+        }
         
         function startHalftimeCountdown(seconds, onComplete) {
             // Stop any existing halftime countdown
