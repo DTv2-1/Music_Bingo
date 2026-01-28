@@ -1039,11 +1039,15 @@
             const isNewQuestion = !currentQuestion || !wasSameQuestion;
             const becameActive = wasSameQuestion && status === 'in_progress' && currentQuestionStatus !== 'in_progress';
             
-            // Check if round changed
+            // Check if round changed OR if this is question #1 of current round
             const roundChanged = currentRound !== question.round;
+            const isFirstQuestionOfRound = question.number === 1;
+            const shouldAnnounceGenre = roundChanged || (isFirstQuestionOfRound && isNewQuestion);
+            
             if (roundChanged) {
                 currentRound = question.round;
                 roundGenres[question.round] = question.genre;
+                console.log(`[ROUND_CHANGE] 🔄 Round changed to ${question.round}: ${question.genre}`);
             }
 
             currentQuestion = question;
@@ -1115,15 +1119,18 @@
                 lastSpokenQuestionId = question.id;
                 isPlayingQuestionTTS = true;
                 console.log('[TTS] 🎤 Starting TTS sequence for question', question.id);
+                console.log('[TTS] 📊 Round:', question.round, 'Question:', question.number);
+                console.log('[TTS] 🎭 Genre:', question.genre);
+                console.log('[TTS] 🔄 Should announce genre:', shouldAnnounceGenre);
                 
-                // If round changed, announce the round first, then the question
-                if (roundChanged) {
-                    console.log('[TTS] 📢 Announcing new round:', question.round, '-', question.genre);
-                    const roundAnnouncement = `Round ${question.round}: ${question.genre}`;
-                    console.log('[TTS] 🎙️ Playing round announcement:', roundAnnouncement);
-                    playTTS(roundAnnouncement, 'daniel')
+                // If it's the first question of a round, ALWAYS announce the genre
+                if (shouldAnnounceGenre) {
+                    console.log('[TTS] 📢 Announcing genre for Round', question.round, ':', question.genre);
+                    const genreAnnouncement = `Round ${question.round}: ${question.genre}. Here comes the first question.`;
+                    console.log('[TTS] 🎙️ Playing genre announcement:', genreAnnouncement);
+                    playTTS(genreAnnouncement, 'daniel')
                         .then(() => {
-                            console.log('[TTS] ✅ Round announcement complete');
+                            console.log('[TTS] ✅ Genre announcement complete');
                             console.log('[TTS] 🎙️ Now playing question:', question.text);
                             return playTTS(question.text, 'daniel');
                         })
@@ -1142,7 +1149,7 @@
                         });
                 } else {
                     // Just play the question, then start countdown
-                    console.log('[TTS] 🎙️ Playing question (no round change):', question.text);
+                    console.log('[TTS] 🎙️ Playing question (no genre announcement):', question.text);
                     playTTS(question.text, 'daniel')
                         .catch(err => {
                             console.error('[TTS] ❌ Error playing question:', err);
@@ -1166,8 +1173,8 @@
 
             console.log('[SSE_UPDATE] ✅ Question display updated');
             
-            // Update difficulty breakdown if round changed
-            if (roundChanged) {
+            // Update difficulty breakdown if genre announced
+            if (shouldAnnounceGenre) {
                 updateDifficultyBreakdown(question.round);
             }
         }
@@ -1654,13 +1661,26 @@
                 if (data.success) {
                     if (data.status === 'halftime') {
                         console.log('[HALFTIME] 🍻 DETECTED! Round:', data.current_round, 'Question:', data.current_question);
-                        console.log('[HALFTIME] 🔔 Showing alert to user...');
-                        showModal('info', '🍻 HALFTIME!', 'Take a short break! Click OK to continue when ready.', 'Ready!');
-                        console.log('[HALFTIME] ✅ Alert shown, updating UI...');
+                        console.log('[HALFTIME] 🔔 Announcing halftime break...');
+                        
+                        // Stop countdown during halftime
+                        stopCountdown();
+                        
+                        // Play halftime announcement
+                        const halftimeMessage = `That's the end of the first round! Let's take a short break. Grab a drink, chat with your team. We'll be back in a moment for the next round!`;
+                        playTTS(halftimeMessage, 'daniel').then(() => {
+                            console.log('[HALFTIME] ✅ Announcement complete');
+                            showModal('info', '🍻 HALFTIME BREAK!', 'Take a 1-2 minute break!\n\nGrab drinks, discuss answers with your team.\n\nClick "Ready!" when you want to continue to the next round.', 'Ready! 🎉');
+                        }).catch(err => {
+                            console.error('[HALFTIME] ❌ Error playing announcement:', err);
+                            showModal('info', '🍻 HALFTIME BREAK!', 'Take a 1-2 minute break!\n\nGrab drinks, discuss answers with your team.\n\nClick "Ready!" when you want to continue to the next round.', 'Ready! 🎉');
+                        });
+                        
                         document.getElementById('questionText').textContent = 'HALFTIME BREAK 🍻';
-                        document.getElementById('currentGenre').textContent = 'BREAK';
+                        document.getElementById('currentGenre').textContent = 'BREAK - Relax & Refresh!';
                         console.log('[HALFTIME] ✅ UI updated');
                     } else if (data.status === 'completed') {
+                        stopCountdown();
                         showModal('success', '🎉 Quiz Completed!', 'Check the final leaderboard!');
                         document.getElementById('questionText').textContent = 'QUIZ COMPLETED! 🎉';
                         document.getElementById('currentGenre').textContent = 'FINISH';
