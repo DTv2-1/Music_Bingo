@@ -127,9 +127,24 @@ def generate_qr_code(url: str, size: int = 150) -> Optional[BytesIO]:
 
 
 def download_logo(url: str) -> Optional[BytesIO]:
-    """Download logo from URL or load from local file"""
+    """Download logo from URL, data URI, or local file"""
     if not url:
         return None
+    
+    # Handle data URI (base64 encoded images)
+    if url.startswith('data:'):
+        try:
+            import base64
+            print(f"🔍 Detected data URI in download_logo")
+            # Extract base64 data from data URI
+            # Format: data:image/png;base64,iVBORw0KG...
+            header, encoded = url.split(',', 1)
+            image_data = base64.b64decode(encoded)
+            print(f"✅ Decoded base64 logo: {len(image_data)} bytes")
+            return BytesIO(image_data)
+        except Exception as e:
+            print(f"Error decoding data URI logo: {e}")
+            return None
     
     # Check if it's a local file path
     if not url.startswith('http'):
