@@ -18,10 +18,14 @@ from django.http import JsonResponse, FileResponse, Http404, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.db import models
+from django.utils import timezone
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 import requests
+
+# Import TaskStatus model
+from .models import TaskStatus
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +40,6 @@ VENUE_NAME = os.getenv('VENUE_NAME', 'this venue')
 BASE_DIR = Path(__file__).resolve().parent.parent  # /app/api -> /app
 DATA_DIR = BASE_DIR / 'data'  # /app/data
 FRONTEND_DIR = BASE_DIR / 'frontend'  # /app/frontend
-
-# In-memory task storage (works with 1 gunicorn worker)
-tasks_storage = {}
 
 @api_view(['GET'])
 def health_check(request):
@@ -86,18 +87,24 @@ def generate_cards_async(request):
         
         task_id = str(uuid.uuid4())
         
-        tasks_storage[task_id] = {
-            'status': 'pending',
-            'result': None,
-            'error': None,
-            'progress': 0,
-            'started_at': time.time()
-        }
+        # Create task in database
+        task = TaskStatus.objects.create(
+            task_id=task_id,
+            task_type='card_generation',
+            status='pending',
+            progress=0,
+            metadata={
+                'venue_name': venue_name,
+                'num_players': num_players,
+                'game_number': game_number
+            }
+        )
         
         def background_task():
             try:
                 logger.info(f"Task {task_id}: Processing started")
-                tasks_storage[task_id]['status'] = 'processing'
+                task.status = 'processing'
+                task.save(update_fields=['status'])
                 
                 script_path = BASE_DIR / 'generate_cards.py'
                 cmd = [
@@ -166,7 +173,8 @@ def generate_cards_async(request):
                             try:
                                 progress_str = line.split('PROGRESS:')[1].strip()
                                 progress_val = int(float(progress_str))
-                                tasks_storage[task_id]['progress'] = progress_val
+                                task.progress = progress_val
+                                task.save(update_fields=['progress'])
                                 logger.info(f"Task {task_id}: Progress updated to {progress_val}%")
                             except Exception as e:
                                 logger.warning(f"Task {task_id}: Failed to parse progress: {e}")
@@ -174,7 +182,8 @@ def generate_cards_async(request):
                         elif '📊 Progress:' in line:
                             try:
                                 progress_str = line.split('Progress:')[1].split('%')[0].strip()
-                                tasks_storage[task_id]['progress'] = int(float(progress_str))
+                                task.progress = int(float(progress_str))
+                                task.save(update_fields=['progress'])
                             except:
                                 pass
                 
@@ -196,20 +205,27 @@ def generate_cards_async(request):
                 
                 if result.returncode != 0:
                     logger.error(f"Task {task_id}: Failed with error: {result.stderr}")
-                    tasks_storage[task_id]['status'] = 'failed'
-                    tasks_storage[task_id]['error'] = result.stderr
+                    task.status = 'failed'
+                    task.error = result.stderr
+                    task.completed_at = timezone.now()
+                    task.save(update_fields=['status', 'error', 'completed_at'])
                     return
                 
                 logger.info(f"Task {task_id}: Completed successfully")
-                tasks_storage[task_id]['status'] = 'completed'
-                tasks_storage[task_id]['result'] = {
+                task.status = 'completed'
+                task.progress = 100
+                task.result = {
                     'success': True,
                     'download_url': '/data/cards/music_bingo_cards.pdf'
                 }
+                task.completed_at = timezone.now()
+                task.save(update_fields=['status', 'progress', 'result', 'completed_at'])
             except Exception as e:
                 logger.error(f"Task {task_id}: Exception: {str(e)}")
-                tasks_storage[task_id]['status'] = 'failed'
-                tasks_storage[task_id]['error'] = str(e)
+                task.status = 'failed'
+                task.error = str(e)
+                task.completed_at = timezone.now()
+                task.save(update_fields=['status', 'error', 'completed_at'])
         
         thread = threading.Thread(target=background_task, daemon=True)
         thread.start()
@@ -220,21 +236,31 @@ def generate_cards_async(request):
 
 @api_view(['GET'])
 def get_task_status(request, task_id):
-    if task_id not in tasks_storage:
+    try:
+        task = TaskStatus.objects.get(task_id=task_id)
+    except TaskStatus.DoesNotExist:
         return Response({'error': 'Task not found'}, status=404)
     
-    task = tasks_storage[task_id]
+    # Calculate elapsed time
+    if task.completed_at:
+        elapsed_seconds = (task.completed_at - task.started_at).total_seconds()
+    else:
+        elapsed_seconds = (timezone.now() - task.started_at).total_seconds()
+    
     response = {
-        'task_id': task_id,
-        'status': task['status'],
-        'progress': task.get('progress', 0),
-        'elapsed_time': round(time.time() - task['started_at'], 2)
+        'task_id': task.task_id,
+        'status': task.status,
+        'progress': task.progress,
+        'elapsed_time': round(elapsed_seconds, 2)
     }
     
-    if task['status'] == 'completed':
-        response['result'] = task['result']
-    elif task['status'] == 'failed':
-        response['error'] = task['error']
+    if task.current_step:
+        response['current_step'] = task.current_step
+    
+    if task.status == 'completed' and task.result:
+        response['result'] = task.result
+    elif task.status == 'failed' and task.error:
+        response['error'] = task.error
     
     return Response(response)
 
@@ -480,25 +506,33 @@ def generate_jingle(request):
         # Generate task ID
         task_id = str(uuid.uuid4())
         
-        # Initialize task status
-        tasks_storage[task_id] = {
-            'status': 'pending',
-            'progress': 0,
-            'current_step': 'initializing',
-            'result': None,
-            'error': None,
-            'started_at': time.time()
-        }
+        # Initialize task status in database
+        task = TaskStatus.objects.create(
+            task_id=task_id,
+            task_type='jingle_generation',
+            status='pending',
+            progress=0,
+            current_step='initializing',
+            metadata={
+                'prompt': prompt,
+                'voice_id': voice_id,
+                'music_style': music_style,
+                'duration_seconds': duration_seconds
+            }
+        )
         
         # Start background task
         def background_jingle_generation():
             try:
                 logger.info(f"Task {task_id}: Starting generation process")
-                tasks_storage[task_id]['status'] = 'processing'
+                task.status = 'processing'
+                task.save(update_fields=['status'])
                 
                 # Step 1: Generate TTS
                 logger.info(f"Task {task_id}: Generating TTS...")
-                tasks_storage[task_id].update({'progress': 20, 'current_step': 'generating_voice'})
+                task.progress = 20
+                task.current_step = 'generating_voice'
+                task.save(update_fields=['progress', 'current_step'])
                 
                 tts_url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
                 tts_payload = {
@@ -531,7 +565,9 @@ def generate_jingle(request):
                 
                 # Step 2: Generate Music
                 logger.info(f"Task {task_id}: Generating music...")
-                tasks_storage[task_id].update({'progress': 50, 'current_step': 'generating_music'})
+                task.progress = 50
+                task.current_step = 'generating_music'
+                task.save(update_fields=['progress', 'current_step'])
                 
                 # ElevenLabs Music Generation API
                 music_url = 'https://api.elevenlabs.io/v1/sound-generation'
@@ -562,13 +598,17 @@ def generate_jingle(request):
                 
                 # Step 3: Mix audio
                 logger.info(f"Task {task_id}: Mixing audio...")
-                tasks_storage[task_id].update({'progress': 75, 'current_step': 'mixing'})
+                task.progress = 75
+                task.current_step = 'mixing'
+                task.save(update_fields=['progress', 'current_step'])
                 
                 mixed_audio = mix_tts_with_music(tts_bytes, music_bytes)
                 
                 # Step 4: Save file
                 logger.info(f"Task {task_id}: Saving file...")
-                tasks_storage[task_id].update({'progress': 90, 'current_step': 'finalizing'})
+                task.progress = 90
+                task.current_step = 'finalizing'
+                task.save(update_fields=['progress', 'current_step'])
                 
                 jingles_dir = DATA_DIR / 'jingles'
                 jingles_dir.mkdir(parents=True, exist_ok=True)
@@ -588,28 +628,26 @@ def generate_jingle(request):
                 actual_duration = len(final_audio) / 1000  # ms to seconds
                 
                 # Update task status
-                tasks_storage[task_id].update({
-                    'status': 'completed',
-                    'progress': 100,
-                    'current_step': 'completed',
-                    'result': {
-                        'audio_url': f'/api/jingles/{filename}',
-                        'filename': filename,
-                        'duration_seconds': actual_duration,
-                        'size_bytes': len(mixed_audio)
-                    },
-                    'completed_at': time.time()
-                })
+                task.status = 'completed'
+                task.progress = 100
+                task.current_step = 'completed'
+                task.result = {
+                    'audio_url': f'/api/jingles/{filename}',
+                    'filename': filename,
+                    'duration_seconds': actual_duration,
+                    'size_bytes': len(mixed_audio)
+                }
+                task.completed_at = timezone.now()
+                task.save(update_fields=['status', 'progress', 'current_step', 'result', 'completed_at'])
                 
                 logger.info(f"Task {task_id}: COMPLETED successfully")
                 
             except Exception as e:
                 logger.error(f"Task {task_id}: ERROR - {e}", exc_info=True)
-                tasks_storage[task_id].update({
-                    'status': 'failed',
-                    'error': str(e),
-                    'failed_at': time.time()
-                })
+                task.status = 'failed'
+                task.error = str(e)
+                task.completed_at = timezone.now()
+                task.save(update_fields=['status', 'error', 'completed_at'])
         
         # Start thread
         thread = threading.Thread(target=background_jingle_generation)
@@ -634,13 +672,31 @@ def get_jingle_status(request, task_id):
     GET /api/jingle-tasks/<task_id>
     """
     try:
-        task = tasks_storage.get(task_id)
+        task = TaskStatus.objects.get(task_id=task_id)
         
-        if not task:
-            return Response({'error': 'Task not found'}, status=404)
+        # Calculate elapsed time
+        if task.completed_at:
+            elapsed_seconds = (task.completed_at - task.started_at).total_seconds()
+        else:
+            elapsed_seconds = (timezone.now() - task.started_at).total_seconds()
         
-        return Response(task)
+        response = {
+            'task_id': task.task_id,
+            'status': task.status,
+            'progress': task.progress,
+            'current_step': task.current_step,
+            'elapsed_time': round(elapsed_seconds, 2)
+        }
         
+        if task.result:
+            response['result'] = task.result
+        if task.error:
+            response['error'] = task.error
+        
+        return Response(response)
+        
+    except TaskStatus.DoesNotExist:
+        return Response({'error': 'Task not found'}, status=404)
     except Exception as e:
         logger.error(f"Error getting task status: {e}", exc_info=True)
         return Response({'error': str(e)}, status=500)

@@ -4,6 +4,42 @@ from datetime import datetime, date
 
 # Create your models here.
 
+class TaskStatus(models.Model):
+    """
+    Stores async task status for card generation, jingle generation, etc.
+    Replaces in-memory tasks_storage dict to support multiple Cloud Run instances
+    """
+    task_id = models.CharField(max_length=36, primary_key=True, help_text="UUID of the task")
+    task_type = models.CharField(max_length=50, help_text="Type: 'card_generation', 'jingle_generation'")
+    status = models.CharField(
+        max_length=20,
+        default='pending',
+        help_text="Status: pending, processing, completed, failed"
+    )
+    progress = models.IntegerField(default=0, help_text="Progress percentage (0-100)")
+    current_step = models.CharField(max_length=100, blank=True, help_text="Current processing step")
+    
+    # Timing
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    # Results
+    result = models.JSONField(null=True, blank=True, help_text="Success result data")
+    error = models.TextField(blank=True, help_text="Error message if failed")
+    
+    # Metadata
+    metadata = models.JSONField(null=True, blank=True, help_text="Additional task parameters")
+    
+    class Meta:
+        ordering = ['-started_at']
+        indexes = [
+            models.Index(fields=['status', '-started_at']),
+            models.Index(fields=['task_type', '-started_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.task_type} - {self.task_id[:8]} ({self.status})"
+
 class JingleSchedule(models.Model):
     """
     Scheduled jingle with time-based playback rules
