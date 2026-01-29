@@ -1121,6 +1121,10 @@ def host_stream(request, session_id):
         if not session:
             yield f"data: {{\"type\": \"error\", \"message\": \"Session not found\"}}\n\n"
             return
+        
+        connection_start = timezone.now()
+        MAX_CONNECTION_TIME = 300  # 5 minutes max for SSE connection
+        
         last_update_time = timezone.now()
         last_status = session.status
         last_round = session.current_round
@@ -1133,6 +1137,13 @@ def host_stream(request, session_id):
         
         while True:
             try:
+                # 🔧 FIX: Force close SSE after MAX_CONNECTION_TIME to prevent zombie connections
+                connection_duration = (timezone.now() - connection_start).total_seconds()
+                if connection_duration > MAX_CONNECTION_TIME:
+                    logger.info(f"⏰ [SSE] Connection timeout for {session_id} after {connection_duration:.0f}s, closing")
+                    yield f"data: {json.dumps({'type': 'timeout', 'message': 'Connection timeout, please refresh'})}\n\n"
+                    break
+                
                 # Refresh session to get latest progress
                 session.refresh_from_db()
                 
@@ -1144,6 +1155,12 @@ def host_stream(request, session_id):
                         logger.info(f"📤 [SSE] Sending progress update: {progress_data}")
                         yield f"data: {json.dumps({'type': 'generation_progress', 'progress': progress_data['progress'], 'status': progress_data['status']})}\n\n"
                         last_progress = progress_data
+                        
+                        # 🔧 FIX: Force close SSE when generation reaches 100%
+                        if progress_data.get('progress', 0) >= 100:
+                            logger.info(f"✅ [SSE] Generation 100% reached, closing SSE for {session_id}")
+                            yield f"data: {json.dumps({'type': 'generation_complete', 'message': 'Generation complete, closing connection'})}\n\n"
+                            break
                 else:
                     if last_progress is not None:
                         logger.info(f"🔍 [SSE] No progress data for {session_id}")
