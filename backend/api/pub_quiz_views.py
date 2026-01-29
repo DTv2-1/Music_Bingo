@@ -634,14 +634,28 @@ def quiz_host_data(request, session_id):
 @api_view(['POST'])
 def start_quiz(request, session_id):
     """Inicia el quiz y envía todas las preguntas a los jugadores"""
+    logger.info(f"🎬 [START_QUIZ] ========== START QUIZ CALLED ==========")
+    logger.info(f"🎬 [START_QUIZ] Session ID: {session_id}")
+    
     session = get_session_by_code_or_id(session_id)
     if not session:
+        logger.error(f"❌ [START_QUIZ] Session not found: {session_id}")
         return Response({"error": "Session not found"}, status=404)
+    
+    logger.info(f"🎬 [START_QUIZ] Current status: {session.status}")
+    logger.info(f"🎬 [START_QUIZ] Changing status to 'in_progress'...")
     
     session.status = 'in_progress'
     session.current_round = 1
     session.current_question = 1
     session.save()
+    
+    logger.info(f"✅ [START_QUIZ] Status saved! New status: {session.status}")
+    
+    # Force database commit
+    from django.db import transaction
+    transaction.commit()
+    logger.info(f"💾 [START_QUIZ] Database commit forced")
     
     # Marcar primera ronda como iniciada
     first_round = session.rounds.filter(round_number=1).first()
@@ -1005,10 +1019,14 @@ def quiz_stream(request, session_id):
                 
                 # Detect status change
                 status_changed = session.status != last_status
+                logger.info(f"🔍 [SSE] Status check: current={session.status}, last={last_status}, changed={status_changed}, quiz_started_sent={quiz_started_sent}")
                 
                 # NEW: When quiz starts (status changes to in_progress), send ALL questions
                 if status_changed and session.status == 'in_progress' and not quiz_started_sent:
-                    logger.info(f"🎬 [SSE] Quiz started! Sending all questions to players...")
+                    logger.info(f"🎬 [SSE] ✅ CONDITIONS MET! Quiz started! Sending all questions to players...")
+                    logger.info(f"🎬 [SSE] - status_changed: {status_changed}")
+                    logger.info(f"🎬 [SSE] - session.status: {session.status}")
+                    logger.info(f"🎬 [SSE] - quiz_started_sent: {quiz_started_sent}")
                     
                     # Get ALL questions
                     all_questions = QuizQuestion.objects.filter(session=session).order_by('round_number', 'question_number')
