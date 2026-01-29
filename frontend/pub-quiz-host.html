@@ -1018,6 +1018,33 @@
                             // Update progress bar
                             updateGenerationProgress(data.progress, data.status);
                             break;
+                        
+                        case 'generation_complete':
+                            // Backend force-closed SSE after 100% - acknowledge and close
+                            console.log('✅ Generation complete, backend closed SSE');
+                            if (hostEventSource) {
+                                hostEventSource.close();
+                                hostEventSource = null;
+                                console.log('🔌 Host SSE connection closed by backend');
+                            }
+                            break;
+                        
+                        case 'timeout':
+                            // Backend closed SSE due to timeout - refresh needed
+                            console.log('⏰ SSE timeout, connection closed by backend');
+                            if (hostEventSource) {
+                                hostEventSource.close();
+                                hostEventSource = null;
+                            }
+                            // Auto-reconnect after timeout
+                            console.log('🔄 Reconnecting in 2 seconds...');
+                            setTimeout(() => {
+                                if (!hostEventSource) {
+                                    connectHostSSE();
+                                }
+                            }, 2000);
+                            break;
+                        
                         case 'host_update':
                             // Update stats (team count, rounds, etc.)
                             updateStatsFromSSE(data.stats);
