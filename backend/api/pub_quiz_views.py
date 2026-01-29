@@ -120,7 +120,11 @@ def create_quiz_session(request):
             status='registration',
         )
         
-        logger.info(f"✅ [CREATE_SESSION] Session created successfully! ID: {session.id}")
+        # Force database commit to ensure session is immediately available
+        from django.db import transaction
+        transaction.commit()
+        
+        logger.info(f"✅ [CREATE_SESSION] Session created successfully! ID: {session.id}, Code: {session.session_code}")
         
         # Asegurarse de que los géneros estén inicializados
         if QuizGenre.objects.count() == 0:
