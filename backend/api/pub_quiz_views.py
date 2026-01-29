@@ -1021,8 +1021,14 @@ def quiz_stream(request, session_id):
                 status_changed = session.status != last_status
                 logger.info(f"🔍 [SSE] Status check: current={session.status}, last={last_status}, changed={status_changed}, quiz_started_sent={quiz_started_sent}")
                 
-                # NEW: When quiz starts (status changes to in_progress), send ALL questions
-                if status_changed and session.status == 'in_progress' and not quiz_started_sent:
+                # NEW: Send questions when quiz is in_progress (either just started OR player connected late)
+                should_send_questions = (
+                    session.status == 'in_progress' and 
+                    not quiz_started_sent and 
+                    (status_changed or last_status is None)  # Changed to in_progress OR first poll
+                )
+                
+                if should_send_questions:
                     logger.info(f"🎬 [SSE] ✅ CONDITIONS MET! Quiz started! Sending all questions to players...")
                     logger.info(f"🎬 [SSE] - status_changed: {status_changed}")
                     logger.info(f"🎬 [SSE] - session.status: {session.status}")
