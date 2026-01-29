@@ -919,40 +919,62 @@
         function connectSSE() {
             // Close existing connection if any
             if (eventSource) {
+                console.log('🔌 [SSE] Closing existing connection');
                 eventSource.close();
             }
-            console.log('🔌 Connecting to SSE stream...');
-            eventSource = new EventSource(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/stream`);
+            const sseUrl = `${BASE_URL}/api/pub-quiz/${SESSION_ID}/stream`;
+            console.log('🔌 [SSE] Connecting to:', sseUrl);
+            console.log('🔌 [SSE] Session ID:', SESSION_ID);
+            console.log('🔌 [SSE] Base URL:', BASE_URL);
+            
+            eventSource = new EventSource(sseUrl);
+            
             eventSource.onopen = () => {
-                console.log('✅ SSE Connected');
+                console.log('✅ [SSE] Connection OPENED successfully');
+                console.log('✅ [SSE] ReadyState:', eventSource.readyState);
                 sseRetryCount = 0; // Reset retry counter on successful connection
             };
 
             eventSource.onmessage = (event) => {
+                console.log('📨 [SSE] RAW MESSAGE received:', event.data.substring(0, 200));
                 try {
                     const data = JSON.parse(event.data);
-                    console.log('📨 SSE Message:', data.type);
+                    console.log('📨 [SSE] Parsed message type:', data.type);
+                    console.log('📨 [SSE] Full data:', data);
+                    
                     switch (data.type) {
                         case 'connected':
-                            console.log(`Connected to session ${data.session_id}`);
+                            console.log(`✅ [SSE] CONNECTED to session ${data.session_id}`);
                             break;
                         
                         case 'waiting':
                             // Waiting for questions to be generated
-                            console.log(`⏳ ${data.message}`);
+                            console.log(`⏳ [SSE] WAITING: ${data.message}`);
                             showScreen('waitingScreen');
                             break;
 
                         case 'quiz_started':
                             // NEW: Quiz started! Receive ALL questions at once
-                            console.log('🎬 Quiz started! Receiving all questions...');
+                            console.log('🎬 [SSE] QUIZ_STARTED event received!');
+                            console.log('🎬 [SSE] Raw all_questions:', data.all_questions);
                             allQuizQuestions = data.all_questions || [];
                             const timing = data.timing || {};
+                            console.log('🎬 [SSE] Parsed allQuizQuestions length:', allQuizQuestions.length);
+                            console.log('🎬 [SSE] First question:', allQuizQuestions[0]);
                             
-                            console.log(`📚 Received ${allQuizQuestions.length} questions`);
-                            console.log(`⏱️ Timing: ${timing.seconds_per_question}s per question, halftime after round ${timing.halftime_after_round}`);
+                            console.log(`📚 [SSE] Received ${allQuizQuestions.length} questions`);
+                            console.log(`⏱️ [SSE] Timing config:`, timing);
+                            console.log(`⏱️ [SSE] - seconds_per_question: ${timing.seconds_per_question}`);
+                            console.log(`⏱️ [SSE] - halftime_after_round: ${timing.halftime_after_round}`);
+                            console.log(`⏱️ [SSE] - halftime_duration: ${timing.halftime_duration}`);
+                            
+                            if (allQuizQuestions.length === 0) {
+                                console.error('❌ [SSE] NO QUESTIONS received! Cannot start quiz.');
+                                return;
+                            }
                             
                             // Start local quiz flow
+                            console.log('🚀 [SSE] Calling startLocalQuizFlow...');
                             startLocalQuizFlow(timing);
                             break;
 
@@ -1001,10 +1023,14 @@
          * Start local quiz flow with automatic timing
          */
         function startLocalQuizFlow(timing) {
+            console.log('🎬 [FLOW] startLocalQuizFlow called');
+            console.log('🎬 [FLOW] allQuizQuestions.length:', allQuizQuestions.length);
+            console.log('🎬 [FLOW] timing:', timing);
+            
             currentQuestionIndex = 0;
             teamAnswers = [];
             
-            console.log('🎬 Starting local quiz flow...');
+            console.log('🎬 [FLOW] Calling showNextQuestion...');
             showNextQuestion(timing);
         }
 
@@ -1012,13 +1038,17 @@
          * Show next question with automatic timer
          */
         function showNextQuestion(timing) {
+            console.log(`📋 [FLOW] showNextQuestion called. currentQuestionIndex: ${currentQuestionIndex}`);
+            console.log(`📋 [FLOW] allQuizQuestions.length: ${allQuizQuestions.length}`);
+            
             if (currentQuestionIndex >= allQuizQuestions.length) {
-                console.log('🎉 All questions completed!');
+                console.log('🎉 [FLOW] All questions completed!');
                 submitAllAnswers();
                 return;
             }
 
             const question = allQuizQuestions[currentQuestionIndex];
+            console.log(`📋 [FLOW] Current question:`, question);
             const prevQuestion = currentQuestionIndex > 0 ? allQuizQuestions[currentQuestionIndex - 1] : null;
             
             // Check for halftime
@@ -1038,8 +1068,15 @@
          * Display a question and start timer
          */
         function displayQuestion(question, timing) {
-            console.log(`📝 Showing Q${question.number} of Round ${question.round}`);
+            console.log(`📝 [DISPLAY] ========== DISPLAYING QUESTION ==========`);
+            console.log(`📝 [DISPLAY] Question object:`, question);
+            console.log(`📝 [DISPLAY] Round: ${question.round}, Number: ${question.number}`);
+            console.log(`📝 [DISPLAY] Text: ${question.text}`);
+            console.log(`📝 [DISPLAY] Type: ${question.type}`);
+            console.log(`📝 [DISPLAY] Timing:`, timing);
+            
             currentQuestionId = question.id;
+            console.log(`📝 [DISPLAY] Set currentQuestionId to: ${currentQuestionId}`);
             
             // Update UI
             document.getElementById('roundTitle').textContent = `Round ${question.round}`;
