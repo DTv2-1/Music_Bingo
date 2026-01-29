@@ -136,17 +136,15 @@ def create_quiz_session(request):
             status='registration',
         )
         
-        logger.info(f"💾 [CREATE_SESSION] Session object created in memory: ID={session.id}, Code={session.session_code}, PK={session.pk}")
+        logger.info(f"💾 [CREATE_SESSION] Session object created: ID={session.id}, Code={session.session_code}, PK={session.pk}")
         
-        # Force database commit to ensure session is immediately available
-        from django.db import transaction
-        transaction.commit()
+        # Django uses autocommit mode by default - session is already saved
+        # Just verify it exists
+        from django.db import connection
+        logger.info(f"🔍 [CREATE_SESSION] DB in transaction: {connection.in_atomic_block}")
         
-        logger.info(f"✅ [CREATE_SESSION] Session committed to DB! ID: {session.id}, Code: {session.session_code}")
-        
-        # Verify it's actually in the database
         verification = PubQuizSession.objects.filter(session_code=session.session_code).exists()
-        logger.info(f"🔍 [CREATE_SESSION] Verification query: session exists = {verification}")
+        logger.info(f"✅ [CREATE_SESSION] Session verified in DB: {verification}, Code: {session.session_code}")
         
         # Asegurarse de que los géneros estén inicializados
         if QuizGenre.objects.count() == 0:

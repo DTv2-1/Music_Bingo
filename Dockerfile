@@ -29,11 +29,11 @@ echo "🔄 Running Django migrations..."\n\
 python manage.py migrate --noinput\n\
 echo "✅ Migrations complete"\n\
 echo ""\n\
-echo "🚀 Starting Gunicorn with preloaded Django (URLs loaded via wsgi.py)..."\n\
+echo "🚀 Starting Gunicorn with 2 workers (PostgreSQL supports concurrency)..."\n\
 exec gunicorn --workers 2 --bind 0.0.0.0:8080 --timeout 120 --preload --worker-class sync --worker-connections 1000 --access-logfile - --error-logfile - --log-level info wsgi:application' > /app/start.sh \
     && chmod +x /app/start.sh
 
-# Run gunicorn with 1 worker (required for in-memory task storage) and 120s timeout
+# Run gunicorn with 2 workers (PostgreSQL supports concurrent writes) and 120s timeout
 # --access-logfile - enables access logs to stdout
 # --error-logfile - enables error logs to stdout  
 # --log-level info shows more details
