@@ -998,7 +998,7 @@ def quiz_stream(request, session_id):
         connection_start = timezone.now()
         MAX_CONNECTION_TIME = 300  # 5 minutes max for SSE connection
         
-        last_status = session.status
+        last_status = None  # Initialize as None to detect first poll
         quiz_started_sent = False  # Track if we've sent the quiz_started message
         
         # Keepalive tracking - send data keepalive every 30s to prevent timeout
