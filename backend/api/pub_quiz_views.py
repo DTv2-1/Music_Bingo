@@ -995,6 +995,9 @@ def quiz_stream(request, session_id):
             yield f"data: {{\"type\": \"error\", \"message\": \"Session not found\"}}\n\n"
             return
         
+        connection_start = timezone.now()
+        MAX_CONNECTION_TIME = 300  # 5 minutes max for SSE connection
+        
         last_status = session.status
         quiz_started_sent = False  # Track if we've sent the quiz_started message
         
@@ -1008,6 +1011,13 @@ def quiz_stream(request, session_id):
         
         while True:
             try:
+                # 🔧 FIX: Force close SSE after MAX_CONNECTION_TIME to prevent zombie connections
+                connection_duration = (timezone.now() - connection_start).total_seconds()
+                if connection_duration > MAX_CONNECTION_TIME:
+                    logger.info(f"⏰ [SSE] Player connection timeout for {session_id} after {connection_duration:.0f}s, closing")
+                    yield f"data: {json.dumps({'type': 'timeout', 'message': 'Connection timeout, please refresh'})}\n\n"
+                    break
+                
                 # Refresh session from database
                 session.refresh_from_db()
                 
