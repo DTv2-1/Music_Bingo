@@ -1080,8 +1080,14 @@
             progressStatus.textContent = status;
             progressPercent.textContent = progress + '%';
 
-            // Hide when complete
+            // When complete: close SSE connection and hide progress
             if (progress >= 100) {
+                console.log('✅ Generation complete (100%), closing SSE connection');
+                if (hostEventSource) {
+                    hostEventSource.close();
+                    hostEventSource = null;
+                    console.log('🔌 Host SSE connection closed');
+                }
                 setTimeout(() => {
                     progressDiv.style.display = 'none';
                 }, 2000);
