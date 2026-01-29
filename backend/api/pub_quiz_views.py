@@ -37,15 +37,31 @@ def get_session_by_code_or_id(session_identifier):
     Get session by session_code (string) or id (int).
     This allows backward compatibility with numeric IDs.
     """
+    logger.info(f"🔎 [GET_SESSION] Looking for session: '{session_identifier}'")
+    logger.info(f"🔎 [GET_SESSION] Total sessions in DB: {PubQuizSession.objects.count()}")
+    
     try:
         # Try as session_code first
-        return PubQuizSession.objects.get(session_code=session_identifier)
-    except (PubQuizSession.DoesNotExist, ValueError):
+        logger.info(f"🔎 [GET_SESSION] Trying by session_code...")
+        session = PubQuizSession.objects.get(session_code=session_identifier)
+        logger.info(f"✅ [GET_SESSION] Found by session_code: {session.id}")
+        return session
+    except PubQuizSession.DoesNotExist:
+        logger.warning(f"⚠️ [GET_SESSION] Not found by session_code, trying numeric ID...")
         try:
             # Fallback to numeric ID
-            return PubQuizSession.objects.get(id=int(session_identifier))
-        except (PubQuizSession.DoesNotExist, ValueError):
+            session = PubQuizSession.objects.get(id=int(session_identifier))
+            logger.info(f"✅ [GET_SESSION] Found by numeric ID: {session.id}")
+            return session
+        except (PubQuizSession.DoesNotExist, ValueError) as e:
+            logger.error(f"❌ [GET_SESSION] Session not found anywhere: {e}")
+            # List all session codes for debugging
+            all_codes = list(PubQuizSession.objects.values_list('session_code', flat=True))
+            logger.error(f"❌ [GET_SESSION] Available session codes: {all_codes}")
             return None
+    except ValueError as e:
+        logger.error(f"❌ [GET_SESSION] ValueError: {e}")
+        return None
 from .pub_quiz_generator import PubQuizGenerator, initialize_genres_in_db
 
 logger = logging.getLogger(__name__)
@@ -120,11 +136,17 @@ def create_quiz_session(request):
             status='registration',
         )
         
+        logger.info(f"💾 [CREATE_SESSION] Session object created in memory: ID={session.id}, Code={session.session_code}, PK={session.pk}")
+        
         # Force database commit to ensure session is immediately available
         from django.db import transaction
         transaction.commit()
         
-        logger.info(f"✅ [CREATE_SESSION] Session created successfully! ID: {session.id}, Code: {session.session_code}")
+        logger.info(f"✅ [CREATE_SESSION] Session committed to DB! ID: {session.id}, Code: {session.session_code}")
+        
+        # Verify it's actually in the database
+        verification = PubQuizSession.objects.filter(session_code=session.session_code).exists()
+        logger.info(f"🔍 [CREATE_SESSION] Verification query: session exists = {verification}")
         
         # Asegurarse de que los géneros estén inicializados
         if QuizGenre.objects.count() == 0:
@@ -550,10 +572,13 @@ def quiz_host_data(request, session_id):
     """Obtiene datos para la vista del host"""
     import logging
     logger = logging.getLogger(__name__)
-    logger.info(f"📊 [HOST_DATA] Request for session {session_id}")
+    logger.info(f"📊 [HOST_DATA] ========== REQUEST START ==========")
+    logger.info(f"📊 [HOST_DATA] Request for session_id: '{session_id}' (type: {type(session_id).__name__})")
+    logger.info(f"📊 [HOST_DATA] Total sessions in DB at request time: {PubQuizSession.objects.count()}")
     
     session = get_session_by_code_or_id(session_id)
     if not session:
+        logger.error(f"❌ [HOST_DATA] Session '{session_id}' not found!")
         return Response({"error": "Session not found"}, status=404)
     teams = session.teams.all().order_by('-total_score')
     rounds = session.rounds.all()
