@@ -976,6 +976,11 @@
                             // Start local quiz flow
                             console.log('🚀 [SSE] Calling startLocalQuizFlow...');
                             startLocalQuizFlow(timing);
+                            
+                            // Close SSE immediately - we have all questions locally now
+                            console.log('✅ [SSE] Closing connection - all questions received, running locally');
+                            eventSource.close();
+                            eventSource = null;
                             break;
 
                         case 'status_change':
