@@ -668,6 +668,7 @@
         let currentQuestionIndex = 0;
         let questionTimer = null;
         let teamAnswers = []; // Store all answers locally
+        let answeredQuestions = new Set(); // Track which questions have been answered
         let isInHalftime = false;
 
         async function init() {
