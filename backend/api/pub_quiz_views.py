@@ -857,7 +857,23 @@ def delete_session(request, session_id):
 @api_view(['POST'])
 def next_question(request, session_id):
     """Avanza a la siguiente pregunta"""
+    print(f"\n\n========== [NEXT] ENDPOINT CALLED ==========")
+    print(f"[NEXT] Session ID: {session_id}")
+    print(f"[NEXT] Request method: {request.method}")
+    
     session = get_session_by_code_or_id(session_id)
+    print(f"[NEXT] Session found: {session.session_code}")
+    print(f"[NEXT] Current status: {session.status}")
+    print(f"[NEXT] Current round: {session.current_round}")
+    print(f"[NEXT] Current question: {session.current_question}")
+    print(f"[NEXT] Total rounds: {session.total_rounds}")
+    print(f"[NEXT] Questions per round: {session.questions_per_round}")
+    print(f"[NEXT] Session found: {session.session_code}")
+    print(f"[NEXT] Current status: {session.status}")
+    print(f"[NEXT] Current round: {session.current_round}")
+    print(f"[NEXT] Current question: {session.current_question}")
+    print(f"[NEXT] Total rounds: {session.total_rounds}")
+    print(f"[NEXT] Questions per round: {session.questions_per_round}")
     if not session:
         return Response({"error": "Session not found"}, status=404)
     
@@ -866,7 +882,7 @@ def next_question(request, session_id):
     # 🔧 FIX: Si estamos en halftime, el primer "Next" debe pasar a in_progress
     # Y mostrar la primera pregunta del nuevo round (que ya está en current_question=1)
     if session.status == 'halftime':
-        print(f"▶️ [HALFTIME] Currently in halftime status")
+        print(f"\n▶️ [HALFTIME] Currently in halftime status")
         print(f"▶️ [HALFTIME] Round: {session.current_round}, Question: {session.current_question}")
         print(f"▶️ [HALFTIME] User clicked Next - resuming to 'in_progress'")
         print(f"▶️ [HALFTIME] Will display Round {session.current_round}, Question {session.current_question}")
@@ -882,19 +898,27 @@ def next_question(request, session_id):
             'message': f'Resuming to Round {session.current_round}, Question {session.current_question}'
         })
     
+    print(f"\n[NEXT] Not in halftime, proceeding with normal flow...")
     total_questions_in_round = session.questions_per_round
+    print(f"[NEXT] Questions in round: {total_questions_in_round}")
+    
+    print(f"\n[NEXT] Checking if we need to advance...")
+    print(f"[NEXT] current_question ({session.current_question}) < total_questions_in_round ({total_questions_in_round})?")
     
     logger.info(f"🔍 [NEXT] total_questions_in_round: {total_questions_in_round}, current_question: {session.current_question}")
     
     if session.current_question < total_questions_in_round:
+        print(f"\n➡️ [NEXT] YES - Moving to next question in same round")
         session.current_question += 1
         # Keep question_started_at as None - frontend will set it after TTS via start-countdown
         # DO NOT reset to timezone.now() here as it would start countdown before TTS finishes
         session.question_started_at = None
         # Ensure status is in_progress when showing a new question
         session.status = 'in_progress'
+        print(f"➡️ [NEXT] New question: {session.current_question} (still in round {session.current_round})")
         logger.info(f"➡️ [NEXT] Moving to question {session.current_question} (still in round {session.current_round}), question_started_at reset to None (will be set after TTS)")
     else:
+        print(f"\n🎯 [NEXT] NO - Last question of round, need to change round")
         # Siguiente ronda
         logger.info(f"🎯 [NEXT] ❗ LAST QUESTION OF ROUND - current_question ({session.current_question}) >= total ({total_questions_in_round})")
         logger.info(f"🎯 [NEXT] Will advance from Round {session.current_round} to Round {session.current_round + 1}")
@@ -937,8 +961,14 @@ def next_question(request, session_id):
             session.status = 'completed'
             logger.info(f"🏉 [NEXT] Quiz completed!")
     
+    print(f"\n[NEXT] About to save session...")
+    print(f"[NEXT] Final state before save:")
+    print(f"[NEXT]   - Round: {session.current_round}")
+    print(f"[NEXT]   - Question: {session.current_question}")
+    print(f"[NEXT]   - Status: {session.status}")
     logger.info(f"💾 [NEXT] About to save session - Final state: Round {session.current_round}, Question {session.current_question}, Status: {session.status}")
     session.save()
+    print(f"[NEXT] ✅ Session saved successfully!")
     logger.info(f"✅ [NEXT] Session saved successfully")
     
     # 📡 SYNC: Get current question details to send to players
