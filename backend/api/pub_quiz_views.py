@@ -866,14 +866,14 @@ def next_question(request, session_id):
     # 🔧 FIX: Si estamos en halftime, el primer "Next" debe pasar a in_progress
     # Y mostrar la primera pregunta del nuevo round (que ya está en current_question=1)
     if session.status == 'halftime':
-        logger.info(f"▶️ [HALFTIME] Currently in halftime status")
-        logger.info(f"▶️ [HALFTIME] Round: {session.current_round}, Question: {session.current_question}")
-        logger.info(f"▶️ [HALFTIME] User clicked Next - resuming to 'in_progress'")
-        logger.info(f"▶️ [HALFTIME] Will display Round {session.current_round}, Question {session.current_question}")
+        print(f"▶️ [HALFTIME] Currently in halftime status")
+        print(f"▶️ [HALFTIME] Round: {session.current_round}, Question: {session.current_question}")
+        print(f"▶️ [HALFTIME] User clicked Next - resuming to 'in_progress'")
+        print(f"▶️ [HALFTIME] Will display Round {session.current_round}, Question {session.current_question}")
         session.status = 'in_progress'
         session.save()
-        logger.info(f"✅ [HALFTIME] Status changed to 'in_progress', quiz continues")
-        logger.info(f"📡 [HALFTIME] Frontend will receive question_update via SSE for Round {session.current_round}, Q{session.current_question}")
+        print(f"✅ [HALFTIME] Status changed to 'in_progress', quiz continues")
+        print(f"📡 [HALFTIME] Frontend will receive question_update via SSE for Round {session.current_round}, Q{session.current_question}")
         return Response({
             'success': True,
             'current_round': session.current_round,
@@ -911,19 +911,23 @@ def next_question(request, session_id):
             session.current_round += 1
             session.current_question = 1
             session.question_started_at = None  # Will be set by frontend after TTS
-            logger.info(f"🔄 [NEXT] Changed from Round {old_round} to Round {session.current_round}, Question reset to 1")
+            print(f"🔄 [NEXT] Changed from Round {old_round} to Round {session.current_round}, Question reset to 1")
             
             # Verificar si es halftime
             next_round = session.rounds.filter(round_number=session.current_round).first()
+            print(f"🔍 [NEXT] next_round: {next_round}")
+            if next_round:
+                print(f"🔍 [NEXT] is_halftime_before: {next_round.is_halftime_before}")
+            
             if next_round and next_round.is_halftime_before:
-                logger.info(f"🍻 [HALFTIME] ❗❗❗ Detected is_halftime_before=True for round {session.current_round}")
-                logger.info(f"🍻 [HALFTIME] Previous round completed: {session.current_round - 1}")
-                logger.info(f"🍻 [HALFTIME] Next round will be: {session.current_round}")
-                logger.info(f"🍻 [HALFTIME] Setting status to 'halftime' for break")
+                print(f"🍻 [HALFTIME] ❗❗❗ Detected is_halftime_before=True for round {session.current_round}")
+                print(f"🍻 [HALFTIME] Previous round completed: {session.current_round - 1}")
+                print(f"🍻 [HALFTIME] Next round will be: {session.current_round}")
+                print(f"🍻 [HALFTIME] Setting status to 'halftime' for break")
                 session.status = 'halftime'
-                logger.info(f"✅ [HALFTIME] Status saved, SSE will notify frontend")
+                print(f"✅ [HALFTIME] Status saved, SSE will notify frontend")
             else:
-                logger.info(f"⚠️ [NEXT] No halftime detected for round {session.current_round} (is_halftime_before={next_round.is_halftime_before if next_round else 'N/A'})")
+                print(f"⚠️ [NEXT] No halftime detected for round {session.current_round} (is_halftime_before={next_round.is_halftime_before if next_round else 'N/A'})")
             
             if next_round:
                 next_round.started_at = timezone.now()
@@ -1154,7 +1158,7 @@ def quiz_stream(request, session_id):
                     if session.status == 'ready' or session.status == 'registration':
                         yield f"data: {json.dumps({'type': 'waiting', 'message': 'Waiting for quiz to start', 'status': session.status})}\n\n"
                     elif session.status == 'halftime':
-                        logger.info(f"🍻 [SSE] ❗ Halftime status detected! Sending halftime event to players...")
+                        print(f"🍻 [SSE] ❗ Halftime status detected! Sending halftime event to players...")
                         halftime_data = {
                             'type': 'halftime',
                             'message': 'Halftime break - please wait',
@@ -1163,7 +1167,7 @@ def quiz_stream(request, session_id):
                             'next_round': session.current_round
                         }
                         yield f"data: {json.dumps(halftime_data)}\n\n"
-                        logger.info(f"✅ [SSE] Halftime event sent to players")
+                        print(f"✅ [SSE] Halftime event sent to players")
                     else:
                         yield f"data: {json.dumps({'type': 'status_change', 'status': session.status})}\n\n"
                     

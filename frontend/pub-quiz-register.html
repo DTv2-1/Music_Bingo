@@ -976,6 +976,10 @@
                             
                             // Initialize quiz - keep SSE open for sync with host
                             console.log('🚀 [SSE] Quiz started! Keeping SSE open for host sync...');
+                            
+                            // Play notification sound
+                            playNotificationSound();
+                            
                             teamAnswers = [];
                             
                             // Check if host has already started a question (reconnection case)
@@ -1124,6 +1128,43 @@
             }
             
             displayQuestion(question, timing);
+        }
+
+        /**
+         * Play notification sound when questions are ready
+         */
+        function playNotificationSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create a pleasant two-tone notification
+                const playTone = (frequency, startTime, duration) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = frequency;
+                    oscillator.type = 'sine';
+                    
+                    // Envelope for smooth sound
+                    gainNode.gain.setValueAtTime(0, startTime);
+                    gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.01);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + duration);
+                };
+                
+                const now = audioContext.currentTime;
+                playTone(800, now, 0.15);        // First tone (higher)
+                playTone(600, now + 0.15, 0.15); // Second tone (lower)
+                
+                console.log('🔔 [SOUND] Notification played');
+            } catch (error) {
+                console.warn('⚠️ [SOUND] Could not play notification:', error);
+            }
         }
 
         /**
