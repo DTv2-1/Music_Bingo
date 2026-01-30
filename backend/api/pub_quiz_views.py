@@ -881,6 +881,8 @@ def next_question(request, session_id):
     
     total_questions_in_round = session.questions_per_round
     
+    logger.info(f"🔍 [NEXT] total_questions_in_round: {total_questions_in_round}, current_question: {session.current_question}")
+    
     if session.current_question < total_questions_in_round:
         session.current_question += 1
         # Keep question_started_at as None - frontend will set it after TTS via start-countdown
@@ -888,30 +890,37 @@ def next_question(request, session_id):
         session.question_started_at = None
         # Ensure status is in_progress when showing a new question
         session.status = 'in_progress'
-        logger.info(f"➡️ [NEXT] Moving to question {session.current_question}, question_started_at reset to None (will be set after TTS)")
+        logger.info(f"➡️ [NEXT] Moving to question {session.current_question} (still in round {session.current_round}), question_started_at reset to None (will be set after TTS)")
     else:
         # Siguiente ronda
+        logger.info(f"🎯 [NEXT] ❗ LAST QUESTION OF ROUND - current_question ({session.current_question}) >= total ({total_questions_in_round})")
+        logger.info(f"🎯 [NEXT] Will advance from Round {session.current_round} to Round {session.current_round + 1}")
+        
         current_round = session.rounds.filter(round_number=session.current_round).first()
         if current_round:
             current_round.is_completed = True
             current_round.completed_at = timezone.now()
             current_round.save()
-            logger.info(f"✅ [NEXT] Round {session.current_round} completed")
+            logger.info(f"✅ [NEXT] Round {session.current_round} marked as completed")
         
         if session.current_round < session.total_rounds:
+            old_round = session.current_round
             session.current_round += 1
             session.current_question = 1
             session.question_started_at = None  # Will be set by frontend after TTS
+            logger.info(f"🔄 [NEXT] Changed from Round {old_round} to Round {session.current_round}, Question reset to 1")
             
             # Verificar si es halftime
             next_round = session.rounds.filter(round_number=session.current_round).first()
             if next_round and next_round.is_halftime_before:
-                logger.info(f"🍻 [HALFTIME] Detected is_halftime_before=True for round {session.current_round}")
+                logger.info(f"🍻 [HALFTIME] ❗❗❗ Detected is_halftime_before=True for round {session.current_round}")
                 logger.info(f"🍻 [HALFTIME] Previous round completed: {session.current_round - 1}")
                 logger.info(f"🍻 [HALFTIME] Next round will be: {session.current_round}")
                 logger.info(f"🍻 [HALFTIME] Setting status to 'halftime' for break")
                 session.status = 'halftime'
                 logger.info(f"✅ [HALFTIME] Status saved, SSE will notify frontend")
+            else:
+                logger.info(f"⚠️ [NEXT] No halftime detected for round {session.current_round} (is_halftime_before={next_round.is_halftime_before if next_round else 'N/A'})")
             
             if next_round:
                 next_round.started_at = timezone.now()
@@ -919,9 +928,11 @@ def next_question(request, session_id):
                 logger.info(f"▶️ [NEXT] Starting Round {session.current_round}")
         else:
             session.status = 'completed'
-            logger.info(f"🎉 [NEXT] Quiz completed!")
+            logger.info(f"🏉 [NEXT] Quiz completed!")
     
+    logger.info(f"💾 [NEXT] About to save session - Final state: Round {session.current_round}, Question {session.current_question}, Status: {session.status}")
     session.save()
+    logger.info(f"✅ [NEXT] Session saved successfully")
     
     # 📡 SYNC: Get current question details to send to players
     current_question_obj = QuizQuestion.objects.filter(
@@ -1104,10 +1115,11 @@ def quiz_stream(request, session_id):
                     current_position = f"{session.current_round}.{session.current_question}"
                     last_position = _player_question_positions.get(session_id, None)
                     
-                    logger.info(f"🔍 [SYNC] Position check - current: {current_position}, last: {last_position}")
+                    logger.info(f"🔍 [SYNC] Position check - current: {current_position}, last: {last_position}, status: {session.status}")
                     
                     if last_position != current_position and last_position is not None:
-                        logger.info(f"📡 [SYNC] Question changed from {last_position} to {current_position}")
+                        logger.info(f"📡 [SYNC] ⚡ Question changed from {last_position} to {current_position}")
+                        logger.info(f"📡 [SYNC] Preparing question_update event for players...")
                         
                         # Get timing config
                         timing_config = {
@@ -1125,7 +1137,11 @@ def quiz_stream(request, session_id):
                         }
                         
                         yield f"data: {json.dumps(question_update_data)}\n\n"
-                        logger.info(f"📡 [SYNC] Sent question_update to players: Round {session.current_round}, Question {session.current_question}")
+                        logger.info(f"✅ [SYNC] Sent question_update to players: Round {session.current_round}, Question {session.current_question}")
+                    elif last_position is None:
+                        logger.info(f"🔍 [SYNC] First poll - initializing position to {current_position}")
+                    else:
+                        logger.info(f"🔍 [SYNC] No change detected")
                     
                     # Update stored position
                     _player_question_positions[session_id] = current_position

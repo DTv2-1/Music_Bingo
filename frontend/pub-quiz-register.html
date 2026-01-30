@@ -994,20 +994,40 @@
 
                         case 'question_update':
                             // Host advanced to next question - sync player
-                            console.log('📡 [SSE] question_update received:', data);
+                            console.log('📡 [SSE] ⚡ question_update received:', data);
+                            console.log('📡 [SSE] Event details:', {
+                                round: data.round,
+                                question: data.question,
+                                timing: data.timing,
+                                allQuestionsLength: allQuizQuestions.length
+                            });
                             
                             // Calculate question index: questions_per_round = total_questions / total_rounds
                             const questionsPerRound = allQuizQuestions.length / data.timing.total_rounds;
                             const questionIndex = (data.round - 1) * questionsPerRound + (data.question - 1);
-                            console.log(`📡 [SSE] Calculated question index: ${questionIndex} (round ${data.round}, question ${data.question}, ${questionsPerRound} per round)`);
+                            console.log(`📡 [SSE] Calculation: (${data.round} - 1) * ${questionsPerRound} + (${data.question} - 1) = ${questionIndex}`);
+                            
+                            // Check if this is a round change
+                            const prevQuestion = currentQuestionIndex >= 0 ? allQuizQuestions[currentQuestionIndex] : null;
+                            if (prevQuestion && prevQuestion.round !== data.round) {
+                                console.log(`🔄 [SSE] ⚠️ ROUND CHANGE detected! From Round ${prevQuestion.round} to Round ${data.round}`);
+                                // TODO: Show halftime if needed
+                            } else {
+                                console.log(`📡 [SSE] Same round - continuing with Round ${data.round}`);
+                            }
                             
                             if (questionIndex >= 0 && questionIndex < allQuizQuestions.length) {
                                 currentQuestionIndex = questionIndex;
                                 const question = allQuizQuestions[currentQuestionIndex];
-                                console.log(`📡 [SSE] Displaying question ${data.question} of round ${data.round}:`, question.text);
+                                console.log(`📡 [SSE] ✅ Displaying question ${data.question} of round ${data.round}:`, question.text);
+                                console.log(`📡 [SSE] Question details:`, {
+                                    id: question.id,
+                                    type: question.type,
+                                    difficulty: question.difficulty
+                                });
                                 displayQuestion(question, data.timing);
                             } else {
-                                console.error(`❌ [SSE] Invalid question index: ${questionIndex}`);
+                                console.error(`❌ [SSE] Invalid question index: ${questionIndex} (must be between 0 and ${allQuizQuestions.length - 1})`);
                             }
                             break;
 
