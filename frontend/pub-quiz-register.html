@@ -973,14 +973,29 @@
                                 return;
                             }
                             
-                            // Start local quiz flow
-                            console.log('🚀 [SSE] Calling startLocalQuizFlow...');
-                            startLocalQuizFlow(timing);
+                            // Initialize quiz - keep SSE open for sync with host
+                            console.log('🚀 [SSE] Quiz started! Keeping SSE open for host sync...');
+                            currentQuestionIndex = 0;
+                            teamAnswers = [];
                             
-                            // Close SSE immediately - we have all questions locally now
-                            console.log('✅ [SSE] Closing connection - all questions received, running locally');
-                            eventSource.close();
-                            eventSource = null;
+                            // Don't start timer - wait for host to send first question
+                            console.log('⏳ [SSE] Waiting for host to start first question...');
+                            break;
+
+                        case 'question_update':
+                            // Host advanced to next question - sync player
+                            console.log('📡 [SSE] question_update received:', data);
+                            const questionIndex = (data.round - 1) * (allQuizQuestions.length / data.total_rounds) + (data.question - 1);
+                            console.log(`📡 [SSE] Calculated question index: ${questionIndex}`);
+                            
+                            if (questionIndex >= 0 && questionIndex < allQuizQuestions.length) {
+                                currentQuestionIndex = questionIndex;
+                                const question = allQuizQuestions[currentQuestionIndex];
+                                console.log(`📡 [SSE] Displaying question ${data.question} of round ${data.round}`);
+                                displayQuestion(question, data.timing);
+                            } else {
+                                console.error(`❌ [SSE] Invalid question index: ${questionIndex}`);
+                            }
                             break;
 
                         case 'status_change':
@@ -1133,12 +1148,8 @@
                 }
             }
             
-            // Start question timer
-            startQuestionTimer(timing.seconds_per_question || 15, () => {
-                // Time's up! Auto-advance to next question
-                currentQuestionIndex++;
-                showNextQuestion(timing);
-            });
+            // Timer is controlled by host, no local timer needed
+            console.log(`⏳ [DISPLAY] Question displayed, waiting for host to advance...`);
         }
 
         /**

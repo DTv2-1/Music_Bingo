@@ -920,11 +920,22 @@ def next_question(request, session_id):
     
     session.save()
     
+    # 📡 SYNC: Get current question details to send to players
+    current_question_obj = QuizQuestion.objects.filter(
+        session=session,
+        round_number=session.current_round,
+        question_number=session.current_question
+    ).first()
+    
+    logger.info(f"📡 [SYNC] Broadcasting question_update to all connected players")
+    logger.info(f"📡 [SYNC] Round: {session.current_round}, Question: {session.current_question}")
+    
     return Response({
         'success': True,
         'current_round': session.current_round,
         'current_question': session.current_question,
-        'status': session.status
+        'status': session.status,
+        'broadcast_to_players': True  # Flag to trigger SSE broadcast
     })
 
 
@@ -1081,6 +1092,39 @@ def quiz_stream(request, session_id):
                     
                     quiz_started_sent = True
                     last_status = session.status
+                
+                # 📡 SYNC: Send question_update when host advances question
+                if session.status == 'in_progress' and quiz_started_sent:
+                    # Check if question changed by comparing with a stored value
+                    current_position = f"{session.current_round}.{session.current_question}"
+                    if not hasattr(quiz_stream, '_last_position'):
+                        quiz_stream._last_position = {}
+                    
+                    last_position = quiz_stream._last_position.get(session_id, None)
+                    
+                    if last_position != current_position and last_position is not None:
+                        logger.info(f"📡 [SYNC] Question changed from {last_position} to {current_position}")
+                        
+                        # Get timing config
+                        timing_config = {
+                            'seconds_per_question': 15,
+                            'halftime_duration': 90,
+                            'halftime_after_round': 1,
+                            'total_rounds': session.total_rounds
+                        }
+                        
+                        question_update_data = {
+                            'type': 'question_update',
+                            'round': session.current_round,
+                            'question': session.current_question,
+                            'timing': timing_config
+                        }
+                        
+                        yield f"data: {json.dumps(question_update_data)}\n\n"
+                        logger.info(f"📡 [SYNC] Sent question_update to players: Round {session.current_round}, Question {session.current_question}")
+                    
+                    # Update stored position
+                    quiz_stream._last_position[session_id] = current_position
                 
                 # Handle other status changes
                 elif status_changed:
