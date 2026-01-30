@@ -1087,7 +1087,9 @@ def quiz_stream(request, session_id):
                         'all_questions': questions_data,
                         'timing': timing_config,
                         'total_rounds': session.total_rounds,
-                        'questions_per_round': session.questions_per_round
+                        'questions_per_round': session.questions_per_round,
+                        'current_round': session.current_round,
+                        'current_question': session.current_question
                     }
                     
                     yield f"data: {json.dumps(data)}\n\n"

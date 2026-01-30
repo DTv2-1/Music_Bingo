@@ -975,11 +975,21 @@
                             
                             // Initialize quiz - keep SSE open for sync with host
                             console.log('🚀 [SSE] Quiz started! Keeping SSE open for host sync...');
-                            currentQuestionIndex = 0;
                             teamAnswers = [];
                             
-                            // Don't start timer - wait for host to send first question
-                            console.log('⏳ [SSE] Waiting for host to start first question...');
+                            // Check if host has already started a question (reconnection case)
+                            if (data.current_round && data.current_question) {
+                                console.log(`🔄 [SSE] Host already on Round ${data.current_round}, Question ${data.current_question}`);
+                                const questionsPerRound = allQuizQuestions.length / data.total_rounds;
+                                currentQuestionIndex = (data.current_round - 1) * questionsPerRound + (data.current_question - 1);
+                                const question = allQuizQuestions[currentQuestionIndex];
+                                console.log(`📍 [SSE] Jumping to question index ${currentQuestionIndex}:`, question.text);
+                                displayQuestion(question, timing);
+                            } else {
+                                // Quiz just started, wait for host to advance to first question
+                                console.log('⏳ [SSE] Waiting for host to start first question...');
+                                currentQuestionIndex = 0;
+                            }
                             break;
 
                         case 'question_update':
