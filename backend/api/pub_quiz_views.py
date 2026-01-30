@@ -27,6 +27,9 @@ from .pub_quiz_models import (
 
 logger = logging.getLogger(__name__)
 
+# Global dict to track last question position per session for SSE sync
+_player_question_positions = {}
+
 
 # ============================================================================
 # HELPER FUNCTIONS
@@ -1095,12 +1098,9 @@ def quiz_stream(request, session_id):
                 
                 # 📡 SYNC: Send question_update when host advances question
                 if session.status == 'in_progress' and quiz_started_sent:
-                    # Check if question changed by comparing with a stored value
+                    # Check if question changed by comparing with stored position
                     current_position = f"{session.current_round}.{session.current_question}"
-                    if not hasattr(quiz_stream, '_last_position'):
-                        quiz_stream._last_position = {}
-                    
-                    last_position = quiz_stream._last_position.get(session_id, None)
+                    last_position = _player_question_positions.get(session_id, None)
                     
                     if last_position != current_position and last_position is not None:
                         logger.info(f"📡 [SYNC] Question changed from {last_position} to {current_position}")
@@ -1124,7 +1124,7 @@ def quiz_stream(request, session_id):
                         logger.info(f"📡 [SYNC] Sent question_update to players: Round {session.current_round}, Question {session.current_question}")
                     
                     # Update stored position
-                    quiz_stream._last_position[session_id] = current_position
+                    _player_question_positions[session_id] = current_position
                 
                 # Handle other status changes
                 elif status_changed:
