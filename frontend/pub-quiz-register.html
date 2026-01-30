@@ -1182,8 +1182,8 @@
                 typeLabel.textContent = '✍️ Written Answer - Type your answer';
                 document.getElementById('multipleChoiceContainer').style.display = 'none';
                 document.getElementById('answerFormContainer').style.display = 'block';
-                const answerInput = document.getElementById('answerInput');
-                const submitBtn = document.getElementById('submitAnswerBtn');
+                const answerInput = document.getElementById('playerAnswer');
+                const submitBtn = document.querySelector('#answerFormContainer button');
                 
                 // Check if already answered
                 const alreadyAnswered = answeredQuestions.has(question.id);
@@ -1247,13 +1247,13 @@
             }
             
             // Disable all inputs (written + MC) to prevent answers during halftime
-            const answerInput = document.getElementById('answer-input');
+            const answerInput = document.getElementById('playerAnswer');
             if (answerInput) {
                 answerInput.disabled = true;
                 console.log(`✅ [HALFTIME] Written answer input disabled`);
             }
             
-            const submitBtn = document.getElementById('submit-answer-btn');
+            const submitBtn = document.querySelector('#answerFormContainer button');
             if (submitBtn) {
                 submitBtn.disabled = true;
                 console.log(`✅ [HALFTIME] Submit button disabled`);
@@ -1451,8 +1451,8 @@
         async function sendAnswer() {
             console.log('🖱️ [SUBMIT] sendAnswer() called');
             
-            const input = document.getElementById('answerInput');
-            console.log('🖱️ [SUBMIT] answerInput element:', input);
+            const input = document.getElementById('playerAnswer');
+            console.log('🖱️ [SUBMIT] playerAnswer element:', input);
             
             const answerText = input ? input.value.trim() : '';
             console.log('🖱️ [SUBMIT] Answer text:', answerText, '(length:', answerText.length, ')');
@@ -1495,9 +1495,11 @@
             // Disable input
             console.log('🔒 [SUBMIT] Disabling input and button...');
             input.disabled = true;
-            const submitBtn = document.getElementById('submitAnswerBtn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = '✅ Saved';
+            const submitBtn = document.querySelector('#answerFormContainer button');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = '✅ Saved';
+            }
             console.log('🔒 [SUBMIT] Input disabled, button text changed to "✅ Saved"');
             
             console.log(`✅ [SUBMIT] ========== ANSWER SAVED SUCCESSFULLY ==========`);

@@ -864,19 +864,22 @@ def next_question(request, session_id):
     logger.info(f"🔄 [NEXT] Current state - Round: {session.current_round}, Question: {session.current_question}, Status: {session.status}")
     
     # 🔧 FIX: Si estamos en halftime, el primer "Next" debe pasar a in_progress
+    # Y mostrar la primera pregunta del nuevo round (que ya está en current_question=1)
     if session.status == 'halftime':
         logger.info(f"▶️ [HALFTIME] Currently in halftime status")
         logger.info(f"▶️ [HALFTIME] Round: {session.current_round}, Question: {session.current_question}")
         logger.info(f"▶️ [HALFTIME] User clicked Next - resuming to 'in_progress'")
+        logger.info(f"▶️ [HALFTIME] Will display Round {session.current_round}, Question {session.current_question}")
         session.status = 'in_progress'
         session.save()
         logger.info(f"✅ [HALFTIME] Status changed to 'in_progress', quiz continues")
-        logger.info(f"📡 [HALFTIME] Sending SSE notification to update frontend")
+        logger.info(f"📡 [HALFTIME] Frontend will receive question_update via SSE for Round {session.current_round}, Q{session.current_question}")
         return Response({
             'success': True,
             'current_round': session.current_round,
             'current_question': session.current_question,
-            'status': session.status
+            'status': session.status,
+            'message': f'Resuming to Round {session.current_round}, Question {session.current_question}'
         })
     
     total_questions_in_round = session.questions_per_round
