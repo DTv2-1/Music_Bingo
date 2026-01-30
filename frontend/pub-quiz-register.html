@@ -1141,9 +1141,12 @@
                 });
                 
                 // Reset selection
+                const alreadyAnswered = answeredQuestions.has(question.id);
+                console.log(`🔍 [DISPLAY] MC Question ${question.id} already answered: ${alreadyAnswered}`);
+                
                 document.querySelectorAll('.option-btn').forEach(btn => {
                     btn.classList.remove('selected');
-                    btn.disabled = false;
+                    btn.disabled = alreadyAnswered;
                 });
                 selectedOption = null;
             } else {
@@ -1151,13 +1154,19 @@
                 document.getElementById('multipleChoiceContainer').style.display = 'none';
                 document.getElementById('answerFormContainer').style.display = 'block';
                 const answerInput = document.getElementById('answerInput');
+                const submitBtn = document.getElementById('submitAnswerBtn');
+                
+                // Check if already answered
+                const alreadyAnswered = answeredQuestions.has(question.id);
+                console.log(`🔍 [DISPLAY] Question ${question.id} already answered: ${alreadyAnswered}`);
+                
                 if (answerInput) {
                     answerInput.value = '';
-                    answerInput.disabled = false;
+                    answerInput.disabled = alreadyAnswered;
                 }
-                const submitBtn = document.getElementById('submitAnswerBtn');
                 if (submitBtn) {
-                    submitBtn.disabled = false;
+                    submitBtn.disabled = alreadyAnswered;
+                    submitBtn.textContent = alreadyAnswered ? '✅ Saved' : 'Submit Answer';
                 }
             }
             
@@ -1396,6 +1405,9 @@
                 timestamp: new Date().toISOString()
             });
             
+            // Mark question as answered
+            answeredQuestions.add(question.id);
+            
             // Disable input
             input.disabled = true;
             document.getElementById('submitAnswerBtn').disabled = true;
@@ -1438,6 +1450,9 @@
                 timestamp: new Date().toISOString(),
                 is_multiple_choice: true
             });
+            
+            // Mark question as answered
+            answeredQuestions.add(question.id);
             
             // Disable all options
             document.querySelectorAll('.option-btn').forEach(btn => {
