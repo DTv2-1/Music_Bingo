@@ -1934,6 +1934,10 @@
                         console.log('[HALFTIME] ⏰ Countdown finished, resuming quiz...');
                         showQuestion(nextQ);
                         playQuestionTTS(nextQ);
+                        
+                        // 🔧 FIX: Notify backend about Round 2 Q1 after halftime
+                        console.log('[HALFTIME] 📡 Notifying backend of Round 2 Q1...');
+                        notifyBackendQuestionChange(nextQ);
                     });
                 });
                 

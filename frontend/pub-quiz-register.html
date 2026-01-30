@@ -1019,12 +1019,18 @@
                             // Calculate question index: questions_per_round = total_questions / total_rounds
                             const questionsPerRound = allQuizQuestions.length / data.timing.total_rounds;
                             const questionIndex = (data.round - 1) * questionsPerRound + (data.question - 1);
-                            console.log(`📡 [SSE] Calculation: (${data.round} - 1) * ${questionsPerRound} + (${data.question} - 1) = ${questionIndex}`);
+                            console.log(`📡 [SSE] 🧮 INDEX CALCULATION:`);
+                            console.log(`📡 [SSE]    questionsPerRound = ${allQuizQuestions.length} / ${data.timing.total_rounds} = ${questionsPerRound}`);
+                            console.log(`📡 [SSE]    questionIndex = (${data.round} - 1) * ${questionsPerRound} + (${data.question} - 1)`);
+                            console.log(`📡 [SSE]    questionIndex = ${(data.round - 1)} * ${questionsPerRound} + ${(data.question - 1)}`);
+                            console.log(`📡 [SSE]    questionIndex = ${questionIndex}`);
                             
                             // Check if this is a round change
                             const prevQuestion = currentQuestionIndex >= 0 ? allQuizQuestions[currentQuestionIndex] : null;
                             if (prevQuestion && prevQuestion.round !== data.round) {
                                 console.log(`🔄 [SSE] ⚠️ ROUND CHANGE detected! From Round ${prevQuestion.round} to Round ${data.round}`);
+                                console.log(`🔄 [SSE]    Previous question: Round ${prevQuestion.round} Q${prevQuestion.number} (index ${currentQuestionIndex})`);
+                                console.log(`🔄 [SSE]    Next question: Round ${data.round} Q${data.question} (index ${questionIndex})`);
                             } else {
                                 console.log(`📡 [SSE] Same round - continuing with Round ${data.round}`);
                             }
@@ -1032,12 +1038,21 @@
                             if (questionIndex >= 0 && questionIndex < allQuizQuestions.length) {
                                 currentQuestionIndex = questionIndex;
                                 const question = allQuizQuestions[currentQuestionIndex];
-                                console.log(`📡 [SSE] ✅ Displaying question ${data.question} of round ${data.round}:`, question.text);
-                                console.log(`📡 [SSE] Question details:`, {
-                                    id: question.id,
-                                    type: question.type,
-                                    difficulty: question.difficulty
-                                });
+                                console.log(`📡 [SSE] ✅ Accessing allQuizQuestions[${questionIndex}]:`);
+                                console.log(`📡 [SSE]    Round: ${question.round}, Number: ${question.number}`);
+                                console.log(`📡 [SSE]    Text: "${question.text.substring(0, 50)}..."`);
+                                console.log(`📡 [SSE]    Expected: Round ${data.round} Q${data.question}`);
+                                
+                                // VALIDACIÓN: Verificar que el índice corresponde a la pregunta correcta
+                                if (question.round !== data.round || question.number !== data.question) {
+                                    console.error(`❌❌❌ [SSE] MISMATCH DETECTED!`);
+                                    console.error(`❌ [SSE] SSE dice: Round ${data.round} Q${data.question}`);
+                                    console.error(`❌ [SSE] Pero allQuizQuestions[${questionIndex}] es: Round ${question.round} Q${question.number}`);
+                                    console.error(`❌ [SSE] Esto causará que se muestre la pregunta INCORRECTA al usuario!`);
+                                } else {
+                                    console.log(`✅ [SSE] MATCH correcto: index ${questionIndex} corresponde a Round ${data.round} Q${data.question}`);
+                                }
+                                
                                 displayQuestion(question, data.timing);
                             } else {
                                 console.error(`❌ [SSE] Invalid question index: ${questionIndex} (must be between 0 and ${allQuizQuestions.length - 1})`);
