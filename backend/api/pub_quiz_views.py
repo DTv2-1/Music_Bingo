@@ -745,6 +745,41 @@ def get_all_questions(request, session_id):
     })
 
 
+@api_view(['GET'])
+def get_team_stats(request, session_id, team_id):
+    """Get final statistics for a team at quiz completion"""
+    session = get_session_by_code_or_id(session_id)
+    if not session:
+        return Response({"error": "Session not found"}, status=404)
+    
+    try:
+        team = QuizTeam.objects.get(id=team_id, session=session)
+    except QuizTeam.DoesNotExist:
+        return Response({"error": "Team not found"}, status=404)
+    
+    # Get team's rank
+    all_teams = session.teams.all().order_by('-total_score', 'team_name')
+    rank = None
+    for idx, t in enumerate(all_teams, 1):
+        if t.id == team.id:
+            rank = idx
+            break
+    
+    # Count answers submitted
+    answers_submitted = TeamAnswer.objects.filter(team=team).count()
+    
+    return Response({
+        'success': True,
+        'team_name': team.team_name,
+        'total_score': team.total_score,
+        'bonus_points': team.bonus_points,
+        'rank': rank,
+        'total_teams': all_teams.count(),
+        'answers_submitted': answers_submitted,
+        'venue_name': session.venue_name
+    })
+
+
 @api_view(['POST'])
 def sync_question_to_players(request, session_id):
     """Sync current question to player screens via SSE"""

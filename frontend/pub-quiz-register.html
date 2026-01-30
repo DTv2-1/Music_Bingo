@@ -525,6 +525,46 @@
                 </div>
             </div>
 
+            <!-- Completed Screen -->
+            <div id="completedScreen" style="display: none;">
+                <div class="question-card" style="max-width: 600px; text-align: center;">
+                    <div style="font-size: 80px; margin-bottom: 20px;">🎉</div>
+                    <h2 style="color: #4ade80; margin-bottom: 20px;">Quiz Completed!</h2>
+                    <p style="font-size: 1.2em; margin-bottom: 30px;">
+                        Thank you for playing! The host will announce the final results soon.
+                    </p>
+                    
+                    <div id="teamStatsContainer" style="background: rgba(255,255,255,0.05); padding: 30px; border-radius: 15px; margin: 30px 0;">
+                        <h3 style="margin-bottom: 20px; color: #fbbf24;">Your Team Stats 📊</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                            <div>
+                                <div style="font-size: 2em; font-weight: bold; color: #4ade80;" id="teamScore">-</div>
+                                <div style="color: #94a3b8; font-size: 0.9em;">Total Score</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 2em; font-weight: bold; color: #60a5fa;" id="teamRank">-</div>
+                                <div style="color: #94a3b8; font-size: 0.9em;">Ranking</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #fbbf24;" id="questionsAnswered">-</div>
+                                <div style="color: #94a3b8; font-size: 0.9em;">Questions Answered</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.5em; font-weight: bold; color: #a78bfa;" id="bonusPoints">-</div>
+                                <div style="color: #94a3b8; font-size: 0.9em;">Bonus Points</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(59, 130, 246, 0.1); border-radius: 10px; border: 2px solid rgba(59, 130, 246, 0.3);">
+                        <p style="margin: 0; font-size: 0.95em; color: #e2e8f0;">
+                            <strong id="venueNameFinal">-</strong> thanks you for participating!<br>
+                            <span style="color: #94a3b8; font-size: 0.85em;">See you at the next quiz night! 🍻</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <div id="buzzScreen" style="display: none;">
                 <h3>BUZZER ROUND! 🚨</h3>
                 <p>Press the button as fast as you can if you know the answer!</p>
@@ -1068,12 +1108,38 @@
                             break;
 
                         case 'ended':
-                            // Quiz completed
-                            showScreen('waitingScreen');
-                            alert('Quiz completed! Thank you for playing!');
+                            // Quiz completed - show completion screen with stats
+                            console.log('🏁 [SSE] Quiz ended event received');
                             stopQuestionTimer();
-                            eventSource.close();
-                            eventSource = null;
+                            
+                            // Load team stats
+                            fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/team/${TEAM_ID}/stats`)
+                                .then(r => r.json())
+                                .then(stats => {
+                                    console.log('📊 Team stats:', stats);
+                                    document.getElementById('teamScore').textContent = stats.total_score || '0';
+                                    document.getElementById('teamRank').textContent = stats.rank ? `#${stats.rank}` : '-';
+                                    document.getElementById('questionsAnswered').textContent = stats.answers_submitted || '0';
+                                    document.getElementById('bonusPoints').textContent = stats.bonus_points || '0';
+                                    document.getElementById('venueNameFinal').textContent = stats.venue_name || 'The venue';
+                                })
+                                .catch(err => {
+                                    console.warn('⚠️ Could not load team stats:', err);
+                                    // Set defaults if API fails
+                                    document.getElementById('teamScore').textContent = '-';
+                                    document.getElementById('teamRank').textContent = '-';
+                                    document.getElementById('questionsAnswered').textContent = answeredQuestions.size.toString();
+                                    document.getElementById('bonusPoints').textContent = '0';
+                                });
+                            
+                            showScreen('completedScreen');
+                            playNotificationSound(); // Celebratory sound
+                            
+                            // Close SSE connection
+                            if (eventSource) {
+                                eventSource.close();
+                                eventSource = null;
+                            }
                             break;
 
                         case 'error':

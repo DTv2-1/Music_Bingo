@@ -73,6 +73,7 @@ urlpatterns = [
     path('pub-quiz/<str:session_id>/set-auto-advance-time', pub_quiz_views.set_auto_advance_time, name='pub-quiz-set-timer'),
     path('pub-quiz/<str:session_id>/stream', pub_quiz_views.quiz_stream, name='pub-quiz-stream'),  # SSE endpoint for players
     path('pub-quiz/<str:session_id>/host-stream', pub_quiz_views.host_stream, name='pub-quiz-host-stream'),  # SSE endpoint for host
+    path('pub-quiz/<str:session_id>/team/<int:team_id>/stats', pub_quiz_views.get_team_stats, name='pub-quiz-team-stats'),  # Team final stats
     path('pub-quiz/question/<int:question_id>/answer', pub_quiz_views.get_question_answer, name='pub-quiz-answer'),
     path('pub-quiz/question/<int:question_id>/submit', pub_quiz_views.submit_answer, name='pub-quiz-submit'),
     path('pub-quiz/question/<int:question_id>/buzz', pub_quiz_views.record_buzz, name='pub-quiz-buzz'),
