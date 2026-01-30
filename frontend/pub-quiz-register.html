@@ -1122,9 +1122,15 @@
                 typeLabel.textContent = '✍️ Written Answer - Type your answer';
                 document.getElementById('multipleChoiceContainer').style.display = 'none';
                 document.getElementById('answerFormContainer').style.display = 'block';
-                document.getElementById('answerInput').value = '';
-                document.getElementById('answerInput').disabled = false;
-                document.getElementById('submitAnswerBtn').disabled = false;
+                const answerInput = document.getElementById('answerInput');
+                if (answerInput) {
+                    answerInput.value = '';
+                    answerInput.disabled = false;
+                }
+                const submitBtn = document.getElementById('submitAnswerBtn');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                }
             }
             
             // Start question timer
