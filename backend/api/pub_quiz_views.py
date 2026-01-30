@@ -1102,6 +1102,8 @@ def quiz_stream(request, session_id):
                     current_position = f"{session.current_round}.{session.current_question}"
                     last_position = _player_question_positions.get(session_id, None)
                     
+                    logger.info(f"🔍 [SYNC] Position check - current: {current_position}, last: {last_position}")
+                    
                     if last_position != current_position and last_position is not None:
                         logger.info(f"📡 [SYNC] Question changed from {last_position} to {current_position}")
                         
