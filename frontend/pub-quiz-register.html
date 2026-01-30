@@ -985,13 +985,16 @@
                         case 'question_update':
                             // Host advanced to next question - sync player
                             console.log('📡 [SSE] question_update received:', data);
-                            const questionIndex = (data.round - 1) * (allQuizQuestions.length / data.total_rounds) + (data.question - 1);
-                            console.log(`📡 [SSE] Calculated question index: ${questionIndex}`);
+                            
+                            // Calculate question index: questions_per_round = total_questions / total_rounds
+                            const questionsPerRound = allQuizQuestions.length / data.timing.total_rounds;
+                            const questionIndex = (data.round - 1) * questionsPerRound + (data.question - 1);
+                            console.log(`📡 [SSE] Calculated question index: ${questionIndex} (round ${data.round}, question ${data.question}, ${questionsPerRound} per round)`);
                             
                             if (questionIndex >= 0 && questionIndex < allQuizQuestions.length) {
                                 currentQuestionIndex = questionIndex;
                                 const question = allQuizQuestions[currentQuestionIndex];
-                                console.log(`📡 [SSE] Displaying question ${data.question} of round ${data.round}`);
+                                console.log(`📡 [SSE] Displaying question ${data.question} of round ${data.round}:`, question.text);
                                 displayQuestion(question, data.timing);
                             } else {
                                 console.error(`❌ [SSE] Invalid question index: ${questionIndex}`);
