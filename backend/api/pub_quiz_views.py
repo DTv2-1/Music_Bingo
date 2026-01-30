@@ -1150,6 +1150,17 @@ def quiz_stream(request, session_id):
                 elif status_changed:
                     if session.status == 'ready' or session.status == 'registration':
                         yield f"data: {json.dumps({'type': 'waiting', 'message': 'Waiting for quiz to start', 'status': session.status})}\n\n"
+                    elif session.status == 'halftime':
+                        logger.info(f"🍻 [SSE] ❗ Halftime status detected! Sending halftime event to players...")
+                        halftime_data = {
+                            'type': 'halftime',
+                            'message': 'Halftime break - please wait',
+                            'duration': 90,  # seconds
+                            'completed_round': session.current_round - 1,
+                            'next_round': session.current_round
+                        }
+                        yield f"data: {json.dumps(halftime_data)}\n\n"
+                        logger.info(f"✅ [SSE] Halftime event sent to players")
                     else:
                         yield f"data: {json.dumps({'type': 'status_change', 'status': session.status})}\n\n"
                     

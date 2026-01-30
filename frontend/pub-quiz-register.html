@@ -993,6 +993,15 @@
                             }
                             break;
 
+                        case 'halftime':
+                            // Halftime break - show halftime screen and disable all inputs
+                            console.log('🍻 [SSE] ⚡ HALFTIME event received:', data);
+                            console.log('🍻 [SSE] Completed round:', data.completed_round);
+                            console.log('🍻 [SSE] Next round:', data.next_round);
+                            console.log('🍻 [SSE] Duration:', data.duration, 'seconds');
+                            showHalftime(data.completed_round, data.next_round, data.duration);
+                            break;
+
                         case 'question_update':
                             // Host advanced to next question - sync player
                             console.log('📡 [SSE] ⚡ question_update received:', data);
@@ -1012,7 +1021,6 @@
                             const prevQuestion = currentQuestionIndex >= 0 ? allQuizQuestions[currentQuestionIndex] : null;
                             if (prevQuestion && prevQuestion.round !== data.round) {
                                 console.log(`🔄 [SSE] ⚠️ ROUND CHANGE detected! From Round ${prevQuestion.round} to Round ${data.round}`);
-                                // TODO: Show halftime if needed
                             } else {
                                 console.log(`📡 [SSE] Same round - continuing with Round ${data.round}`);
                             }
@@ -1227,18 +1235,49 @@
         /**
          * Show halftime screen
          */
-        function showHalftime(duration, onComplete) {
-            console.log(`🍻 Halftime for ${duration} seconds`);
+        function showHalftime(completedRound, nextRound, durationSeconds) {
+            console.log(`🍻 [HALFTIME] Showing halftime after Round ${completedRound}`);
+            console.log(`🍻 [HALFTIME] Disabling all answer inputs...`);
+            
+            // Hide question container
+            const questionBox = document.getElementById('question-box');
+            if (questionBox) {
+                questionBox.style.display = 'none';
+                console.log(`✅ [HALFTIME] Question box hidden`);
+            }
+            
+            // Disable all inputs (written + MC) to prevent answers during halftime
+            const answerInput = document.getElementById('answer-input');
+            if (answerInput) {
+                answerInput.disabled = true;
+                console.log(`✅ [HALFTIME] Written answer input disabled`);
+            }
+            
+            const submitBtn = document.getElementById('submit-answer-btn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                console.log(`✅ [HALFTIME] Submit button disabled`);
+            }
+            
+            // Disable all MC radio buttons
+            const mcButtons = document.querySelectorAll('input[name="answer"]');
+            mcButtons.forEach(btn => {
+                btn.disabled = true;
+            });
+            if (mcButtons.length > 0) {
+                console.log(`✅ [HALFTIME] ${mcButtons.length} MC buttons disabled`);
+            }
+            
+            // Show halftime screen
             showScreen('waitingScreen');
             document.querySelector('#waitingScreen h2').textContent = '🍻 HALFTIME BREAK';
-            document.querySelector('#waitingScreen p').textContent = `Take a ${duration} second break! Next round coming up...`;
-            
-            setTimeout(() => {
-                console.log('✅ Halftime over, continuing...');
-                document.querySelector('#waitingScreen h2').textContent = '⏳ Waiting for Quiz to Start';
-                document.querySelector('#waitingScreen p').textContent = 'Please wait while the host starts the quiz...';
-                onComplete();
-            }, duration * 1000);
+            document.querySelector('#waitingScreen p').innerHTML = `
+                You've completed Round ${completedRound}!<br>
+                Next up: Round ${nextRound}<br>
+                Grab a drink and get ready...<br>
+                <strong>⏱️ ${durationSeconds} seconds</strong>
+            `;
+            console.log(`✅ [HALFTIME] Halftime screen displayed for ${durationSeconds} seconds`);
         }
 
         /**
@@ -1410,31 +1449,60 @@
         }
 
         async function sendAnswer() {
-            const input = document.getElementById('answerInput');
-            const answerText = input ? input.value.trim() : '';
-            if (!answerText) return;
+            console.log('🖱️ [SUBMIT] sendAnswer() called');
             
-            console.log(`💾 Saving answer for Q${currentQuestionIndex + 1}: ${answerText}`);
+            const input = document.getElementById('answerInput');
+            console.log('🖱️ [SUBMIT] answerInput element:', input);
+            
+            const answerText = input ? input.value.trim() : '';
+            console.log('🖱️ [SUBMIT] Answer text:', answerText, '(length:', answerText.length, ')');
+            
+            if (!answerText) {
+                console.warn('⚠️ [SUBMIT] Empty answer - aborting');
+                return;
+            }
+            
+            console.log(`💾 [SUBMIT] Saving answer for Q${currentQuestionIndex + 1}: "${answerText}"`);
+            console.log(`💾 [SUBMIT] Current question index: ${currentQuestionIndex}`);
+            console.log(`💾 [SUBMIT] Total questions: ${allQuizQuestions.length}`);
             
             // Save answer locally
             const question = allQuizQuestions[currentQuestionIndex];
-            teamAnswers.push({
+            console.log(`💾 [SUBMIT] Question object:`, {
+                id: question.id,
+                round: question.round,
+                number: question.number,
+                text: question.text.substring(0, 50) + '...'
+            });
+            
+            const answerObj = {
                 question_id: question.id,
                 round: question.round,
                 question_number: question.number,
                 answer: answerText,
                 timestamp: new Date().toISOString()
-            });
+            };
+            
+            console.log(`💾 [SUBMIT] Answer object to save:`, answerObj);
+            teamAnswers.push(answerObj);
+            console.log(`✅ [SUBMIT] Answer pushed to teamAnswers array (total: ${teamAnswers.length})`);
             
             // Mark question as answered
+            console.log(`🏷️ [SUBMIT] Marking question ${question.id} as answered`);
             answeredQuestions.add(question.id);
+            console.log(`🏷️ [SUBMIT] answeredQuestions size: ${answeredQuestions.size}`);
             
             // Disable input
+            console.log('🔒 [SUBMIT] Disabling input and button...');
             input.disabled = true;
-            document.getElementById('submitAnswerBtn').disabled = true;
-            document.getElementById('submitAnswerBtn').textContent = '✅ Saved';
+            const submitBtn = document.getElementById('submitAnswerBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '✅ Saved';
+            console.log('🔒 [SUBMIT] Input disabled, button text changed to "✅ Saved"');
             
-            console.log(`✅ Answer saved (${teamAnswers.length} total)`);
+            console.log(`✅ [SUBMIT] ========== ANSWER SAVED SUCCESSFULLY ==========`);
+            console.log(`✅ [SUBMIT] Total answers in memory: ${teamAnswers.length}`);
+            console.log(`✅ [SUBMIT] All answers:`, teamAnswers);
         }
 
         // Multiple Choice Functions
