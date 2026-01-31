@@ -67,6 +67,7 @@ urlpatterns = [
     path('pub-quiz/<str:session_id>/start-countdown', pub_quiz_views.start_countdown, name='pub-quiz-start-countdown'),
     path('pub-quiz/<str:session_id>/reset', pub_quiz_views.reset_quiz, name='pub-quiz-reset'),
     path('pub-quiz/<str:session_id>/delete', pub_quiz_views.delete_session, name='pub-quiz-delete'),
+    path('pub-quiz/bulk-delete', pub_quiz_views.bulk_delete_sessions, name='pub-quiz-bulk-delete'),  # Bulk delete sessions
     path('pub-quiz/<str:session_id>/next', pub_quiz_views.next_question, name='pub-quiz-next'),
     path('pub-quiz/<str:session_id>/toggle-auto-advance', pub_quiz_views.toggle_auto_advance, name='pub-quiz-toggle-auto'),
     path('pub-quiz/<str:session_id>/pause-auto-advance', pub_quiz_views.pause_auto_advance, name='pub-quiz-pause-auto'),

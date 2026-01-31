@@ -91,6 +91,17 @@
             box-shadow: 0 6px 20px rgba(118, 75, 162, 0.6);
         }
 
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+        }
+
         .btn-secondary {
             background: rgba(255, 255, 255, 0.1);
             color: white;
@@ -469,9 +480,14 @@
                 <div class="filter-tab" data-filter="in_progress">In Progress</div>
                 <div class="filter-tab" data-filter="completed">Completed</div>
             </div>
-            <button class="btn btn-primary" onclick="showCreateModal()">
-                ✨ Create New Quiz
-            </button>
+            <div style="display: flex; gap: 10px;">
+                <button id="deleteSelectedBtn" class="btn btn-danger" onclick="deleteSelected()" style="display: none;">
+                    🗑️ Delete Selected (<span id="selectedCount">0</span>)
+                </button>
+                <button class="btn btn-primary" onclick="showCreateModal()">
+                    ✨ Create New Quiz
+                </button>
+            </div>
         </div>
 
         <div id="sessionsContainer" class="sessions-grid">
@@ -609,6 +625,9 @@
 
                 return `
                     <div class="session-card" onclick="openSession(${session.id})">
+                        <div style="position: absolute; top: 15px; left: 15px; z-index: 10;" onclick="event.stopPropagation()">
+                            <input type="checkbox" class="session-checkbox" data-session-id="${session.id}" data-venue-name="${session.venue_name}" onchange="updateSelectedCount()" style="width: 20px; height: 20px; cursor: pointer;">
+                        </div>
                         <span class="session-status status-${session.status}">${getStatusLabel(session.status)}</span>
                         <h3>${session.venue_name}</h3>
                         <p style="opacity: 0.7; margin-bottom: 15px;">📅 ${dateStr}</p>
@@ -767,14 +786,10 @@
 
                         if (response.ok && data.success) {
                             console.log(`✅ [DELETE] Session deleted successfully`);
-                            showModal('success', 'Session Deleted!', `Session "${venueName}" deleted successfully!`, 'OK', () => {
-                                loadSessions(); // Reload sessions list
-                            });
+                            loadSessions(); // Reload sessions list immediately
                         } else if (response.status === 404) {
                             console.warn(`⚠️ [DELETE] Session already deleted`);
-                            showModal('warning', 'Already Deleted', 'This session has already been deleted.', 'OK', () => {
-                                loadSessions(); // Refresh list
-                            });
+                            loadSessions(); // Refresh list
                         } else {
                             console.error(`❌ [DELETE] Failed:`, data.error || data.detail);
                             showModal('error', 'Delete Failed', 'Error deleting session: ' + (data.error || data.detail || 'Unknown error'));
@@ -898,6 +913,69 @@
                     window.customConfirmCallback = null;
                 }
             }, 300);
+        }
+
+        // 🗑️ BULK DELETE FUNCTIONS
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.session-checkbox:checked');
+            const count = checkboxes.length;
+            const deleteBtn = document.getElementById('deleteSelectedBtn');
+            const countSpan = document.getElementById('selectedCount');
+            
+            if (count > 0) {
+                deleteBtn.style.display = 'block';
+                countSpan.textContent = count;
+            } else {
+                deleteBtn.style.display = 'none';
+            }
+        }
+
+        async function deleteSelected() {
+            const checkboxes = document.querySelectorAll('.session-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showModal('warning', 'No Selection', 'Please select at least one session to delete.');
+                return;
+            }
+
+            const sessionIds = Array.from(checkboxes).map(cb => parseInt(cb.dataset.sessionId));
+            const venueNames = Array.from(checkboxes).map(cb => cb.dataset.venueName).join(', ');
+            
+            const count = sessionIds.length;
+            const message = count === 1
+                ? `Are you sure you want to delete 1 session?\n\n"${venueNames}"\n\nThis action cannot be undone!`
+                : `Are you sure you want to delete ${count} sessions?\n\n${venueNames}\n\nThis action cannot be undone!`;
+
+            showConfirmModal(
+                'Delete Multiple Sessions?',
+                message,
+                'Delete All',
+                async () => {
+                    try {
+                        console.log(`🗑️ [BULK DELETE] Deleting sessions:`, sessionIds);
+                        const response = await fetch(`${BASE_URL}/api/pub-quiz/bulk-delete`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ session_ids: sessionIds })
+                        });
+
+                        const data = await response.json();
+                        console.log(`📥 [BULK DELETE] Response:`, response.status, data);
+
+                        if (response.ok && data.success) {
+                            console.log(`✅ [BULK DELETE] Deleted ${data.deleted_count} sessions`);
+                            showModal('success', 'Sessions Deleted', `Successfully deleted ${data.deleted_count} session(s).`);
+                            loadSessions(); // Reload sessions list
+                        } else {
+                            console.error(`❌ [BULK DELETE] Failed:`, data.error);
+                            showModal('error', 'Delete Failed', 'Error deleting sessions: ' + (data.error || 'Unknown error'));
+                        }
+                    } catch (error) {
+                        console.error('❌ [BULK DELETE] Exception:', error);
+                        showModal('error', 'Delete Failed', 'Failed to delete sessions: ' + error.message);
+                    }
+                },
+                'Cancel'
+            );
         }
     </script>
 </body>

@@ -889,6 +889,50 @@ def delete_session(request, session_id):
     })
 
 
+@api_view(['DELETE'])
+def bulk_delete_sessions(request):
+    """Elimina múltiples sesiones a la vez"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    session_ids = request.data.get('session_ids', [])
+    
+    if not session_ids:
+        return Response({"error": "No session IDs provided"}, status=400)
+    
+    if not isinstance(session_ids, list):
+        return Response({"error": "session_ids must be an array"}, status=400)
+    
+    logger.info(f"🗑️ [BULK DELETE] Request to delete {len(session_ids)} sessions: {session_ids}")
+    
+    deleted_count = 0
+    errors = []
+    
+    for session_id in session_ids:
+        try:
+            session = get_session_by_code_or_id(session_id)
+            if session:
+                venue_name = session.venue_name
+                session.delete()
+                deleted_count += 1
+                logger.info(f"✅ [BULK DELETE] Deleted session '{venue_name}' (ID: {session_id})")
+            else:
+                errors.append(f"Session {session_id} not found")
+                logger.warning(f"⚠️ [BULK DELETE] Session {session_id} not found")
+        except Exception as e:
+            errors.append(f"Error deleting session {session_id}: {str(e)}")
+            logger.error(f"❌ [BULK DELETE] Error deleting session {session_id}: {e}")
+    
+    logger.info(f"✅ [BULK DELETE] Completed - Deleted {deleted_count}/{len(session_ids)} sessions")
+    
+    return Response({
+        'success': True,
+        'deleted_count': deleted_count,
+        'total_requested': len(session_ids),
+        'errors': errors if errors else None
+    })
+
+
 @api_view(['POST'])
 def next_question(request, session_id):
     """Avanza a la siguiente pregunta"""
