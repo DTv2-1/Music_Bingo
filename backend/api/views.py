@@ -41,31 +41,10 @@ from .utils.config import (
     VENUE_NAME
 )
 
-logger = logging.getLogger(__name__)
+# Import services
+from .services import upload_to_gcs, GCSStorageService, TTSService, MusicGenerationService
 
-def upload_to_gcs(local_file_path, destination_blob_name):
-    """
-    Upload a file to Google Cloud Storage and return a public URL
-    Files are auto-deleted after 7 days via bucket lifecycle policy
-    """
-    try:
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(GCS_BUCKET_NAME)
-        blob = bucket.blob(destination_blob_name)
-        
-        # Upload the file
-        blob.upload_from_filename(local_file_path)
-        logger.info(f"✅ Uploaded {local_file_path} to gs://{GCS_BUCKET_NAME}/{destination_blob_name}")
-        
-        # Make blob publicly readable
-        blob.make_public()
-        logger.info(f"✅ Made blob public: {blob.public_url}")
-        
-        # Return public URL
-        return blob.public_url
-    except Exception as e:
-        logger.error(f"❌ Failed to upload to GCS: {e}")
-        raise
+logger = logging.getLogger(__name__)
 
 @api_view(['GET'])
 def health_check(request):
@@ -319,9 +298,6 @@ def get_task_status(request, task_id):
 @api_view(['POST'])
 def generate_tts(request):
     """Proxy for ElevenLabs TTS"""
-    if not ELEVENLABS_API_KEY:
-        return Response({'error': 'ElevenLabs API key not configured'}, status=500)
-    
     try:
         text = request.data.get('text', '')
         voice_id = request.data.get('voice_id', ELEVENLABS_VOICE_ID)
@@ -329,45 +305,34 @@ def generate_tts(request):
         if not text:
             return Response({'error': 'No text provided'}, status=400)
         
-        url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
+        # Use TTS service
+        tts_service = TTSService()
         
-        response = requests.post(
-            url,
-            headers={
-                'xi-api-key': ELEVENLABS_API_KEY,
-                'Content-Type': 'application/json'
-            },
-            json={
-                'text': text,
-                'model_id': 'eleven_turbo_v2_5',
-                'voice_settings': {
-                    'stability': 0.35,
-                    'similarity_boost': 0.85,
-                    'style': 0.5,
-                    'use_speaker_boost': True
-                },
-                'optimize_streaming_latency': 1,
-                'output_format': 'mp3_44100_128'
-            }
+        # Custom voice settings for turbo mode
+        voice_settings = {
+            'stability': 0.35,
+            'similarity_boost': 0.85,
+            'style': 0.5,
+            'use_speaker_boost': True
+        }
+        
+        audio_bytes = tts_service.generate_turbo(
+            text=text,
+            voice_id=voice_id,
+            voice_settings=voice_settings
         )
         
-        if not response.ok:
-            return Response({
-                'error': f'ElevenLabs API error: {response.status_code}',
-                'details': response.text
-            }, status=response.status_code)
+        return HttpResponse(audio_bytes, content_type='audio/mpeg')
         
-        return HttpResponse(response.content, content_type='audio/mpeg')
-        
+    except ValueError as e:
+        return Response({'error': str(e)}, status=400)
     except Exception as e:
+        logger.error(f"Error generating TTS: {e}", exc_info=True)
         return Response({'error': str(e)}, status=500)
 
 @api_view(['POST'])
 def generate_tts_preview(request):
     """Generate TTS preview with custom voice settings"""
-    if not ELEVENLABS_API_KEY:
-        return Response({'error': 'ElevenLabs API key not configured'}, status=500)
-    
     try:
         text = request.data.get('text', '')
         voice_id = request.data.get('voice_id', ELEVENLABS_VOICE_ID)
@@ -386,32 +351,18 @@ def generate_tts_preview(request):
         
         logger.info(f"Generating TTS preview: voice={voice_id}, settings={settings_payload}")
         
-        url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
-        
-        response = requests.post(
-            url,
-            headers={
-                'xi-api-key': ELEVENLABS_API_KEY,
-                'Content-Type': 'application/json'
-            },
-            json={
-                'text': text,
-                'model_id': 'eleven_multilingual_v2',
-                'voice_settings': settings_payload,
-                'optimize_streaming_latency': 1,
-                'output_format': 'mp3_44100_128'
-            },
-            timeout=30
+        # Use TTS service
+        tts_service = TTSService()
+        audio_bytes = tts_service.generate_preview(
+            text=text,
+            voice_id=voice_id,
+            voice_settings=settings_payload
         )
         
-        if not response.ok:
-            return Response({
-                'error': f'ElevenLabs API error: {response.status_code}',
-                'details': response.text
-            }, status=response.status_code)
+        return HttpResponse(audio_bytes, content_type='audio/mpeg')
         
-        return HttpResponse(response.content, content_type='audio/mpeg')
-        
+    except ValueError as e:
+        return Response({'error': str(e)}, status=400)
     except Exception as e:
         logger.error(f"Error generating TTS preview: {e}", exc_info=True)
         return Response({'error': str(e)}, status=500)
@@ -580,29 +531,23 @@ def generate_jingle(request):
                 task.status = 'processing'
                 task.save(update_fields=['status'])
                 
+                # Initialize services
+                tts_service = TTSService()
+                music_service = MusicGenerationService()
+                
                 # Step 1: Generate TTS
                 logger.info(f"Task {task_id}: Generating TTS...")
                 task.progress = 20
                 task.current_step = 'generating_voice'
                 task.save(update_fields=['progress', 'current_step'])
                 
-                tts_url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
-                tts_payload = {
-                    'text': text,
-                    'model_id': 'eleven_multilingual_v2',
-                    'voice_settings': voice_settings_payload
-                }
-                tts_headers = {
-                    'xi-api-key': ELEVENLABS_API_KEY,
-                    'Content-Type': 'application/json'
-                }
+                tts_bytes = tts_service.generate_audio(
+                    text=text,
+                    voice_id=voice_id,
+                    voice_settings=voice_settings_payload,
+                    model_id='eleven_multilingual_v2'
+                )
                 
-                tts_response = requests.post(tts_url, json=tts_payload, headers=tts_headers, timeout=30)
-                
-                if tts_response.status_code != 200:
-                    raise Exception(f'TTS API error: {tts_response.status_code} - {tts_response.text}')
-                
-                tts_bytes = tts_response.content
                 logger.info(f"Task {task_id}: TTS generated ({len(tts_bytes)} bytes)")
                 
                 # Calculate actual TTS duration to generate matching music
@@ -621,30 +566,11 @@ def generate_jingle(request):
                 task.current_step = 'generating_music'
                 task.save(update_fields=['progress', 'current_step'])
                 
-                # ElevenLabs Music Generation API
-                music_url = 'https://api.elevenlabs.io/v1/sound-generation'
-                music_payload = {
-                    'text': music_prompt,
-                    'duration_seconds': music_duration
-                }
-                music_headers = {
-                    'xi-api-key': ELEVENLABS_API_KEY,
-                    'Content-Type': 'application/json'
-                }
-                
-                music_response = requests.post(music_url, json=music_payload, headers=music_headers, timeout=60)
-                
-                if music_response.status_code != 200:
-                    logger.warning(f"Music API error: {music_response.status_code}, using fallback")
-                    # Fallback: use silent background or default music
-                    # For now, we'll create a simple tone as placeholder
-                    from pydub.generators import Sine
-                    music_audio = Sine(440).to_audio_segment(duration=music_duration * 1000).apply_gain(-20)
-                    music_io = io.BytesIO()
-                    music_audio.export(music_io, format='mp3')
-                    music_bytes = music_io.getvalue()
-                else:
-                    music_bytes = music_response.content
+                music_bytes = music_service.generate_music(
+                    prompt=music_prompt,
+                    duration_seconds=music_duration,
+                    use_fallback_on_error=True
+                )
                 
                 logger.info(f"Task {task_id}: Music generated ({len(music_bytes)} bytes)")
                 
@@ -800,42 +726,25 @@ def generate_music_preview(request):
         music_prompt = data.get('music_prompt', 'upbeat background music')
         duration = int(data.get('duration', 5))
         
-        if not ELEVENLABS_API_KEY:
-            return Response({'error': 'ElevenLabs API key not configured'}, status=500)
-        
         logger.info(f"Generating music preview: '{music_prompt}', {duration}s")
         
-        # Call ElevenLabs Sound Generation API
-        url = 'https://api.elevenlabs.io/v1/sound-generation'
-        payload = {
-            'text': music_prompt,
-            'duration_seconds': duration
-        }
-        headers = {
-            'xi-api-key': ELEVENLABS_API_KEY,
-            'Content-Type': 'application/json'
-        }
+        # Use Music Generation service
+        music_service = MusicGenerationService()
+        music_bytes = music_service.generate_preview(
+            prompt=music_prompt,
+            duration=duration
+        )
         
-        response = requests.post(url, json=payload, headers=headers, timeout=30)
-        
-        if response.status_code != 200:
-            logger.error(f"Music API error: {response.status_code} - {response.text}")
-            # Return a fallback simple tone
-            from pydub.generators import Sine
-            music_audio = Sine(440).to_audio_segment(duration=duration * 1000).apply_gain(-20)
-            music_io = io.BytesIO()
-            music_audio.export(music_io, format='mp3')
-            music_io.seek(0)
-            
-            return HttpResponse(music_io.getvalue(), content_type='audio/mpeg')
-        
-        logger.info(f"Music preview generated: {len(response.content)} bytes")
+        logger.info(f"Music preview generated: {len(music_bytes)} bytes")
         
         # Return audio directly
-        return HttpResponse(response.content, content_type='audio/mpeg')
+        return HttpResponse(music_bytes, content_type='audio/mpeg')
         
+    except ValueError as e:
+        return Response({'error': str(e)}, status=400)
     except Exception as e:
         logger.error(f"Error generating music preview: {e}", exc_info=True)
+        return Response({'error': str(e)}, status=500)
 
 
 @api_view(['GET'])
