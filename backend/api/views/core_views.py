@@ -1,0 +1,81 @@
+"""
+Core API Views
+Health check, pool data, task status, config
+"""
+
+import json
+import logging
+from pathlib import Path
+
+from django.utils import timezone
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+from ..models import TaskStatus
+from ..utils.config import DATA_DIR, VENUE_NAME
+
+logger = logging.getLogger(__name__)
+
+
+@api_view(['GET'])
+def health_check(request):
+    """Health check endpoint"""
+    logger.info("Health check endpoint called")
+    return Response({'status': 'healthy', 'message': 'Music Bingo API (Django)'})
+
+
+@api_view(['GET'])
+def get_pool(request):
+    """Get music pool data"""
+    try:
+        logger.info(f"get_pool called - DATA_DIR: {DATA_DIR}")
+        pool_path = DATA_DIR / 'pool.json'
+        logger.info(f"Looking for pool at: {pool_path}, exists: {pool_path.exists()}")
+        with open(pool_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        logger.info(f"Pool loaded successfully: {len(data.get('songs', []))} songs")
+        return Response(data)
+    except FileNotFoundError as e:
+        logger.error(f"Pool file not found: {e}")
+        return Response({'error': 'Pool file not found'}, status=404)
+    except Exception as e:
+        logger.error(f"Error loading pool: {e}", exc_info=True)
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['GET'])
+def get_task_status(request, task_id):
+    """Get async task status"""
+    try:
+        task = TaskStatus.objects.get(task_id=task_id)
+    except TaskStatus.DoesNotExist:
+        return Response({'error': 'Task not found'}, status=404)
+    
+    # Calculate elapsed time
+    if task.completed_at:
+        elapsed_seconds = (task.completed_at - task.started_at).total_seconds()
+    else:
+        elapsed_seconds = (timezone.now() - task.started_at).total_seconds()
+    
+    response = {
+        'task_id': task.task_id,
+        'status': task.status,
+        'progress': task.progress,
+        'elapsed_time': round(elapsed_seconds, 2)
+    }
+    
+    if task.current_step:
+        response['current_step'] = task.current_step
+    
+    if task.status == 'completed' and task.result:
+        response['result'] = task.result
+    elif task.status == 'failed' and task.error:
+        response['error'] = task.error
+    
+    return Response(response)
+
+
+@api_view(['GET'])
+def get_config(request):
+    """Get public configuration"""
+    return Response({'venue_name': VENUE_NAME})
