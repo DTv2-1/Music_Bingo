@@ -53,6 +53,9 @@ from .services import (
     CardGenerationService
 )
 
+# Import async tasks
+from .tasks import run_card_generation_task, run_jingle_generation_task
+
 logger = logging.getLogger(__name__)
 
 @api_view(['GET'])
@@ -116,128 +119,23 @@ def generate_cards_async(request):
             }
         )
         
-        def background_task():
-            try:
-                logger.info(f"Task {task_id}: Processing started")
-                task.status = 'processing'
-                task.save(update_fields=['status'])
-                
-                # Use CardGenerationService to prepare command
-                card_service = CardGenerationService()
-                cmd = card_service.prepare_generation_command(
-                    venue_name=venue_name,
-                    num_players=num_players,
-                    game_number=game_number,
-                    game_date=game_date,
-                    pub_logo=pub_logo,
-                    social_media=social_media,
-                    include_qr=include_qr,
-                    prize_4corners=prize_4corners,
-                    prize_first_line=prize_first_line,
-                    prize_full_house=prize_full_house
-                )
-                
-                logger.info(f"Task {task_id}: Running command: {' '.join(cmd)}")
-                
-                # Run with real-time output capture for progress tracking
-                process = subprocess.Popen(
-                    cmd,
-                    cwd=str(BASE_DIR),
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    bufsize=1
-                )
-                
-                stdout_lines = []
-                stderr_lines = []
-                
-                # Read output line by line for progress tracking
-                while True:
-                    output = process.stdout.readline()
-                    if output == '' and process.poll() is not None:
-                        break
-                    if output:
-                        line = output.strip()
-                        stdout_lines.append(line)
-                        logger.info(f"Task {task_id}: {line}")
-                        
-                        # Parse structured progress from output (PROGRESS: XX)
-                        if line.startswith('PROGRESS:'):
-                            try:
-                                progress_str = line.split('PROGRESS:')[1].strip()
-                                progress_val = int(float(progress_str))
-                                task.progress = progress_val
-                                task.save(update_fields=['progress'])
-                                logger.info(f"Task {task_id}: Progress updated to {progress_val}%")
-                            except Exception as e:
-                                logger.warning(f"Task {task_id}: Failed to parse progress: {e}")
-                        # Also parse emoji format for backwards compatibility
-                        elif '📊 Progress:' in line:
-                            try:
-                                progress_str = line.split('Progress:')[1].split('%')[0].strip()
-                                task.progress = int(float(progress_str))
-                                task.save(update_fields=['progress'])
-                            except:
-                                pass
-                
-                # Get any remaining stderr
-                stderr_output = process.stderr.read()
-                if stderr_output:
-                    stderr_lines.append(stderr_output)
-                
-                return_code = process.poll()
-                
-                # Create result object similar to subprocess.run
-                class Result:
-                    def __init__(self, returncode, stdout, stderr):
-                        self.returncode = returncode
-                        self.stdout = stdout
-                        self.stderr = stderr
-                
-                result = Result(return_code, '\n'.join(stdout_lines), '\n'.join(stderr_lines))
-                
-                if result.returncode != 0:
-                    logger.error(f"Task {task_id}: Failed with error: {result.stderr}")
-                    task.status = 'failed'
-                    task.error = result.stderr
-                    task.completed_at = timezone.now()
-                    task.save(update_fields=['status', 'error', 'completed_at'])
-                    return
-                
-                # Upload PDF to GCS
-                pdf_path = DATA_DIR / 'cards' / 'music_bingo_cards.pdf'
-                if pdf_path.exists():
-                    try:
-                        # Use task_id in blob name for uniqueness
-                        blob_name = f"cards/{task_id}/music_bingo_cards.pdf"
-                        download_url = upload_to_gcs(str(pdf_path), blob_name)
-                        logger.info(f"Task {task_id}: PDF uploaded to GCS, signed URL generated")
-                    except Exception as upload_error:
-                        logger.error(f"Task {task_id}: GCS upload failed: {upload_error}")
-                        download_url = '/data/cards/music_bingo_cards.pdf'  # Fallback
-                else:
-                    logger.warning(f"Task {task_id}: PDF not found at {pdf_path}")
-                    download_url = '/data/cards/music_bingo_cards.pdf'  # Fallback
-                
-                logger.info(f"Task {task_id}: Completed successfully")
-                task.status = 'completed'
-                task.progress = 100
-                task.result = {
-                    'success': True,
-                    'download_url': download_url
-                }
-                task.completed_at = timezone.now()
-                task.save(update_fields=['status', 'progress', 'result', 'completed_at'])
-            except Exception as e:
-                logger.error(f"Task {task_id}: Exception: {str(e)}")
-                task.status = 'failed'
-                task.error = str(e)
-                task.completed_at = timezone.now()
-                task.save(update_fields=['status', 'error', 'completed_at'])
+        # Use CardGenerationService to prepare command
+        card_service = CardGenerationService()
+        cmd = card_service.prepare_generation_command(
+            venue_name=venue_name,
+            num_players=num_players,
+            game_number=game_number,
+            game_date=game_date,
+            pub_logo=pub_logo,
+            social_media=social_media,
+            include_qr=include_qr,
+            prize_4corners=prize_4corners,
+            prize_first_line=prize_first_line,
+            prize_full_house=prize_full_house
+        )
         
-        thread = threading.Thread(target=background_task, daemon=True)
-        thread.start()
+        # Run task in background using task module
+        run_card_generation_task(task_id, task, cmd, BASE_DIR)
         
         return Response({'task_id': task_id, 'status': 'pending'}, status=202)
     except Exception as e:
@@ -497,49 +395,17 @@ def generate_jingle(request):
             }
         )
         
-        # Start background task using JingleService
-        def background_jingle_generation():
-            try:
-                logger.info(f"Task {task_id}: Starting generation process")
-                task.status = 'processing'
-                task.save(update_fields=['status'])
-                
-                # Use JingleService for complete jingle creation
-                jingle_service = JingleService()
-                result = jingle_service.create_jingle(
-                    text=text,
-                    voice_id=voice_id,
-                    music_prompt=music_prompt,
-                    voice_settings=voice_settings_payload,
-                    task_id=task_id,
-                    task_callback=lambda progress, step: (
-                        setattr(task, 'progress', progress),
-                        setattr(task, 'current_step', step),
-                        task.save(update_fields=['progress', 'current_step'])
-                    )
-                )
-                
-                # Update task status with result
-                task.status = 'completed'
-                task.progress = 100
-                task.current_step = 'completed'
-                task.result = result
-                task.completed_at = timezone.now()
-                task.save(update_fields=['status', 'progress', 'current_step', 'result', 'completed_at'])
-                
-                logger.info(f"Task {task_id}: COMPLETED successfully")
-                
-            except Exception as e:
-                logger.error(f"Task {task_id}: ERROR - {e}", exc_info=True)
-                task.status = 'failed'
-                task.error = str(e)
-                task.completed_at = timezone.now()
-                task.save(update_fields=['status', 'error', 'completed_at'])
-        
-        # Start thread
-        thread = threading.Thread(target=background_jingle_generation)
-        thread.daemon = True
-        thread.start()
+        # Run task in background using task module
+        jingle_service = JingleService()
+        run_jingle_generation_task(
+            task_id=task_id,
+            task_model=task,
+            jingle_service=jingle_service,
+            text=text,
+            voice_id=voice_id,
+            music_prompt=music_prompt,
+            voice_settings=voice_settings_payload
+        )
         
         return Response({
             'task_id': task_id,
