@@ -29,7 +29,7 @@ from datetime import datetime
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from ..services.bingo_session_service import BingoSessionService
+from ..services.session_service import BingoSessionService
 from ..validators import validate_session_status
 
 logger = logging.getLogger(__name__)

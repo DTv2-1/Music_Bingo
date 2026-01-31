@@ -28,7 +28,7 @@ from rest_framework.response import Response
 
 from ..models import TaskStatus
 from ..services.jingle_service import JingleService
-from ..services.music_generation_service import MusicGenerationService
+from ..services.music_service import MusicGenerationService
 from ..validators import validate_jingle_input
 from ..tasks import run_jingle_generation_task
 from ..utils.config import ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, DATA_DIR
