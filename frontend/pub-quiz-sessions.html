@@ -566,6 +566,35 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+
+        /* Selection Mode Styles */
+        .session-checkbox {
+            display: none;
+        }
+
+        body.selection-mode .session-checkbox {
+            display: block;
+        }
+
+        body.selection-mode .session-card {
+            padding-left: 50px;
+        }
+
+        .btn-select {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-select:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-select.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-color: var(--primary);
+        }
     </style>
     <script src="/config.js"></script>
 </head>
@@ -590,6 +619,13 @@
                 <div class="filter-tab" data-filter="completed">Completed</div>
             </div>
             <div style="display: flex; gap: 10px;">
+                <button id="selectModeBtn" class="btn btn-select" onclick="toggleSelectionMode()">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 11 12 14 22 4"></polyline>
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                    </svg>
+                    Select
+                </button>
                 <button id="deleteSelectedBtn" class="btn btn-danger" onclick="deleteSelected()" style="display: none;">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -1103,6 +1139,40 @@
             }, 300);
         }
 
+        // 🎯 SELECTION MODE FUNCTIONS
+        function toggleSelectionMode() {
+            const body = document.body;
+            const btn = document.getElementById('selectModeBtn');
+            const deleteBtn = document.getElementById('deleteSelectedBtn');
+            
+            body.classList.toggle('selection-mode');
+            
+            if (body.classList.contains('selection-mode')) {
+                btn.classList.add('active');
+                btn.innerHTML = `
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    Cancel
+                `;
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = `
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 11 12 14 22 4"></polyline>
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                    </svg>
+                    Select
+                `;
+                
+                // Clear all selections
+                const checkboxes = document.querySelectorAll('.session-checkbox:checked');
+                checkboxes.forEach(cb => cb.checked = false);
+                deleteBtn.style.display = 'none';
+            }
+        }
+
         // 🗑️ BULK DELETE FUNCTIONS
         function updateSelectedCount() {
             const checkboxes = document.querySelectorAll('.session-checkbox:checked');
@@ -1152,6 +1222,7 @@
                         if (response.ok && data.success) {
                             console.log(`✅ [BULK DELETE] Deleted ${data.deleted_count} sessions`);
                             showModal('success', 'Sessions Deleted', `Successfully deleted ${data.deleted_count} session(s).`);
+                            toggleSelectionMode(); // Exit selection mode
                             loadSessions(); // Reload sessions list
                         } else {
                             console.error(`❌ [BULK DELETE] Failed:`, data.error);
