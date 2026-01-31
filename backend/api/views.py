@@ -56,6 +56,14 @@ from .services import (
 # Import async tasks
 from .tasks import run_card_generation_task, run_jingle_generation_task
 
+# Import validators
+from .validators import (
+    validate_jingle_input,
+    validate_tts_input,
+    validate_card_generation_params,
+    validate_session_status
+)
+
 logger = logging.getLogger(__name__)
 
 @api_view(['GET'])
@@ -175,11 +183,14 @@ def get_task_status(request, task_id):
 def generate_tts(request):
     """Proxy for ElevenLabs TTS"""
     try:
-        text = request.data.get('text', '')
-        voice_id = request.data.get('voice_id', ELEVENLABS_VOICE_ID)
+        # Validate input using validator
+        try:
+            validated_data = validate_tts_input(request.data, ELEVENLABS_API_KEY)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=400)
         
-        if not text:
-            return Response({'error': 'No text provided'}, status=400)
+        text = validated_data['text']
+        voice_id = validated_data['voice_id'] or ELEVENLABS_VOICE_ID
         
         # Use TTS service
         tts_service = TTSService()
@@ -350,31 +361,19 @@ def generate_jingle(request):
     """
     try:
         data = request.data
-        text = data.get('text', '').strip()
-        voice_id = data.get('voice_id', ELEVENLABS_VOICE_ID)
-        music_prompt = data.get('music_prompt', 'upbeat energetic pub background music')
+        
+        # Validate input using validator
+        try:
+            validated_data = validate_jingle_input(data, ELEVENLABS_API_KEY)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=400)
+        
+        text = validated_data['text']
+        voice_id = validated_data['voice_id'] or ELEVENLABS_VOICE_ID
+        music_prompt = validated_data['music_prompt']
+        voice_settings_payload = validated_data['voice_settings']
         
         logger.info(f"Generating jingle for text: '{text[:50]}...'")
-        
-        # Get voice settings (with defaults)
-        voice_settings = data.get('voiceSettings', {})
-        voice_settings_payload = {
-            'stability': voice_settings.get('stability', 0.5),
-            'similarity_boost': voice_settings.get('similarity_boost', 0.75),
-            'style': voice_settings.get('style', 0.5),
-            'use_speaker_boost': voice_settings.get('use_speaker_boost', True)
-        }
-        
-        # Validation
-        if not text:
-            return Response({'error': 'Text is required'}, status=400)
-        
-        if len(text) > 1000:
-            return Response({'error': 'Text too long (max 1000 characters / ~200 words)'}, status=400)
-        
-        if not ELEVENLABS_API_KEY:
-            return Response({'error': 'ElevenLabs API key not configured'}, status=500)
-        
         logger.info(f"Starting jingle generation: text='{text}', music_prompt='{music_prompt}', voice_settings={voice_settings_payload}")
         
         # Generate task ID
@@ -1145,6 +1144,12 @@ def update_bingo_session_status(request, session_id):
         new_status = request.data.get('status')
         if not new_status:
             return Response({'error': 'Status is required'}, status=400)
+        
+        # Validate status using validator
+        try:
+            validate_session_status(new_status)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=400)
         
         # Use BingoSessionService to update status
         session_service = BingoSessionService()
