@@ -1,11 +1,17 @@
 """
-Core API Views
-Health check, pool data, task status, config
+Core Utility Views
+
+This module provides core utility endpoints for the Music Bingo application:
+- health_check: System health monitoring endpoint
+- get_pool: Retrieve music pool data
+- get_task_status: Check status of async tasks (card generation, jingle generation)
+- get_config: Get public configuration settings
+
+These endpoints provide essential infrastructure services used across the application.
 """
 
 import json
 import logging
-from pathlib import Path
 
 from django.utils import timezone
 from rest_framework.decorators import api_view

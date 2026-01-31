@@ -1,5 +1,22 @@
 """
 Venue Configuration Views
+
+This module manages venue-specific configuration settings:
+- venue_config: Get/save venue configuration (GET/POST)
+
+Configuration Options:
+- num_players: Default number of players for sessions
+- voice_id: ElevenLabs voice ID for announcements
+- selected_decades: Music era preferences (60s, 70s, 80s, 90s)
+- pub_logo: Venue logo URL for branding
+- social_platform: Social media platform (Instagram, Facebook, etc.)
+- social_username: Social media handle
+- include_qr: Enable QR codes on cards
+- prize_4corners: 4-corners prize description
+- prize_first_line: First line prize description
+- prize_full_house: Full house prize description
+
+Each venue can have unique settings for personalized gaming experience.
 """
 
 import logging

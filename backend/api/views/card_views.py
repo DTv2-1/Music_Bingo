@@ -1,12 +1,21 @@
 """
 Card Generation Views
+
+This module handles bingo card generation and logo management:
+- generate_cards_async: Asynchronously generate PDF bingo cards with custom branding
+- upload_logo: Handle venue logo uploads for card customization
+
+Card generation supports:
+- Custom venue names and branding
+- Prize configuration (4 corners, first line, full house)
+- QR code integration for social media
+- Multiple players per session
+- Background processing with progress tracking
 """
 
 import logging
 import uuid
 import time
-from pathlib import Path
-from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response

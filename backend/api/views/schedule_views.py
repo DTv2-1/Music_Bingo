@@ -1,5 +1,26 @@
 """
 Jingle Schedule Management Views
+
+This module provides scheduling system for automated jingle playback:
+- create_jingle_schedule: Create/list jingle schedules with time/date constraints
+- get_active_jingles: Get currently active jingles based on schedule rules
+- update_jingle_schedule: Update existing schedule parameters
+- delete_jingle_schedule: Remove jingle schedules
+
+Schedule Features:
+- Date ranges (start_date, end_date)
+- Time windows (time_start, time_end)
+- Day of week selection (Monday-Sunday)
+- Repeat patterns (occasional, regular, often)
+- Priority system (0-100)
+- Enable/disable toggle
+
+Active schedule evaluation considers:
+- Current date within date range
+- Current time within time window (if specified)
+- Current day matches selected days
+- Schedule is enabled
+- Sorted by priority (highest first)
 """
 
 import logging

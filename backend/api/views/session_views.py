@@ -1,5 +1,27 @@
 """
 Bingo Session Management Views
+
+This module manages active bingo game sessions:
+- bingo_sessions: Create new session or list all sessions (POST/GET)
+- bingo_session_detail: Get/update/delete specific session (GET/PUT/DELETE)
+- update_bingo_session_status: Update session status (PATCH)
+
+Session Lifecycle:
+1. pending: Session created, waiting to start
+2. active: Game in progress, songs being played
+3. completed: Game finished
+
+Session Data:
+- venue_name: Associated venue
+- session_id: Unique identifier
+- created_at: Session creation timestamp
+- started_at: Game start timestamp
+- completed_at: Game completion timestamp
+- songs_played: List of songs in session
+- current_song_index: Current position in playlist
+- status: Session state (pending/active/completed)
+
+Supports filtering by venue and session management operations.
 """
 
 import logging

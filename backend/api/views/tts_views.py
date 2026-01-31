@@ -1,5 +1,14 @@
 """
 Text-to-Speech (TTS) Views
+
+This module provides text-to-speech functionality using ElevenLabs API:
+- generate_tts: Generate TTS audio with optimized voice settings (Turbo mode)
+- generate_tts_preview: Generate TTS preview with custom voice parameters
+- get_announcements: Retrieve standard announcement templates
+- get_ai_announcements: Get AI-generated announcement variations
+
+Used for creating custom game announcements, promotional messages, and jingles.
+Supports voice customization (stability, similarity, style, speaker boost).
 """
 
 import logging

@@ -1,5 +1,22 @@
 """
 Jingle Management Views
+
+This module manages promotional jingles combining TTS + AI-generated music:
+- generate_jingle: Create jingle with custom text and music (async task)
+- get_jingle_status: Check jingle generation progress and status
+- download_jingle: Download generated jingle files
+- generate_music_preview: Generate short music previews (5s) for testing
+- list_jingles: List all generated jingles with metadata
+- manage_playlist: Get/update jingle playlist configuration
+
+Jingle generation workflow:
+1. Generate TTS voice announcement
+2. Generate AI background music
+3. Mix audio tracks (voice + music)
+4. Upload to Google Cloud Storage
+5. Return download URL
+
+Supports ElevenLabs TTS and Music Generation APIs.
 """
 
 import logging
