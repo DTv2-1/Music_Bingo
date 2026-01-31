@@ -12,12 +12,19 @@
     <link rel="shortcut icon" href="assets/favicon-32x32.png">
     <style>
         :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --success: #00f2fe;
-            --bg: #0b0e14;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
             --card-bg: rgba(255, 255, 255, 0.05);
             --border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
         }
 
         * {
@@ -27,11 +34,30 @@
         }
 
         body {
-            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: var(--text-primary);
             min-height: 100vh;
             padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
         }
 
         .container {
@@ -45,17 +71,25 @@
         }
 
         .header h1 {
-            font-size: 3em;
+            font-size: 2.5em;
             margin-bottom: 10px;
-            background: linear-gradient(90deg, #ffffff, #e0e0ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            width: 48px;
+            height: 48px;
         }
 
         .header p {
-            opacity: 0.9;
-            font-size: 1.2em;
+            color: var(--text-secondary);
+            font-size: 1.1em;
+            font-weight: 400;
         }
 
         .actions {
@@ -81,25 +115,30 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
         }
 
         .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(118, 75, 162, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-icon {
+            width: 20px;
+            height: 20px;
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
         }
 
         .btn-danger:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
         }
 
         .btn-secondary {
@@ -119,16 +158,25 @@
 
         .filter-tab {
             padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid transparent;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .filter-tab:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
         .filter-tab.active {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: white;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+            border-color: var(--primary);
+            color: var(--text-primary);
+            font-weight: 600;
         }
 
         .sessions-grid {
@@ -139,47 +187,74 @@
         }
 
         .session-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 25px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .session-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
         }
 
         .session-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .session-card:hover::before {
+            opacity: 1;
         }
 
         .session-status {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 700;
-            margin-bottom: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-bottom: 16px;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-icon {
+            width: 12px;
+            height: 12px;
         }
 
         .status-registration {
-            background: rgba(255, 193, 7, 0.2);
-            color: #ffc107;
-            border: 1px solid #ffc107;
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
         }
 
         .status-in_progress {
-            background: rgba(0, 242, 254, 0.2);
-            color: #00f2fe;
-            border: 1px solid #00f2fe;
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
         }
 
         .status-completed {
-            background: rgba(76, 175, 80, 0.2);
-            color: #4caf50;
-            border: 1px solid #4caf50;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
         .session-card h3 {
@@ -195,22 +270,35 @@
         }
 
         .info-item {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 10px;
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .info-label {
-            font-size: 0.8em;
-            opacity: 0.7;
-            margin-bottom: 5px;
+            font-size: 0.75em;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
         }
 
         .info-value {
-            font-size: 1.3em;
+            font-size: 1.4em;
             font-weight: 700;
-            color: var(--success);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .info-icon {
+            width: 18px;
+            height: 18px;
         }
 
         .session-actions {
@@ -220,9 +308,20 @@
         }
 
         .btn-small {
-            padding: 8px 15px;
+            padding: 10px 16px;
             font-size: 0.9em;
             flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .btn-danger.btn-small {
+            flex: 0 0 auto;
+            min-width: 45px;
+            padding: 10px;
         }
 
         .btn-danger {
@@ -301,16 +400,16 @@
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            background: rgba(255, 255, 255, 0.05);
+            padding: 80px 20px;
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
-            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border: 2px dashed rgba(255, 255, 255, 0.1);
         }
 
-        .empty-state-icon {
-            font-size: 4em;
-            margin-bottom: 20px;
-            opacity: 0.5;
+        .empty-state h2 {
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            font-size: 1.8em;
         }
 
         @media (max-width: 768px) {
@@ -462,6 +561,11 @@
         .custom-modal.info .custom-modal-icon {
             color: #4facfe;
         }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
     <script src="/config.js"></script>
 </head>
@@ -469,7 +573,12 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎤 Pub Quiz Sessions</h1>
+            <h1>
+                <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                </svg>
+                Pub Quiz Sessions
+            </h1>
             <p>Manage all your quiz events</p>
         </div>
 
@@ -482,10 +591,16 @@
             </div>
             <div style="display: flex; gap: 10px;">
                 <button id="deleteSelectedBtn" class="btn btn-danger" onclick="deleteSelected()" style="display: none;">
-                    🗑️ Delete Selected (<span id="selectedCount">0</span>)
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    Delete Selected (<span id="selectedCount">0</span>)
                 </button>
                 <button class="btn btn-primary" onclick="showCreateModal()">
-                    ✨ Create New Quiz
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Create New Quiz
                 </button>
             </div>
         </div>
@@ -495,17 +610,29 @@
         </div>
 
         <div id="emptyState" class="empty-state" style="display: none;">
-            <div class="empty-state-icon">🎭</div>
+            <svg class="empty-state-icon" style="width: 80px; height: 80px; margin: 0 auto 20px; opacity: 0.4;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
             <h2>No Quiz Sessions Yet</h2>
-            <p style="margin: 20px 0; opacity: 0.8;">Create your first quiz session to get started!</p>
-            <button class="btn btn-primary" onclick="showCreateModal()">Create Quiz Session</button>
+            <p style="margin: 20px 0; color: var(--text-secondary);">Create your first quiz session to get started!</p>
+            <button class="btn btn-primary" onclick="showCreateModal()">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 4v16m8-8H4"/>
+                </svg>
+                Create Quiz Session
+            </button>
         </div>
     </div>
 
     <!-- Create Session Modal -->
     <div id="createModal" class="modal">
         <div class="modal-content">
-            <h2>✨ Create New Quiz</h2>
+            <h2 style="display: flex; align-items: center; gap: 12px;">
+                <svg style="width: 32px; height: 32px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Create New Quiz
+            </h2>
             <form id="createForm" onsubmit="createSession(event)">
                 <div class="form-group">
                     <label for="venueName">Venue Name</label>
@@ -626,40 +753,90 @@
                 return `
                     <div class="session-card" onclick="openSession(${session.id})">
                         <div style="position: absolute; top: 15px; left: 15px; z-index: 10;" onclick="event.stopPropagation()">
-                            <input type="checkbox" class="session-checkbox" data-session-id="${session.id}" data-venue-name="${session.venue_name}" onchange="updateSelectedCount()" style="width: 20px; height: 20px; cursor: pointer;">
+                            <input type="checkbox" class="session-checkbox" data-session-id="${session.id}" data-venue-name="${session.venue_name}" onchange="updateSelectedCount()" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--primary);">
                         </div>
-                        <span class="session-status status-${session.status}">${getStatusLabel(session.status)}</span>
+                        <span class="session-status status-${session.status}">
+                            ${getStatusIcon(session.status)}
+                            ${getStatusLabel(session.status)}
+                        </span>
                         <h3>${session.venue_name}</h3>
-                        <p style="opacity: 0.7; margin-bottom: 15px;">📅 ${dateStr}</p>
+                        <p style="color: var(--text-secondary); margin-bottom: 15px; display: flex; align-items: center; gap: 6px;">
+                            <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            ${dateStr}
+                        </p>
                         
                         <div class="session-info">
                             <div class="info-item">
                                 <div class="info-label">Teams</div>
-                                <div class="info-value">${session.team_count}</div>
+                                <div class="info-value">
+                                    <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M23 21v-2a4 4 0 00-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 010 7.75"></path>
+                                    </svg>
+                                    ${session.team_count}
+                                </div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label">Progress</div>
-                                <div class="info-value">${progress}</div>
+                                <div class="info-value">
+                                    <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    </svg>
+                                    ${progress}
+                                </div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label">Questions</div>
-                                <div class="info-value">${session.question_count}</div>
+                                <div class="info-value">
+                                    <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"></path>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                    </svg>
+                                    ${session.question_count}
+                                </div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label">Duration</div>
-                                <div class="info-value">${session.duration_minutes}min</div>
+                                <div class="info-value">
+                                    <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                    ${session.duration_minutes}min
+                                </div>
                             </div>
                         </div>
 
                         <div class="session-actions" onclick="event.stopPropagation()">
                             <button class="btn btn-primary btn-small" onclick="openHostDashboard(${session.id})">
-                                🎤 Host
+                                <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M13.8 12H3"></path>
+                                </svg>
+                                Host
                             </button>
                             <button class="btn btn-secondary btn-small" onclick="openRegistration(${session.id})">
-                                📱 QR
+                                <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <rect x="7" y="7" width="3" height="3"></rect>
+                                    <rect x="14" y="7" width="3" height="3"></rect>
+                                    <rect x="7" y="14" width="3" height="3"></rect>
+                                    <rect x="14" y="14" width="3" height="3"></rect>
+                                </svg>
+                                QR
                             </button>
                             <button class="btn btn-danger btn-small" onclick="deleteSession(${session.id}, '${session.venue_name}')" title="Delete Session">
-                                🗑️
+                                <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
                             </button>
                         </div>
                     </div>
@@ -667,12 +844,22 @@
             }).join('');
         }
 
+        function getStatusIcon(status) {
+            const icons = {
+                'registration': '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>',
+                'in_progress': '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>',
+                'completed': '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+                'paused': '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="10" y1="15" x2="10" y2="9"></line><line x1="14" y1="15" x2="14" y2="9"></line></svg>'
+            };
+            return icons[status] || '';
+        }
+
         function getStatusLabel(status) {
             const labels = {
-                'registration': '📝 Registration',
-                'in_progress': '🎮 Live',
-                'completed': '✅ Completed',
-                'paused': '⏸️ Paused'
+                'registration': 'Registration',
+                'in_progress': 'Live',
+                'completed': 'Completed',
+                'paused': 'Paused'
             };
             return labels[status] || status;
         }
@@ -695,7 +882,8 @@
 
             // Mostrar loading
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '⏳ Creating Session...';
+            submitBtn.innerHTML = '<svg style="width: 16px; height: 16px; animation: spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6.219-8.56"></path></svg> Creating Session...';
+            submitBtn.style.opacity = '0.6';
 
             const formData = {
                 venue_name: document.getElementById('venueName').value,
