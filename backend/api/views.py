@@ -29,10 +29,19 @@ from datetime import timedelta
 # Import TaskStatus model
 from .models import TaskStatus
 
-logger = logging.getLogger(__name__)
+# Import centralized configuration
+from .utils.config import (
+    AppConfig,
+    BASE_DIR,
+    DATA_DIR,
+    FRONTEND_DIR,
+    ELEVENLABS_API_KEY,
+    ELEVENLABS_VOICE_ID,
+    GCS_BUCKET_NAME,
+    VENUE_NAME
+)
 
-# GCS Configuration
-GCS_BUCKET_NAME = os.getenv('GCS_BUCKET_NAME', 'music-bingo-cards')
+logger = logging.getLogger(__name__)
 
 def upload_to_gcs(local_file_path, destination_blob_name):
     """
@@ -57,19 +66,6 @@ def upload_to_gcs(local_file_path, destination_blob_name):
     except Exception as e:
         logger.error(f"❌ Failed to upload to GCS: {e}")
         raise
-
-
-# Configuration
-ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY', '')
-ELEVENLABS_VOICE_ID = os.getenv('ELEVENLABS_VOICE_ID', '21m00Tcm4TlvDq8ikWAM')
-VENUE_NAME = os.getenv('VENUE_NAME', 'this venue')
-
-# Paths - Fix for Docker container structure
-# Docker WORKDIR is /app, files are copied as: COPY backend/ . COPY data/ ./data/
-# So from /app/api/views.py we need to go to /app/data/
-BASE_DIR = Path(__file__).resolve().parent.parent  # /app/api -> /app
-DATA_DIR = BASE_DIR / 'data'  # /app/data
-FRONTEND_DIR = BASE_DIR / 'frontend'  # /app/frontend
 
 @api_view(['GET'])
 def health_check(request):
