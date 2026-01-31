@@ -42,7 +42,16 @@ from .utils.config import (
 )
 
 # Import services
-from .services import upload_to_gcs, GCSStorageService, TTSService, MusicGenerationService
+from .services import (
+    upload_to_gcs, 
+    GCSStorageService, 
+    TTSService, 
+    MusicGenerationService,
+    JingleService,
+    ScheduleService,
+    BingoSessionService,
+    CardGenerationService
+)
 
 logger = logging.getLogger(__name__)
 
@@ -113,51 +122,20 @@ def generate_cards_async(request):
                 task.status = 'processing'
                 task.save(update_fields=['status'])
                 
-                script_path = BASE_DIR / 'generate_cards.py'
-                cmd = [
-                    'python3', str(script_path),
-                    '--venue_name', venue_name,
-                    '--num_players', str(num_players),
-                    '--game_number', str(game_number)
-                ]
-                
-                if game_date:
-                    cmd.extend(['--game_date', game_date])
-                
-                if pub_logo:
-                    logger.info(f"Task {task_id}: pub_logo received: {pub_logo[:100]}...")
-                    # Convert relative URL to absolute path
-                    if pub_logo.startswith('/data/'):
-                        logo_path = str(BASE_DIR / pub_logo[1:])  # Remove leading /
-                        cmd.extend(['--pub_logo', logo_path])
-                        logger.info(f"Task {task_id}: ✅ Using pub logo PATH: {logo_path}")
-                    elif pub_logo.startswith('http'):
-                        cmd.extend(['--pub_logo', pub_logo])
-                        logger.info(f"Task {task_id}: ✅ Using pub logo URL: {pub_logo}")
-                    elif pub_logo.startswith('data:'):
-                        # Handle data URI (base64 encoded image)
-                        cmd.extend(['--pub_logo', pub_logo])
-                        logger.info(f"Task {task_id}: ✅ Using pub logo DATA URI (base64)")
-                    else:
-                        logger.warning(f"Task {task_id}: ⚠️ Unknown pub_logo format, skipping. Starts with: {pub_logo[:20]}")
-                else:
-                    logger.info(f"Task {task_id}: ℹ️ No pub_logo provided")
-                
-                if social_media:
-                    cmd.extend(['--social_media', social_media])
-                    logger.info(f"Task {task_id}: Adding social media QR: {social_media}")
-                
-                if include_qr:
-                    cmd.extend(['--include_qr', 'true'])
-                    logger.info(f"Task {task_id}: QR code enabled")
-                
-                # Add prizes if provided
-                if prize_4corners:
-                    cmd.extend(['--prize_4corners', prize_4corners])
-                if prize_first_line:
-                    cmd.extend(['--prize_first_line', prize_first_line])
-                if prize_full_house:
-                    cmd.extend(['--prize_full_house', prize_full_house])
+                # Use CardGenerationService to prepare command
+                card_service = CardGenerationService()
+                cmd = card_service.prepare_generation_command(
+                    venue_name=venue_name,
+                    num_players=num_players,
+                    game_number=game_number,
+                    game_date=game_date,
+                    pub_logo=pub_logo,
+                    social_media=social_media,
+                    include_qr=include_qr,
+                    prize_4corners=prize_4corners,
+                    prize_first_line=prize_first_line,
+                    prize_full_house=prize_full_house
+                )
                 
                 logger.info(f"Task {task_id}: Running command: {' '.join(cmd)}")
                 
@@ -473,15 +451,10 @@ def generate_jingle(request):
     Returns: {task_id: "uuid"}
     """
     try:
-        from .audio_mixer import mix_tts_with_music
-        
         data = request.data
         text = data.get('text', '').strip()
         voice_id = data.get('voice_id', ELEVENLABS_VOICE_ID)
         music_prompt = data.get('music_prompt', 'upbeat energetic pub background music')
-        
-        # No text truncation - let TTS handle the full text
-        # Duration will be calculated dynamically after TTS generation
         
         logger.info(f"Generating jingle for text: '{text[:50]}...'")
         
@@ -524,97 +497,33 @@ def generate_jingle(request):
             }
         )
         
-        # Start background task
+        # Start background task using JingleService
         def background_jingle_generation():
             try:
                 logger.info(f"Task {task_id}: Starting generation process")
                 task.status = 'processing'
                 task.save(update_fields=['status'])
                 
-                # Initialize services
-                tts_service = TTSService()
-                music_service = MusicGenerationService()
-                
-                # Step 1: Generate TTS
-                logger.info(f"Task {task_id}: Generating TTS...")
-                task.progress = 20
-                task.current_step = 'generating_voice'
-                task.save(update_fields=['progress', 'current_step'])
-                
-                tts_bytes = tts_service.generate_audio(
+                # Use JingleService for complete jingle creation
+                jingle_service = JingleService()
+                result = jingle_service.create_jingle(
                     text=text,
                     voice_id=voice_id,
+                    music_prompt=music_prompt,
                     voice_settings=voice_settings_payload,
-                    model_id='eleven_multilingual_v2'
+                    task_id=task_id,
+                    task_callback=lambda progress, step: (
+                        setattr(task, 'progress', progress),
+                        setattr(task, 'current_step', step),
+                        task.save(update_fields=['progress', 'current_step'])
+                    )
                 )
                 
-                logger.info(f"Task {task_id}: TTS generated ({len(tts_bytes)} bytes)")
-                
-                # Calculate actual TTS duration to generate matching music
-                from pydub import AudioSegment
-                tts_audio = AudioSegment.from_mp3(io.BytesIO(tts_bytes))
-                tts_duration_seconds = len(tts_audio) / 1000  # Convert ms to seconds
-                logger.info(f"Task {task_id}: TTS duration: {tts_duration_seconds:.2f}s")
-                
-                # Generate music with TTS duration + 2 seconds for intro/outro
-                music_duration = min(max(int(tts_duration_seconds) + 2, 5), 30)  # Between 5-30 seconds
-                logger.info(f"Task {task_id}: Music target duration: {music_duration}s")
-                
-                # Step 2: Generate Music
-                logger.info(f"Task {task_id}: Generating music...")
-                task.progress = 50
-                task.current_step = 'generating_music'
-                task.save(update_fields=['progress', 'current_step'])
-                
-                music_bytes = music_service.generate_music(
-                    prompt=music_prompt,
-                    duration_seconds=music_duration,
-                    use_fallback_on_error=True
-                )
-                
-                logger.info(f"Task {task_id}: Music generated ({len(music_bytes)} bytes)")
-                
-                # Step 3: Mix audio
-                logger.info(f"Task {task_id}: Mixing audio...")
-                task.progress = 75
-                task.current_step = 'mixing'
-                task.save(update_fields=['progress', 'current_step'])
-                
-                mixed_audio = mix_tts_with_music(tts_bytes, music_bytes)
-                
-                # Step 4: Save file
-                logger.info(f"Task {task_id}: Saving file...")
-                task.progress = 90
-                task.current_step = 'finalizing'
-                task.save(update_fields=['progress', 'current_step'])
-                
-                jingles_dir = DATA_DIR / 'jingles'
-                jingles_dir.mkdir(parents=True, exist_ok=True)
-                
-                timestamp = int(time.time())
-                filename = f'jingle_{timestamp}_{task_id[:8]}.mp3'
-                file_path = jingles_dir / filename
-                
-                with open(file_path, 'wb') as f:
-                    f.write(mixed_audio)
-                
-                logger.info(f"Task {task_id}: Jingle saved to {file_path}")
-                
-                # Calculate actual duration from final mixed audio
-                from pydub import AudioSegment
-                final_audio = AudioSegment.from_mp3(io.BytesIO(mixed_audio))
-                actual_duration = len(final_audio) / 1000  # ms to seconds
-                
-                # Update task status
+                # Update task status with result
                 task.status = 'completed'
                 task.progress = 100
                 task.current_step = 'completed'
-                task.result = {
-                    'audio_url': f'/api/jingles/{filename}',
-                    'filename': filename,
-                    'duration_seconds': actual_duration,
-                    'size_bytes': len(mixed_audio)
-                }
+                task.result = result
                 task.completed_at = timezone.now()
                 task.save(update_fields=['status', 'progress', 'current_step', 'result', 'completed_at'])
                 
@@ -760,38 +669,9 @@ def list_jingles(request):
         logger.info(f'Request method: {request.method}')
         logger.info(f'Request path: {request.path}')
         
-        jingles_dir = DATA_DIR / 'jingles'
-        logger.info(f'Looking for jingles in: {jingles_dir}')
-        logger.info(f'Directory exists: {jingles_dir.exists()}')
-        
-        if not jingles_dir.exists():
-            logger.warning('Jingles directory does not exist')
-            return Response([])
-        
-        jingles = []
-        for file_path in jingles_dir.glob('*.mp3'):
-            # Get file metadata
-            stat = file_path.stat()
-            
-            # Try to load metadata JSON if exists
-            metadata_path = file_path.with_suffix('.json')
-            metadata = {}
-            if metadata_path.exists():
-                try:
-                    with open(metadata_path, 'r') as f:
-                        metadata = json.load(f)
-                except Exception as e:
-                    logger.warning(f"Error loading metadata for {file_path.name}: {e}")
-            
-            jingles.append({
-                'filename': file_path.name,
-                'created': datetime.fromtimestamp(stat.st_ctime).isoformat(),
-                'size': stat.st_size,
-                'metadata': metadata
-            })
-        
-        # Sort by creation time (newest first)
-        jingles.sort(key=lambda x: x['created'], reverse=True)
+        # Use JingleService to list jingles
+        jingle_service = JingleService()
+        jingles = jingle_service.list_jingles()
         
         logger.info(f'✅ Found {len(jingles)} jingles')
         for jingle in jingles:
@@ -822,16 +702,9 @@ def manage_playlist(request):
     
     if request.method == 'GET':
         try:
-            if playlist_file.exists():
-                with open(playlist_file, 'r') as f:
-                    playlist = json.load(f)
-            else:
-                playlist = {
-                    'jingles': [],
-                    'enabled': False,
-                    'interval': 3
-                }
-            
+            # Use JingleService to get playlist
+            jingle_service = JingleService()
+            playlist = jingle_service.get_playlist()
             return Response(playlist)
             
         except Exception as e:
@@ -842,29 +715,18 @@ def manage_playlist(request):
         try:
             data = request.data
             
-            # Validate jingle files exist
-            jingles_dir = DATA_DIR / 'jingles'
-            validated_jingles = []
-            for filename in data.get('jingles', []):
-                file_path = jingles_dir / filename
-                if file_path.exists():
-                    validated_jingles.append(filename)
-                else:
-                    logger.warning(f"Jingle not found: {filename}")
+            # Use JingleService to save playlist
+            jingle_service = JingleService()
+            result = jingle_service.save_playlist(
+                jingles=data.get('jingles', []),
+                enabled=data.get('enabled', False),
+                interval=data.get('interval', 3)
+            )
             
-            playlist = {
-                'jingles': validated_jingles,
-                'enabled': data.get('enabled', False),
-                'interval': int(data.get('interval', 3))
-            }
+            return Response(result)
             
-            # Save playlist
-            with open(playlist_file, 'w') as f:
-                json.dump(playlist, f, indent=2)
-            
-            logger.info(f"Playlist updated: {len(validated_jingles)} jingles, enabled={playlist['enabled']}")
-            return Response(playlist)
-            
+        except ValueError as e:
+            return Response({'error': str(e)}, status=400)
         except Exception as e:
             logger.error(f"Error saving playlist: {e}", exc_info=True)
             return Response({'error': str(e)}, status=500)
@@ -911,68 +773,16 @@ def create_jingle_schedule(request):
     if request.method == 'GET':
         # List all schedules
         try:
-            from .models import JingleSchedule
-            
             # Get venue_name from query params
             venue_name = request.GET.get('venue_name')
             session_id = request.GET.get('session_id')
             
-            # Filter schedules with priority: session > venue > global
-            if session_id:
-                # Most specific: schedules for this specific session
-                all_schedules = JingleSchedule.objects.filter(
-                    models.Q(session__session_id=session_id) |
-                    models.Q(session__isnull=True, venue_name=venue_name) |
-                    models.Q(session__isnull=True, venue_name__isnull=True) |
-                    models.Q(session__isnull=True, venue_name='')
-                ).order_by('-priority', '-created_at')
-                logger.info(f'Filtering schedules for session: {session_id}, venue: {venue_name}')
-            elif venue_name:
-                # Get schedules for specific venue:
-                # 1. Schedules with sessions from this venue
-                # 2. Schedules without session but with venue_name
-                # 3. Global schedules (no session, no venue)
-                all_schedules = JingleSchedule.objects.filter(
-                    models.Q(session__venue_name=venue_name) |
-                    models.Q(session__isnull=True, venue_name=venue_name) |
-                    models.Q(session__isnull=True, venue_name__isnull=True) |
-                    models.Q(session__isnull=True, venue_name='')
-                ).order_by('-priority', '-created_at')
-                logger.info(f'Filtering schedules for venue: {venue_name}')
-            else:
-                # Get all schedules
-                all_schedules = JingleSchedule.objects.all().order_by('-priority', '-created_at')
-                logger.info('Returning all schedules (no venue filter)')
-            
-            schedules_list = []
-            for schedule in all_schedules:
-                schedules_list.append({
-                    'id': schedule.id,
-                    'jingle_name': schedule.jingle_name,
-                    'jingle_filename': schedule.jingle_filename,
-                    'venue_name': schedule.venue_name,
-                    'session_id': schedule.session.session_id if schedule.session else None,
-                    'start_date': schedule.start_date.strftime('%Y-%m-%d'),
-                    'end_date': schedule.end_date.strftime('%Y-%m-%d') if schedule.end_date else None,
-                    'time_start': schedule.time_start.strftime('%H:%M') if schedule.time_start else None,
-                    'time_end': schedule.time_end.strftime('%H:%M') if schedule.time_end else None,
-                    'days_of_week': {
-                        'monday': schedule.monday,
-                        'tuesday': schedule.tuesday,
-                        'wednesday': schedule.wednesday,
-                        'thursday': schedule.thursday,
-                        'friday': schedule.friday,
-                        'saturday': schedule.saturday,
-                        'sunday': schedule.sunday
-                    },
-                    'repeat_pattern': schedule.repeat_pattern,
-                    'enabled': schedule.enabled,
-                    'priority': schedule.priority,
-                    'is_active_now': schedule.is_active_now(),
-                    'interval': schedule.get_interval(),
-                    'created_at': schedule.created_at.isoformat(),
-                    'updated_at': schedule.updated_at.isoformat()
-                })
+            # Use ScheduleService to get schedules
+            schedule_service = ScheduleService()
+            schedules_list = schedule_service.get_schedules(
+                venue_name=venue_name,
+                session_id=session_id
+            )
             
             logger.info(f'✅ Listed {len(schedules_list)} jingle schedules')
             for schedule in schedules_list:
@@ -990,160 +800,20 @@ def create_jingle_schedule(request):
     
     # POST: Create new schedule
     try:
-        from .models import JingleSchedule
-        from datetime import datetime
-        
         data = request.data
         
-        # Validate required fields
-        jingle_name = data.get('jingle_name', '').strip()
-        if not jingle_name:
-            return Response({
-                'error': 'Jingle name is required'
-            }, status=400)
+        # Use ScheduleService to create schedule
+        schedule_service = ScheduleService()
+        result = schedule_service.create_schedule(data)
         
-        jingle_filename = data.get('jingle_filename', '').strip()
-        if not jingle_filename:
-            return Response({
-                'error': 'Jingle filename is required'
-            }, status=400)
+        logger.info(f"Created jingle schedule #{result['schedule_id']}: {data.get('jingle_name')}")
         
-        # Verify jingle file exists (optional check - skip if in development)
-        jingles_dir = DATA_DIR / 'jingles'
-        jingle_path = jingles_dir / jingle_filename
-        if not jingle_path.exists():
-            logger.warning(f'Jingle file not found at {jingle_path}, but continuing anyway')
-            # In production, uncomment this to enforce file existence:
-            # return Response({
-            #     'error': f'Jingle file not found: {jingle_filename}'
-            # }, status=404)
+        return Response(result, status=201)
         
-        start_date = data.get('start_date')
-        if not start_date:
-            return Response({
-                'error': 'Start date is required'
-            }, status=400)
-        
-        # Validate date format
-        try:
-            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
-        except ValueError:
-            return Response({
-                'error': 'Invalid start_date format. Use YYYY-MM-DD'
-            }, status=400)
-        
-        # Validate end_date if provided
-        end_date = data.get('end_date')
-        end_date_obj = None
-        if end_date:
-            try:
-                end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
-            except ValueError:
-                return Response({
-                    'error': 'Invalid end_date format. Use YYYY-MM-DD'
-                }, status=400)
-            
-            # Validate end_date is after start_date
-            if end_date_obj < start_date_obj:
-                return Response({
-                    'error': 'End date must be after start date'
-                }, status=400)
-        
-        # Validate time_start and time_end if provided
-        time_start = data.get('time_start')
-        time_end = data.get('time_end')
-        time_start_obj = None
-        time_end_obj = None
-        
-        if time_start:
-            try:
-                time_start_obj = datetime.strptime(time_start, '%H:%M').time()
-            except ValueError:
-                return Response({
-                    'error': 'Invalid time_start format. Use HH:MM'
-                }, status=400)
-        
-        if time_end:
-            try:
-                time_end_obj = datetime.strptime(time_end, '%H:%M').time()
-            except ValueError:
-                return Response({
-                    'error': 'Invalid time_end format. Use HH:MM'
-                }, status=400)
-        
-        # Validate time_end is after time_start
-        if time_start_obj and time_end_obj and time_end_obj <= time_start_obj:
-            return Response({
-                'error': 'End time must be after start time'
-            }, status=400)
-        
-        # Validate days_of_week
-        days_of_week = data.get('days_of_week', {})
-        if not any(days_of_week.values()):
-            return Response({
-                'error': 'At least one day of the week must be selected'
-            }, status=400)
-        
-        # Validate repeat_pattern
-        repeat_pattern = data.get('repeat_pattern', 'regular')
-        if repeat_pattern not in ['occasional', 'regular', 'often']:
-            return Response({
-                'error': 'Invalid repeat_pattern. Must be: occasional, regular, or often'
-            }, status=400)
-        
-        # Validate priority
-        priority = int(data.get('priority', 0))
-        if priority < 0 or priority > 100:
-            return Response({
-                'error': 'Priority must be between 0 and 100'
-            }, status=400)
-        
-        # Get optional venue_name
-        venue_name = data.get('venue_name', '').strip() or None
-        
-        # Get optional session_id and resolve to BingoSession instance
-        session_id_raw = data.get('session_id')
-        session_id = session_id_raw.strip() if session_id_raw else None
-        session_instance = None
-        if session_id:
-            try:
-                from .models import BingoSession
-                session_instance = BingoSession.objects.get(session_id=session_id)
-                logger.info(f"Linking schedule to session: {session_id}")
-            except BingoSession.DoesNotExist:
-                logger.warning(f"Session not found: {session_id}, creating schedule without session link")
-                session_instance = None
-        
-        # Create JingleSchedule
-        schedule = JingleSchedule.objects.create(
-            jingle_name=jingle_name,
-            jingle_filename=jingle_filename,
-            venue_name=venue_name,
-            session=session_instance,
-            start_date=start_date_obj,
-            end_date=end_date_obj,
-            time_start=time_start_obj,
-            time_end=time_end_obj,
-            monday=days_of_week.get('monday', False),
-            tuesday=days_of_week.get('tuesday', False),
-            wednesday=days_of_week.get('wednesday', False),
-            thursday=days_of_week.get('thursday', False),
-            friday=days_of_week.get('friday', False),
-            saturday=days_of_week.get('saturday', False),
-            sunday=days_of_week.get('sunday', False),
-            repeat_pattern=repeat_pattern,
-            enabled=data.get('enabled', True),
-            priority=priority
-        )
-        
-        logger.info(f"Created jingle schedule #{schedule.id}: {jingle_name}")
-        
+    except ValueError as e:
         return Response({
-            'success': True,
-            'schedule_id': schedule.id,
-            'message': 'Schedule created successfully'
-        }, status=201)
-        
+            'error': str(e)
+        }, status=400)
     except Exception as e:
         logger.error(f"Error creating jingle schedule: {e}", exc_info=True)
         return Response({
@@ -1182,57 +852,18 @@ def get_active_jingles(request):
     logger.info(f'Request method: {request.method}')
     logger.info(f'Request path: {request.path}')
     try:
-        from .models import JingleSchedule
-        from django.db import models as django_models
-        
         # Get venue_name from query params
         venue_name = request.GET.get('venue_name')
         session_id = request.GET.get('session_id')
         
-        # Filter schedules by session (most specific) > venue > global
-        if session_id:
-            # Filter: session-specific OR (no session AND venue match) OR (no session AND no venue = global)
-            all_schedules = JingleSchedule.objects.filter(
-                enabled=True
-            ).filter(
-                django_models.Q(session__session_id=session_id) |
-                django_models.Q(session__isnull=True, venue_name=venue_name) |
-                django_models.Q(session__isnull=True, venue_name__isnull=True) |
-                django_models.Q(session__isnull=True, venue_name='')
-            ).order_by('-priority', '-created_at')
-            logger.info(f'Filtering active jingles for session: {session_id}, venue: {venue_name}')
-        elif venue_name:
-            # Get schedules for specific venue:
-            # 1. Schedules with sessions from this venue
-            # 2. Schedules without session but with venue_name
-            # 3. Global schedules (no session, no venue)
-            all_schedules = JingleSchedule.objects.filter(
-                enabled=True
-            ).filter(
-                django_models.Q(session__venue_name=venue_name) |
-                django_models.Q(session__isnull=True, venue_name=venue_name) |
-                django_models.Q(session__isnull=True, venue_name__isnull=True) |
-                django_models.Q(session__isnull=True, venue_name='')
-            ).order_by('-priority', '-created_at')
-            logger.info(f'Filtering active jingles for venue: {venue_name}')
-        else:
-            # Get all enabled schedules
-            all_schedules = JingleSchedule.objects.filter(enabled=True).order_by('-priority', '-created_at')
-            logger.info('Returning all active jingles (no venue filter)')
+        # Use ScheduleService to get active schedules
+        schedule_service = ScheduleService()
+        active_schedules = schedule_service.get_active_schedules(
+            venue_name=venue_name,
+            session_id=session_id
+        )
         
-        # Filter to only active schedules using is_active_now()
-        active_schedules = []
-        for schedule in all_schedules:
-            if schedule.is_active_now():
-                active_schedules.append({
-                    'id': schedule.id,
-                    'jingle_name': schedule.jingle_name,
-                    'jingle_filename': schedule.jingle_filename,
-                    'interval': schedule.get_interval(),
-                    'priority': schedule.priority
-                })
-        
-        logger.info(f'✅ Found {len(active_schedules)} active jingle schedules out of {len(all_schedules)} total')
+        logger.info(f'✅ Found {len(active_schedules)} active jingle schedules')
         for schedule in active_schedules:
             logger.info(f"  - {schedule['jingle_name']} (interval: {schedule['interval']}, priority: {schedule['priority']})")
         
@@ -1409,29 +1040,18 @@ def delete_jingle_schedule(request, schedule_id):
     }
     """
     try:
-        from .models import JingleSchedule
+        # Use ScheduleService to delete schedule
+        schedule_service = ScheduleService()
+        result = schedule_service.delete_schedule(schedule_id)
         
-        # Get schedule by ID
-        try:
-            schedule = JingleSchedule.objects.get(id=schedule_id)
-        except JingleSchedule.DoesNotExist:
-            return Response({
-                'error': f'Schedule with id {schedule_id} not found'
-            }, status=404)
+        logger.info(f"Deleted jingle schedule #{schedule_id}")
         
-        # Store name for logging before deletion
-        schedule_name = schedule.jingle_name
+        return Response(result)
         
-        # Delete the schedule
-        schedule.delete()
-        
-        logger.info(f"Deleted jingle schedule #{schedule_id}: {schedule_name}")
-        
+    except ValueError as e:
         return Response({
-            'success': True,
-            'message': 'Schedule deleted successfully'
-        })
-        
+            'error': str(e)
+        }, status=404)
     except Exception as e:
         logger.error(f"Error deleting jingle schedule: {e}", exc_info=True)
         return Response({
@@ -1556,43 +1176,16 @@ def bingo_sessions(request):
     
     if request.method == 'POST':
         try:
-            data = request.data
+            # Use BingoSessionService to create session
+            session_service = BingoSessionService()
+            result = session_service.create_session(request.data)
             
-            # Generate unique session ID
-            session_id = str(uuid.uuid4())
+            logger.info(f"✅ Created bingo session: {result['session_id']} for {request.data.get('venue_name', '')}")
             
-            # Log incoming logo data
-            logo_url = data.get('logo_url', '')
-            logger.info(f"Creating bingo session for '{data.get('venue_name', '')}'")
-            logger.info(f"  logo_url received: {logo_url[:100] if logo_url else 'None'}...")
-            logger.info(f"  logo_url type: {type(logo_url)}, length: {len(logo_url) if logo_url else 0}")
-            if logo_url:
-                logger.info(f"  logo_url starts with: {logo_url[:50]}")
+            return Response(result, status=201)
             
-            # Create session
-            session = BingoSession.objects.create(
-                session_id=session_id,
-                venue_name=data.get('venue_name', ''),
-                host_name=data.get('host_name', ''),
-                num_players=data.get('num_players', 25),
-                voice_id=data.get('voice_id', 'JBFqnCBsd6RMkjVDRZzb'),
-                decades=data.get('decades', ['1960s', '1970s', '1980s', '1990s']),
-                logo_url=logo_url,
-                social_media=data.get('social_media', ''),
-                include_qr=data.get('include_qr', False),
-                prizes=data.get('prizes', {}),
-                status='pending'
-            )
-            
-            logger.info(f"✅ Created bingo session: {session_id} for {session.venue_name}")
-            logger.info(f"   Saved logo_url length: {len(session.logo_url) if session.logo_url else 0}")
-            
-            return Response({
-                'success': True,
-                'session_id': session_id,
-                'message': 'Session created successfully'
-            }, status=201)
-            
+        except ValueError as e:
+            return Response({'error': str(e)}, status=400)
         except Exception as e:
             logger.error(f"Error creating bingo session: {e}", exc_info=True)
             return Response({'error': str(e)}, status=500)
@@ -1601,25 +1194,9 @@ def bingo_sessions(request):
         try:
             venue_name = request.GET.get('venue')
             
-            if venue_name:
-                sessions = BingoSession.objects.filter(venue_name__icontains=venue_name)
-            else:
-                sessions = BingoSession.objects.all()[:50]  # Limit to 50 recent
-            
-            sessions_data = []
-            for session in sessions:
-                sessions_data.append({
-                    'session_id': session.session_id,
-                    'venue_name': session.venue_name,
-                    'host_name': session.host_name,
-                    'num_players': session.num_players,
-                    'status': session.status,
-                    'songs_count': session.get_songs_count(),
-                    'duration_minutes': session.get_duration_minutes(),
-                    'created_at': session.created_at.isoformat(),
-                    'started_at': session.started_at.isoformat() if session.started_at else None,
-                    'completed_at': session.completed_at.isoformat() if session.completed_at else None
-                })
+            # Use BingoSessionService to get sessions
+            session_service = BingoSessionService()
+            sessions_data = session_service.get_sessions_by_venue(venue_name) if venue_name else session_service.get_recent_sessions(limit=50)
             
             return Response({
                 'sessions': sessions_data,
@@ -1644,30 +1221,17 @@ def bingo_session_detail(request, session_id):
         return Response({'error': 'Session not found'}, status=404)
     
     if request.method == 'GET':
-        logger.info(f"📖 Fetching bingo session {session_id}")
-        logger.info(f"   venue_name: {session.venue_name}")
-        logger.info(f"   logo_url length: {len(session.logo_url) if session.logo_url else 0}")
-        if session.logo_url:
-            logger.info(f"   logo_url starts with: {session.logo_url[:50]}")
-        
-        return Response({
-            'session_id': session.session_id,
-            'venue_name': session.venue_name,
-            'host_name': session.host_name,
-            'num_players': session.num_players,
-            'voice_id': session.voice_id,
-            'decades': session.decades,
-            'logo_url': session.logo_url,
-            'social_media': session.social_media,
-            'include_qr': session.include_qr,
-            'prizes': session.prizes,
-            'songs_played': session.songs_played,
-            'current_song_index': session.current_song_index,
-            'status': session.status,
-            'created_at': session.created_at.isoformat(),
-            'started_at': session.started_at.isoformat() if session.started_at else None,
-            'completed_at': session.completed_at.isoformat() if session.completed_at else None
-        })
+        try:
+            # Use BingoSessionService to get session details
+            session_service = BingoSessionService()
+            session_data = session_service.get_session_summary(session_id)
+            
+            logger.info(f"📖 Fetching bingo session {session_id}")
+            
+            return Response(session_data)
+            
+        except ValueError as e:
+            return Response({'error': str(e)}, status=404)
     
     elif request.method == 'PUT':
         try:
@@ -1711,33 +1275,21 @@ def bingo_session_detail(request, session_id):
 @api_view(['PATCH'])
 def update_bingo_session_status(request, session_id):
     """Update bingo session status (pending -> active -> completed)"""
-    from .models import BingoSession
-    
     try:
-        session = BingoSession.objects.get(session_id=session_id)
-        
         new_status = request.data.get('status')
         if not new_status:
             return Response({'error': 'Status is required'}, status=400)
         
-        # Validate status
-        valid_statuses = ['pending', 'active', 'completed', 'cancelled']
-        if new_status not in valid_statuses:
-            return Response({'error': f'Invalid status. Must be one of: {valid_statuses}'}, status=400)
-        
-        session.status = new_status
-        session.save(update_fields=['status'])
+        # Use BingoSessionService to update status
+        session_service = BingoSessionService()
+        result = session_service.update_session_status(session_id, new_status)
         
         logger.info(f"Updated bingo session {session_id} status to: {new_status}")
         
-        return Response({
-            'success': True,
-            'status': new_status,
-            'message': f'Session status updated to {new_status}'
-        })
+        return Response(result)
         
-    except BingoSession.DoesNotExist:
-        return Response({'error': 'Session not found'}, status=404)
+    except ValueError as e:
+        return Response({'error': str(e)}, status=400 if 'not found' not in str(e).lower() else 404)
     except Exception as e:
         logger.error(f"Error updating session status: {e}", exc_info=True)
         return Response({'error': str(e)}, status=500)
