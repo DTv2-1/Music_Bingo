@@ -15,8 +15,31 @@ All API views have been refactored into domain-specific modules:
 This provides better organization, maintainability, and testability.
 """
 
-# Import all views from modular package for backward compatibility
+# Import all views from modular views package for backward compatibility
 # This allows existing URL patterns to continue working without modification
-from .views import *  # noqa: F401, F403
+from api.views.core_views import health_check, get_pool, get_task_status, get_config
+from api.views.card_views import generate_cards_async, upload_logo
+from api.views.tts_views import generate_tts, generate_tts_preview, get_announcements, get_ai_announcements
+from api.views.jingle_views import generate_jingle, get_jingle_status, download_jingle, generate_music_preview, list_jingles, manage_playlist
+from api.views.schedule_views import create_jingle_schedule, get_active_jingles, update_jingle_schedule, delete_jingle_schedule
+from api.views.venue_views import venue_config
+from api.views.session_views import bingo_sessions, bingo_session_detail, update_bingo_session_status
 
+__all__ = [
+    # Core
+    'health_check', 'get_pool', 'get_task_status', 'get_config',
+    # Card
+    'generate_cards_async', 'upload_logo',
+    # TTS
+    'generate_tts', 'generate_tts_preview', 'get_announcements', 'get_ai_announcements',
+    # Jingle
+    'generate_jingle', 'get_jingle_status', 'download_jingle', 'generate_music_preview',
+    'list_jingles', 'manage_playlist',
+    # Schedule
+    'create_jingle_schedule', 'get_active_jingles', 'update_jingle_schedule', 'delete_jingle_schedule',
+    # Venue
+    'venue_config',
+    # Session
+    'bingo_sessions', 'bingo_session_detail', 'update_bingo_session_status',
+]
 
