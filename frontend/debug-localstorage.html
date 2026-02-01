@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalStorage Debug - Music Bingo</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        h1 {
+            color: #ffff00;
+        }
+        .key {
+            color: #00ffff;
+            font-weight: bold;
+        }
+        .value {
+            color: #ff00ff;
+        }
+        .empty {
+            color: #ff0000;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #333;
+            background: #222;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .test-button {
+            background: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 LocalStorage Debug Tool</h1>
+    
+    <div class="section">
+        <h2>Prize Values in LocalStorage:</h2>
+        <div id="prizeValues"></div>
+    </div>
+
+    <div class="section">
+        <h2>All LocalStorage Keys:</h2>
+        <div id="allKeys"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test Actions:</h2>
+        <button onclick="showPrizes()">🔄 Refresh Prize Values</button>
+        <button class="test-button" onclick="setPrizes()">✅ Set Test Prizes</button>
+        <button class="test-button" onclick="clearPrizes()">❌ Clear Prizes</button>
+    </div>
+
+    <script>
+        function showPrizes() {
+            const prize4Corners = localStorage.getItem('prize4Corners');
+            const prizeFirstLine = localStorage.getItem('prizeFirstLine');
+            const prizeFullHouse = localStorage.getItem('prizeFullHouse');
+
+            const div = document.getElementById('prizeValues');
+            div.innerHTML = `
+                <p><span class="key">prize4Corners:</span> 
+                   <span class="${prize4Corners ? 'value' : 'empty'}">${prize4Corners || '(empty)'}</span>
+                   (length: ${prize4Corners ? prize4Corners.length : 0})</p>
+                
+                <p><span class="key">prizeFirstLine:</span> 
+                   <span class="${prizeFirstLine ? 'value' : 'empty'}">${prizeFirstLine || '(empty)'}</span>
+                   (length: ${prizeFirstLine ? prizeFirstLine.length : 0})</p>
+                
+                <p><span class="key">prizeFullHouse:</span> 
+                   <span class="${prizeFullHouse ? 'value' : 'empty'}">${prizeFullHouse || '(empty)'}</span>
+                   (length: ${prizeFullHouse ? prizeFullHouse.length : 0})</p>
+            `;
+        }
+
+        function showAllKeys() {
+            const div = document.getElementById('allKeys');
+            let html = '<ul>';
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                const truncated = value.length > 100 ? value.substring(0, 100) + '...' : value;
+                html += `<li><span class="key">${key}:</span> ${truncated}</li>`;
+            }
+            
+            html += '</ul>';
+            div.innerHTML = html || '<p class="empty">No keys in localStorage</p>';
+        }
+
+        function setPrizes() {
+            localStorage.setItem('prize4Corners', '£10 Voucher TEST');
+            localStorage.setItem('prizeFirstLine', '£20 Bar Tab TEST');
+            localStorage.setItem('prizeFullHouse', '£50 Cash Prize TEST');
+            alert('✅ Test prizes set!');
+            showPrizes();
+        }
+
+        function clearPrizes() {
+            localStorage.removeItem('prize4Corners');
+            localStorage.removeItem('prizeFirstLine');
+            localStorage.removeItem('prizeFullHouse');
+            alert('❌ Prizes cleared!');
+            showPrizes();
+        }
+
+        // Auto-load on page load
+        window.onload = function() {
+            showPrizes();
+            showAllKeys();
+        };
+    </script>
+</body>
+</html>
