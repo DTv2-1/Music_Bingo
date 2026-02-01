@@ -29,9 +29,18 @@ jobs:
         with:
           project_id: smart-arc-466414-p9
       
+      - name: Set service name
+        id: service
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "name=music-bingo" >> $GITHUB_OUTPUT
+          else
+            echo "name=music-bingo-dev" >> $GITHUB_OUTPUT
+          fi
+      
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy music-bingo \
+          gcloud run deploy ${{ steps.service.outputs.name }} \
             --region=europe-west2 \
             --source=. \
             --project=smart-arc-466414-p9 \
