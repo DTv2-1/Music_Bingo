@@ -649,10 +649,10 @@ def generate_batch_pdf(batch_data):
         story.extend(card_elements)
         
         # Add page break after every 2 cards (except for the last card in batch)
-        if (idx + 1) % 2 == 0 and idx < len(cards_range) - 1:
+        if (idx + 1) % 2 == 0 and idx < len(cards_data) - 1:
             story.append(PageBreak())
         # Add spacer between cards on same page
-        elif idx < len(cards_range) - 1:
+        elif idx < len(cards_data) - 1:
             story.append(Spacer(1, 5*mm))
     
     doc.build(story)
