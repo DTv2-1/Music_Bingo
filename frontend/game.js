@@ -300,9 +300,9 @@ async function loadSessionAndStart(sessionId) {
         localStorage.setItem('pubLogo', session.logo_url || '');
         localStorage.setItem('socialMedia', session.social_media || '');
         localStorage.setItem('includeQR', session.include_qr ? 'true' : 'false');
-        localStorage.setItem('prize4Corners', session.prizes?.prize_4corners || '');
-        localStorage.setItem('prizeFirstLine', session.prizes?.prize_first_line || '');
-        localStorage.setItem('prizeFullHouse', session.prizes?.prize_full_house || '');
+        localStorage.setItem('prize4Corners', session.prizes?.four_corners || '');
+        localStorage.setItem('prizeFirstLine', session.prizes?.first_line || '');
+        localStorage.setItem('prizeFullHouse', session.prizes?.full_house || '');
         console.log('💾 Saved session branding to localStorage:', {
             pubLogo: session.logo_url,
             socialMedia: session.social_media,
