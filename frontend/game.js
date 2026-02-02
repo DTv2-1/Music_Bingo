@@ -2258,11 +2258,14 @@ async function generateCards() {
             const timestamp = new Date().getTime();
             const link = document.createElement('a');
             
-            const downloadUrl = result.download_url;
-            if (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://')) {
+            const downloadUrl = result.pdf_url || result.download_url;
+            if (downloadUrl && (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://'))) {
                 link.href = downloadUrl;
-            } else {
+            } else if (downloadUrl) {
                 link.href = `${CONFIG.API_URL}${downloadUrl}?t=${timestamp}`;
+            } else {
+                console.error('❌ No PDF URL in cached result:', result);
+                throw new Error('No PDF URL in cached response');
             }
             
             link.download = `music_bingo_${venueName.replace(/\s+/g, '_')}_${numPlayers}players.pdf`;
@@ -2336,14 +2339,17 @@ async function generateCards() {
                     const timestamp = new Date().getTime();
                     const link = document.createElement('a');
                     
-                    // Check if download_url is already a complete URL (from GCS)
-                    const downloadUrl = status.result.download_url;
-                    if (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://')) {
+                    // Check if pdf_url is already a complete URL (from GCS)
+                    const downloadUrl = status.result.pdf_url || status.result.download_url;
+                    if (downloadUrl && (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://'))) {
                         // Full URL from GCS (already includes signed parameters)
                         link.href = downloadUrl;
-                    } else {
+                    } else if (downloadUrl) {
                         // Relative path (fallback to local file)
                         link.href = `${CONFIG.API_URL}${downloadUrl}?t=${timestamp}`;
+                    } else {
+                        console.error('❌ No PDF URL found in result:', status.result);
+                        throw new Error('No PDF URL in response');
                     }
                     
                     link.download = `music_bingo_${venueName.replace(/\s+/g, '_')}_${numPlayers}players.pdf`;

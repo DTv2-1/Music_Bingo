@@ -102,7 +102,7 @@ def generate_cards_async(request):
                 progress=100,
                 result={
                     'success': True,
-                    'download_url': cached_pdf_url,
+                    'pdf_url': cached_pdf_url,
                     'cached': True,
                     'message': 'Using cached PDF from previous generation'
                 },
@@ -119,7 +119,7 @@ def generate_cards_async(request):
                 'task_id': task_id,
                 'status': 'completed',
                 'cached': True,
-                'download_url': cached_pdf_url,
+                'pdf_url': cached_pdf_url,
                 'message': 'Using cached PDF - no regeneration needed'
             }, status=200)
         
