@@ -899,6 +899,27 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     
     total_time = time.time() - start_time
     
+    # *** CRITICAL: Save session file with exact songs used ***
+    # This ensures the game plays THE SAME songs that are printed on cards
+    session_file = OUTPUT_DIR / "current_session.json"
+    session_data = {
+        "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "venue_name": venue_name,
+        "num_players": num_players,
+        "num_cards": NUM_CARDS,
+        "songs_per_card": SONGS_PER_CARD,
+        "game_number": game_number,
+        "game_date": game_date,
+        "songs": selected_songs  # The EXACT songs used in the cards
+    }
+    
+    with open(session_file, 'w', encoding='utf-8') as f:
+        json.dump(session_data, f, indent=2, ensure_ascii=False)
+    
+    print(f"\n✅ Session file saved: {session_file}")
+    print(f"   ⚠️  IMPORTANT: Use this session file when starting the game!")
+    print(f"   This ensures songs played match the printed cards.")
+    
     print(f"\n{'='*60}")
     print(f"✅ SUCCESS!")
     print(f"{'='*60}")
@@ -907,6 +928,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"Pages: {(NUM_CARDS + 1) // 2} (2 cards per page)")
     print(f"Songs per card: {SONGS_PER_CARD}")
     print(f"Total songs available: {len(selected_songs)}")
+    print(f"Session file: {session_file}")
     print(f"⏱️  TOTAL TIME: {total_time:.2f}s")
     print(f"{'='*60}\n")
     
@@ -914,7 +936,8 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         'num_cards': NUM_CARDS,
         'num_pages': (NUM_CARDS + 1) // 2,  # 2 cards per page
         'songs_per_card': SONGS_PER_CARD,
-        'total_songs': len(selected_songs)
+        'total_songs': len(selected_songs),
+        'session_file': str(session_file)
     }
 
 
