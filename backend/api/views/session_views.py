@@ -94,7 +94,7 @@ def bingo_session_detail(request, session_id):
         try:
             # Use BingoSessionService to get session details
             session_service = BingoSessionService()
-            session_data = session_service.get_session_summary(session_id)
+            session_data = session_service.get_session_summary(session)
             
             logger.info(f"📖 Fetching bingo session {session_id}")
             
