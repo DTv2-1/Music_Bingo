@@ -136,14 +136,18 @@ def generate_cards_async(request):
         
         # Check if there's an existing session_id in request
         session_id = data.get('session_id')
+        logger.info(f"Session ID from request: {session_id}")
         
         if session_id:
             # Use existing session
             try:
                 session = session_service.get_session(session_id)
-                logger.info(f"Using existing BingoSession: {session_id}")
-            except:
+                logger.info(f"✅ Using existing BingoSession: {session_id}")
+                logger.info(f"   Venue: {session.venue_name}, Players: {session.num_players}")
+                logger.info(f"   Current song_pool size: {len(session.song_pool)}")
+            except Exception as e:
                 # Create new if not found
+                logger.warning(f"Session {session_id} not found: {e}. Creating new session...")
                 session_id = str(uuid.uuid4())
                 session = session_service.create_session({
                     'session_id': session_id,
@@ -159,7 +163,7 @@ def generate_cards_async(request):
                         'full_house': prize_full_house
                     }
                 })
-                logger.info(f"Created new BingoSession: {session_id}")
+                logger.info(f"✅ Created new BingoSession: {session_id}")
         else:
             # Create new session
             session_id = str(uuid.uuid4())

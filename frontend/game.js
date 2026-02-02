@@ -945,21 +945,35 @@ async function loadSongPool() {
         
         if (sessionId) {
             console.log(`🔑 Found session ID in localStorage: ${sessionId}`);
+            console.log(`📡 Fetching session from: ${CONFIG.API_URL}/api/session?session_id=${sessionId}`);
             
             // Fetch session from database using session_id
             const sessionResponse = await fetch(`${CONFIG.API_URL}/api/session?session_id=${sessionId}`);
+            
+            console.log(`📨 Response status: ${sessionResponse.status}`);
             
             if (sessionResponse.ok) {
                 const sessionData = await sessionResponse.json();
                 console.log('✅ Loaded session from database (session_id)');
                 console.log(`   Source: ${sessionData.source}`);
+                console.log(`   Session ID: ${sessionData.session_id}`);
                 console.log(`   Generated: ${sessionData.generated_at}`);
                 console.log(`   Venue: ${sessionData.venue_name}`);
-                console.log(`   Songs: ${sessionData.songs.length}`);
+                console.log(`   Num Players: ${sessionData.num_players}`);
+                console.log(`   Songs count: ${sessionData.songs?.length || 0}`);
+                console.log(`   PDF URL: ${sessionData.pdf_url || 'none'}`);
+                
+                if (!sessionData.songs || sessionData.songs.length === 0) {
+                    console.warn('⚠️  Session loaded but song_pool is EMPTY!');
+                    console.warn('   This means cards have NOT been generated yet.');
+                    console.warn('   Will fall back to pool.json...');
+                } else {
+                    console.log(`   First 3 songs:`, sessionData.songs.slice(0, 3).map(s => s.title));
+                }
                 
                 // Use EXACT songs from session (no filtering, no shuffling)
-                gameState.pool = sessionData.songs;
-                gameState.remaining = [...sessionData.songs];
+                gameState.pool = sessionData.songs || [];
+                gameState.remaining = [...(sessionData.songs || [])];
                 
                 // Update venue name if provided in session
                 if (sessionData.venue_name) {
@@ -2342,6 +2356,9 @@ async function generateCards() {
         const existingSessionId = localStorage.getItem('currentSessionId');
         if (existingSessionId) {
             console.log('🔗 Using existing session_id:', existingSessionId);
+            console.log('   This will update the existing BingoSession in database');
+        } else {
+            console.log('ℹ️  No existing session_id - backend will create new BingoSession');
         }
 
         // Use new async endpoint
@@ -2384,6 +2401,15 @@ async function generateCards() {
                 localStorage.setItem('currentSessionId', result.session_id);
                 console.log('🔑 Session ID saved (cached):', result.session_id);
             }
+            
+            // 🔄 Reload song pool (in case session was created without cards before)
+            console.log('🔄 Reloading song pool (cached PDF)...');
+            loadSongPool().then(() => {
+                console.log('✅ Song pool reloaded from cache!');
+                updateStats();
+            }).catch(err => {
+                console.error('⚠️  Failed to reload song pool:', err);
+            });
             
             // Show success immediately
             btn.textContent = '⚡ Downloaded (cached)!';
@@ -2456,6 +2482,19 @@ async function generateCards() {
                         localStorage.setItem('currentSessionId', status.result.session_id);
                         console.log('🔑 Session ID saved to localStorage:', status.result.session_id);
                     }
+
+                    // 🔄 Reload song pool from database now that cards are generated
+                    console.log('🔄 Reloading song pool after card generation...');
+                    console.log(`   Session ID for reload: ${status.result.session_id}`);
+                    loadSongPool().then(() => {
+                        console.log('✅ Song pool reloaded - game ready to play!');
+                        console.log(`   Songs loaded: ${gameState.remaining.length}`);
+                        console.log(`   Pool size: ${gameState.pool.length}`);
+                        updateStats();
+                    }).catch(err => {
+                        console.error('⚠️  Failed to reload song pool:', err);
+                        console.error('   Error details:', err.message);
+                    });
 
                     // Show brief success message in button (no alert modal)
                     btn.textContent = '✅ Downloaded!';

@@ -80,9 +80,17 @@ def get_session(request):
         session_id = request.GET.get('session_id')
         
         if session_id:
-            logger.info(f"Fetching session from database: {session_id}")
+            logger.info(f"📡 Fetching session from database: {session_id}")
             try:
                 session = BingoSession.objects.get(session_id=session_id)
+                logger.info(f"✅ Found BingoSession in database")
+                logger.info(f"   ID: {session.session_id}")
+                logger.info(f"   Venue: {session.venue_name}")
+                logger.info(f"   Players: {session.num_players}")
+                logger.info(f"   song_pool length: {len(session.song_pool)}")
+                logger.info(f"   PDF URL: {session.pdf_url or 'none'}")
+                logger.info(f"   Created: {session.created_at}")
+                
                 data = {
                     'session_id': session.session_id,
                     'venue_name': session.venue_name,
@@ -93,10 +101,16 @@ def get_session(request):
                     'pdf_url': session.pdf_url,
                     'source': 'database'
                 }
-                logger.info(f"Session loaded from database: {len(data['songs'])} songs, venue: {data['venue_name']}")
+                
+                if len(session.song_pool) == 0:
+                    logger.warning(f"⚠️  Session {session_id} has EMPTY song_pool!")
+                    logger.warning(f"   Cards may not have been generated yet.")
+                else:
+                    logger.info(f"✅ Returning {len(data['songs'])} songs for venue: {data['venue_name']}")
+                
                 return Response(data)
             except BingoSession.DoesNotExist:
-                logger.warning(f"Session not found in database: {session_id}")
+                logger.error(f"❌ Session not found in database: {session_id}")
                 return Response({
                     'error': 'Session not found',
                     'hint': 'The session may have been deleted or the session_id is incorrect'

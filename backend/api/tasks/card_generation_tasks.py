@@ -127,16 +127,34 @@ def run_card_generation_task(task_id: str, task_model, cmd: list, base_dir: Path
                                 
                                 # Update BingoSession in database with song_pool and pdf_url
                                 session_id = task_model.metadata.get('session_id') if task_model.metadata else None
+                                logger.info(f"Task {task_id}: Attempting to update BingoSession {session_id}")
+                                
                                 if session_id:
                                     try:
                                         from api.models import BingoSession
                                         bingo_session = BingoSession.objects.get(session_id=session_id)
-                                        bingo_session.song_pool = session_data.get('songs', [])
+                                        logger.info(f"Task {task_id}: Found BingoSession {session_id}")
+                                        logger.info(f"   Venue: {bingo_session.venue_name}")
+                                        logger.info(f"   Current song_pool size: {len(bingo_session.song_pool)}")
+                                        
+                                        songs_to_save = session_data.get('songs', [])
+                                        logger.info(f"   New song_pool size: {len(songs_to_save)}")
+                                        
+                                        bingo_session.song_pool = songs_to_save
                                         bingo_session.pdf_url = public_url
                                         bingo_session.save(update_fields=['song_pool', 'pdf_url'])
-                                        logger.info(f"Task {task_id}: Updated BingoSession {session_id} with song pool ({len(session_data.get('songs', []))} songs)")
+                                        
+                                        logger.info(f"Task {task_id}: ✅ Updated BingoSession {session_id}")
+                                        logger.info(f"   Saved {len(songs_to_save)} songs to database")
+                                        logger.info(f"   PDF URL: {public_url}")
+                                        
+                                        # Verify save
+                                        bingo_session.refresh_from_db()
+                                        logger.info(f"   Verification: song_pool now has {len(bingo_session.song_pool)} songs")
                                     except Exception as db_error:
-                                        logger.warning(f"Task {task_id}: Could not update BingoSession: {db_error}")
+                                        logger.error(f"Task {task_id}: ❌ Could not update BingoSession: {db_error}", exc_info=True)
+                                else:
+                                    logger.warning(f"Task {task_id}: No session_id in metadata - cannot update database")
                                 
                             except Exception as session_error:
                                 logger.warning(f"Task {task_id}: Could not upload session file: {session_error}")
