@@ -151,7 +151,7 @@ class BingoSessionService:
         logger.info(f"✅ Updated session {session_id}")
         return session
     
-    def update_session_status(self, session_id: str, new_status: str) -> BingoSession:
+    def update_session_status(self, session_id: str, new_status: str) -> dict:
         """
         Update session status with validation
         
@@ -160,7 +160,7 @@ class BingoSessionService:
             new_status: New status value
             
         Returns:
-            BingoSession: Updated session
+            dict: Updated session as dictionary
             
         Raises:
             ValueError: If status transition invalid
@@ -182,7 +182,7 @@ class BingoSessionService:
         session.save(update_fields=['status', 'started_at', 'completed_at'])
         
         logger.info(f"✅ Updated session {session_id} status to {new_status}")
-        return session
+        return self._session_to_dict(session)
     
     def delete_session(self, session_id: str) -> bool:
         """
