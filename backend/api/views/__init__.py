@@ -69,7 +69,6 @@ __all__ = [
     'get_pool',
     'get_session',
     'get_task_status',
-    'get_config',tus',
     'get_config',
     # Card
     'generate_cards_async',
