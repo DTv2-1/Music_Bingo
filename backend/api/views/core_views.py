@@ -69,11 +69,31 @@ def get_session(request):
         500: Server error reading session file
     """
     try:
+        import requests
+        from api.services.storage_service import GCSStorageService
+        
+        # Try to fetch from Google Cloud Storage first (persistent)
+        gcs_url = 'https://storage.googleapis.com/music-bingo-cards/cards/current_session.json'
+        
+        try:
+            logger.info(f"Fetching session from GCS: {gcs_url}")
+            response = requests.get(gcs_url, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                logger.info(f"Session loaded from GCS: {len(data.get('songs', []))} songs, venue: {data.get('venue_name')}")
+                return Response(data)
+            else:
+                logger.warning(f"GCS returned status {response.status_code}")
+        except Exception as gcs_error:
+            logger.warning(f"Could not fetch from GCS: {gcs_error}")
+        
+        # Fallback to local file (if container hasn't restarted)
         session_path = DATA_DIR / 'cards' / 'current_session.json'
-        logger.info(f"get_session called - looking for: {session_path}")
+        logger.info(f"Trying local file: {session_path}")
         
         if not session_path.exists():
-            logger.warning(f"Session file not found at: {session_path}")
+            logger.warning(f"Session file not found locally or in GCS")
             return Response({
                 'error': 'No session file found. Generate cards first.',
                 'hint': 'Use the "Generate Cards" button to create a new game session'
@@ -82,7 +102,7 @@ def get_session(request):
         with open(session_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
-        logger.info(f"Session loaded: {len(data.get('songs', []))} songs, venue: {data.get('venue_name')}")
+        logger.info(f"Session loaded locally: {len(data.get('songs', []))} songs, venue: {data.get('venue_name')}")
         return Response(data)
         
     except Exception as e:

@@ -934,15 +934,44 @@ async function loadSongPool() {
     // This ensures songs played match what's on the physical cards
     
     try {
-        // First, try to load the session file (created when cards are generated)
+        // First, try to load session data from localStorage (saved after card generation)
+        const storedSessionData = localStorage.getItem('currentSessionData');
+        
+        if (storedSessionData) {
+            const sessionData = JSON.parse(storedSessionData);
+            console.log('✅ Loaded session data from localStorage');
+            console.log(`   Generated: ${sessionData.generated_at}`);
+            console.log(`   Venue: ${sessionData.venue_name}`);
+            console.log(`   Songs: ${sessionData.songs.length}`);
+            
+            // Use EXACT songs from session (no filtering, no shuffling)
+            gameState.pool = sessionData.songs;
+            gameState.remaining = [...sessionData.songs]; // Use all session songs in order
+            
+            // Update venue name if provided in session
+            if (sessionData.venue_name) {
+                gameState.venueName = sessionData.venue_name;
+                document.getElementById('venueName').value = sessionData.venue_name;
+            }
+            
+            console.log(`✅ Game will use ${gameState.remaining.length} songs from localStorage`);
+            console.log('⚠️  These songs MATCH the printed cards!');
+            
+            return; // Exit early with session data
+        }
+        
+        // Second, try to load the session file from server (fallback)
         const sessionResponse = await fetch(`${CONFIG.API_URL}/api/session`);
         
         if (sessionResponse.ok) {
             const sessionData = await sessionResponse.json();
-            console.log('✅ Loaded session file from card generation');
+            console.log('✅ Loaded session file from server');
             console.log(`   Generated: ${sessionData.generated_at}`);
             console.log(`   Venue: ${sessionData.venue_name}`);
             console.log(`   Songs: ${sessionData.songs.length}`);
+            
+            // Save to localStorage for future use
+            localStorage.setItem('currentSessionData', JSON.stringify(sessionData));
             
             // Use EXACT songs from session (no filtering, no shuffling)
             gameState.pool = sessionData.songs;
@@ -959,7 +988,7 @@ async function loadSongPool() {
             
         } else {
             // Fallback: Use old pool.json method if no session file exists
-            console.warn('⚠️  No session file found - falling back to pool.json');
+            console.warn('⚠️  No session data found - falling back to pool.json');
             console.warn('⚠️  WARNING: Songs may NOT match printed cards!');
             console.warn('⚠️  Please generate cards first to create session file.');
             
@@ -2359,6 +2388,12 @@ async function generateCards() {
                 if (status.status === 'completed') {
                     // Success!
                     console.log('✅ Generation completed:', status.result);
+
+                    // Save session data to localStorage if provided
+                    if (status.result.session_data) {
+                        localStorage.setItem('currentSessionData', JSON.stringify(status.result.session_data));
+                        console.log('💾 Session data saved to localStorage');
+                    }
 
                     // Show brief success message in button (no alert modal)
                     btn.textContent = '✅ Downloaded!';

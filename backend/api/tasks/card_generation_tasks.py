@@ -96,21 +96,42 @@ def run_card_generation_task(task_id: str, task_model, cmd: list, base_dir: Path
                             f'cards/{latest_pdf.name}'
                         )
                         
-                        # Update session file with GCS URL for caching
+                        # Update session file with GCS URL and upload to GCS
                         session_file = cards_dir / 'current_session.json'
+                        session_json_url = None
+                        session_data = None
+                        
                         if session_file.exists():
                             try:
                                 with open(session_file, 'r', encoding='utf-8') as f:
                                     session_data = json.load(f)
                                 session_data['pdf_url'] = public_url
+                                
+                                # Save updated session file locally
                                 with open(session_file, 'w', encoding='utf-8') as f:
                                     json.dump(session_data, f, indent=2, ensure_ascii=False)
-                                logger.info(f"Task {task_id}: Updated session file with GCS URL")
+                                
+                                # Upload session file to GCS with unique name based on venue/players/game
+                                venue_safe = session_data.get('venue_name', 'venue').replace(' ', '_').replace('/', '_')
+                                players = session_data.get('num_players', 25)
+                                game_num = session_data.get('game_number', 1)
+                                timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+                                session_filename = f'sessions/{venue_safe}_{players}p_game{game_num}_{timestamp}.json'
+                                
+                                logger.info(f"Task {task_id}: Uploading session file to GCS as {session_filename}...")
+                                session_json_url = upload_to_gcs(
+                                    str(session_file),
+                                    session_filename
+                                )
+                                logger.info(f"Task {task_id}: Session file uploaded to {session_json_url}")
+                                
                             except Exception as session_error:
-                                logger.warning(f"Task {task_id}: Could not update session file: {session_error}")
+                                logger.warning(f"Task {task_id}: Could not upload session file: {session_error}")
                         
                         task_model.result = {
                             'pdf_url': public_url,
+                            'session_url': session_json_url,
+                            'session_data': session_data,  # Include full session data in response
                             'filename': latest_pdf.name,
                             'message': 'Cards generated and uploaded successfully'
                         }
