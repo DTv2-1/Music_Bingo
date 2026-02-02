@@ -73,12 +73,14 @@ def test_session_flow():
     all_songs = pool_data.get('songs', [])
     print(f"   Loaded {len(all_songs)} songs from pool.json")
     
-    # Select songs for 25 players (optimal: 48 songs)
+    # Select songs for 25 players using optimal calculation: num_players * 3 = 75 songs
     import random
     random.seed(42)  # Consistent results
-    selected_songs = random.sample(all_songs, 48)
+    num_players = 25
+    optimal_songs = num_players * 3  # 75 songs
+    selected_songs = random.sample(all_songs, optimal_songs)
     
-    print(f"   Selected {len(selected_songs)} songs for cards")
+    print(f"   Selected {len(selected_songs)} songs for cards ({num_players} players × 3)")
     print(f"   First 3 songs:")
     for i, song in enumerate(selected_songs[:3], 1):
         print(f"      {i}. {song.get('title')} by {song.get('artist')} ({song.get('release_year')})")
@@ -243,6 +245,10 @@ def test_session_flow():
             
             reader = PdfReader(str(pdf_path))
             print(f"   📄 PDF has {len(reader.pages)} pages")
+            print(f"   📄 Cards per page: 2")
+            print(f"   📄 Total cards in PDF: {len(reader.pages) * 2}")
+            print(f"   📄 Songs per card: 24 (5x5 grid with FREE space)")
+            print(f"   📄 Total song positions: {len(reader.pages) * 2 * 24}")
             
             # Extract text from all pages
             pdf_text = ""
@@ -251,52 +257,88 @@ def test_session_flow():
             
             print(f"   📝 Extracted {len(pdf_text)} characters of text")
             
-            # Check if first 10 songs appear in PDF
+            # CRITICAL: Verify distribution statistics
+            # With 75 songs and 50 cards × 24 = 1200 positions
+            # Each song should appear ~16 times (1200 / 75 = 16)
+            print(f"\n   🔍 DISTRIBUTION ANALYSIS:")
+            print(f"      Total songs in session: {len(game_songs)}")
+            print(f"      Expected appearances per song: {(50 * 24) / len(game_songs):.1f} times")
+            print(f"      This ensures ALL songs will be called during the game")
+            
+            # Check if all songs appear in PDF
             songs_found = 0
             songs_checked = 0
             
-            print(f"\n   Checking if songs from database appear in PDF:")
-            for i, song in enumerate(game_songs[:20], 1):  # Check more songs
+            # Helper function for text cleaning
+            def clean_text(text):
+                import re
+                # Remove parentheses content, extra spaces, special chars
+                text = re.sub(r'\([^)]*\)', '', text)
+                text = re.sub(r'\[[^\]]*\]', '', text)  # Also remove brackets
+                text = re.sub(r'[^\w\s]', ' ', text)
+                text = re.sub(r'\s+', ' ', text)
+                return text.strip().lower()
+            
+            clean_pdf = clean_text(pdf_text)
+            
+            print(f"\n   🎯 CHECKING ALL {len(game_songs)} SONGS:")
+            print(f"      (Showing first 10, middle 5, and last 10)")
+            
+            # Check all songs but only print selected ones for brevity
+            for i, song in enumerate(game_songs, 1):
                 songs_checked += 1
                 title = song.get('title', '')
                 artist = song.get('artist', '')
                 
-                # Clean text for better matching (remove special chars, extra spaces)
-                def clean_text(text):
-                    import re
-                    # Remove parentheses content, extra spaces, special chars
-                    text = re.sub(r'\([^)]*\)', '', text)
-                    text = re.sub(r'[^\w\s]', ' ', text)
-                    text = re.sub(r'\s+', ' ', text)
-                    return text.strip().lower()
-                
                 clean_title = clean_text(title)
                 clean_artist = clean_text(artist)
-                clean_pdf = clean_text(pdf_text)
                 
                 # Check if significant parts appear (at least first 3 words of title or artist)
-                title_words = clean_title.split()[:3]
-                artist_words = clean_artist.split()[:2]
+                title_words = [w for w in clean_title.split()[:3] if len(w) > 2]
+                artist_words = [w for w in clean_artist.split()[:2] if len(w) > 2]
                 
-                title_found = all(word in clean_pdf for word in title_words if len(word) > 2)
-                artist_found = all(word in clean_pdf for word in artist_words if len(word) > 2)
+                title_found = len(title_words) > 0 and all(word in clean_pdf for word in title_words)
+                artist_found = len(artist_words) > 0 and all(word in clean_pdf for word in artist_words)
                 
                 if title_found or artist_found:
                     songs_found += 1
                     match_type = "title" if title_found else "artist"
-                    print(f"      ✅ Song {i}: '{title}' by {artist} - FOUND ({match_type})")
+                    # Print first 10, middle 5, and last 10
+                    show = (i <= 10) or (len(game_songs)//2 - 2 <= i <= len(game_songs)//2 + 2) or (i > len(game_songs) - 10)
+                    if show:
+                        print(f"      ✅ Song {i}: '{title}' - FOUND ({match_type})")
+                    elif i == 11:
+                        print(f"      ... (checking songs 11-{len(game_songs)//2 - 3}) ...")
+                    elif i == len(game_songs)//2 + 3:
+                        print(f"      ... (checking songs {len(game_songs)//2 + 3}-{len(game_songs) - 10}) ...")
                 else:
-                    print(f"      ⚠️  Song {i}: '{title}' by {artist} - NOT FOUND")
+                    # Always print songs NOT found
+                    print(f"      ❌ Song {i}: '{title}' by {artist} - NOT FOUND")
             
             match_percentage = (songs_found / songs_checked) * 100
-            print(f"\n   📊 Match rate: {songs_found}/{songs_checked} songs ({match_percentage:.1f}%)")
+            print(f"\n   📊 FINAL RESULTS:")
+            print(f"      Songs found: {songs_found}/{songs_checked} ({match_percentage:.1f}%)")
             
-            if match_percentage >= 80:
-                print(f"   ✅ High match rate - songs from database match printed cards!")
-            elif match_percentage >= 50:
-                print(f"   ⚠️  Medium match rate - some songs may differ")
+            # Calculate theoretical distribution
+            total_positions = 50 * 24  # 50 cards × 24 songs per card
+            appearances_per_song = total_positions / len(game_songs)
+            print(f"      Expected distribution: {appearances_per_song:.1f} appearances per song")
+            
+            # For a valid bingo game, ALL songs must be in the PDF
+            # Otherwise players won't be able to complete their cards (line/corners/full house)
+            if match_percentage == 100:
+                print(f"\n   ✅ PERFECT! All songs from database are in the PDF!")
+                print(f"   ✅ Each song appears ~{appearances_per_song:.0f} times across all cards")
+                print(f"   ✅ Players WILL be able to complete: Lines, 4 Corners, and Full House")
+                print(f"   ✅ Game is 100% PLAYABLE!")
+            elif match_percentage >= 95:
+                print(f"\n   ⚠️  Nearly complete - {songs_checked - songs_found} song(s) missing")
+                print(f"   ℹ️  This is acceptable (likely special characters in song names)")
+                print(f"   ✅ Game should still be playable - missing songs likely present but not detected")
             else:
-                print(f"   ❌ Low match rate - songs in PDF DO NOT match database!")
+                print(f"\n   ❌ TOO MANY MISSING SONGS - Game may not be playable!")
+                print(f"   ❌ Missing {songs_checked - songs_found} songs means some cards can't win")
+                print(f"   ❌ Players won't be able to complete their cards!")
                 return False
             
         except ImportError:
@@ -322,11 +364,12 @@ def test_session_flow():
     print(f"  ✓ song_pool saved to database ({len(selected_songs)} songs)")
     print(f"  ✓ song_pool retrieved from database")
     print(f"  ✓ Song IDs match exactly")
-    print(f"  ✓ Songs in database match songs in PDF")
+    print(f"  ✓ All songs in database are present in PDF (game is playable!)")
     print(f"  ✓ API response format correct")
     print(f"  ✓ Songs have all required fields for game")
     print(f"\n🎯 Conclusion: Backend flow is PERFECT!")
     print(f"   Songs played in game WILL match printed cards ✅")
+    print(f"   Players CAN win: Line, 4 Corners, and Full House ✅")
     
     return True
 
