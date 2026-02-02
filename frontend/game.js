@@ -2341,12 +2341,16 @@ async function generateCards() {
                     
                     // Check if pdf_url is already a complete URL (from GCS)
                     const downloadUrl = status.result.pdf_url || status.result.download_url;
+                    console.log('🔗 Download URL:', downloadUrl);
+                    
                     if (downloadUrl && (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://'))) {
                         // Full URL from GCS (already includes signed parameters)
                         link.href = downloadUrl;
+                        console.log('✅ Using full URL from GCS');
                     } else if (downloadUrl) {
                         // Relative path (fallback to local file)
                         link.href = `${CONFIG.API_URL}${downloadUrl}?t=${timestamp}`;
+                        console.log('✅ Using relative path');
                     } else {
                         console.error('❌ No PDF URL found in result:', status.result);
                         throw new Error('No PDF URL in response');
@@ -2354,8 +2358,10 @@ async function generateCards() {
                     
                     link.download = `music_bingo_${venueName.replace(/\s+/g, '_')}_${numPlayers}players.pdf`;
                     link.target = '_blank';
+                    console.log('📥 Creating download link:', link.href);
                     document.body.appendChild(link);
                     link.click();
+                    console.log('🖱️ Link clicked');
                     document.body.removeChild(link);
                     
                     // Show optional notification (non-blocking)
