@@ -11,11 +11,14 @@ Card generation supports:
 - QR code integration for social media
 - Multiple players per session
 - Background processing with progress tracking
+- PDF caching to avoid regenerating identical cards
 """
 
+import json
 import logging
 import uuid
 import time
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -32,7 +35,12 @@ from ..utils.config import BASE_DIR, DATA_DIR
 
 @api_view(['POST'])
 def generate_cards_async(request):
-    """Generate cards asynchronously (Django)"""
+    """
+    Generate cards asynchronously with caching support
+    
+    Checks if identical cards were generated before and returns cached PDF URL
+    if parameters match. Otherwise, generates new cards.
+    """
     try:
         data = request.data
         venue_name = data.get('venue_name', 'Music Bingo')
@@ -49,7 +57,73 @@ def generate_cards_async(request):
         prize_full_house = data.get('prize_full_house', '')
         
         logger.info(f"Starting async card generation: {num_players} cards for '{venue_name}'")
-        logger.info(f"  pub_logo: {pub_logo[:100] if pub_logo else 'None'}...")  # Truncate for readability
+        
+        # *** CHECK CACHE: Load existing session to see if we can reuse it ***
+        session_path = DATA_DIR / 'cards' / 'current_session.json'
+        cached_pdf_url = None
+        should_regenerate = True
+        
+        if session_path.exists():
+            try:
+                with open(session_path, 'r', encoding='utf-8') as f:
+                    existing_session = json.load(f)
+                
+                # Check if parameters match existing session
+                params_match = (
+                    existing_session.get('venue_name') == venue_name and
+                    existing_session.get('num_players') == num_players and
+                    existing_session.get('game_number') == game_number and
+                    existing_session.get('prize_4corners') == prize_4corners and
+                    existing_session.get('prize_first_line') == prize_first_line and
+                    existing_session.get('prize_full_house') == prize_full_house
+                )
+                
+                # If params match AND we have a cached PDF URL, reuse it
+                if params_match and existing_session.get('pdf_url'):
+                    cached_pdf_url = existing_session.get('pdf_url')
+                    logger.info(f"✅ CACHE HIT: Reusing existing PDF from session")
+                    logger.info(f"   PDF URL: {cached_pdf_url}")
+                    should_regenerate = False
+                else:
+                    logger.info(f"⚠️  CACHE MISS: Parameters changed or no PDF URL, regenerating...")
+                    if not params_match:
+                        logger.info(f"   Params changed: venue={existing_session.get('venue_name')}→{venue_name}, "
+                                  f"players={existing_session.get('num_players')}→{num_players}")
+            except Exception as e:
+                logger.warning(f"Could not load existing session for cache check: {e}")
+        
+        # If we have a cached PDF, return it immediately without regenerating
+        if not should_regenerate and cached_pdf_url:
+            task_id = str(uuid.uuid4())
+            task = TaskStatus.objects.create(
+                task_id=task_id,
+                task_type='card_generation',
+                status='completed',
+                progress=100,
+                result={
+                    'success': True,
+                    'download_url': cached_pdf_url,
+                    'cached': True,
+                    'message': 'Using cached PDF from previous generation'
+                },
+                completed_at=timezone.now(),
+                metadata={
+                    'venue_name': venue_name,
+                    'num_players': num_players,
+                    'game_number': game_number,
+                    'cached': True
+                }
+            )
+            
+            return Response({
+                'task_id': task_id,
+                'status': 'completed',
+                'cached': True,
+                'download_url': cached_pdf_url,
+                'message': 'Using cached PDF - no regeneration needed'
+            }, status=200)
+        
+        logger.info(f"  pub_logo: {pub_logo[:100] if pub_logo else 'None'}...")
         logger.info(f"  pub_logo type: {type(pub_logo)}, length: {len(pub_logo) if pub_logo else 0}")
         logger.info(f"  social_media: {social_media}, include_qr: {include_qr}")
         logger.info(f"  prizes: {prize_4corners}, {prize_first_line}, {prize_full_house}")

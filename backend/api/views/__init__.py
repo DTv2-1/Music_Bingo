@@ -15,6 +15,7 @@ This package organizes API views by domain:
 from .core_views import (
     health_check,
     get_pool,
+    get_session,
     get_task_status,
     get_config
 )
@@ -62,12 +63,13 @@ from .session_views import (
     bingo_session_detail,
     update_bingo_session_status
 )
-
 __all__ = [
     # Core
     'health_check',
     'get_pool',
+    'get_session',
     'get_task_status',
+    'get_config',tus',
     'get_config',
     # Card
     'generate_cards_async',
