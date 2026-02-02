@@ -2244,7 +2244,42 @@ async function generateCards() {
         }
 
         const result = await response.json();
-        console.log('✅ Task started:', result);
+        console.log('✅ Task result:', result);
+
+        // *** HANDLE CACHED RESPONSE (immediate completion) ***
+        if (result.status === 'completed' && result.cached) {
+            console.log('⚡ CACHED PDF - Instant download!');
+            
+            // Show success immediately
+            btn.textContent = '⚡ Downloaded (cached)!';
+            btn.style.background = 'linear-gradient(135deg, #38ef7d 0%, #11998e 100%)';
+            
+            // Download immediately
+            const timestamp = new Date().getTime();
+            const link = document.createElement('a');
+            
+            const downloadUrl = result.download_url;
+            if (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://')) {
+                link.href = downloadUrl;
+            } else {
+                link.href = `${CONFIG.API_URL}${downloadUrl}?t=${timestamp}`;
+            }
+            
+            link.download = `music_bingo_${venueName.replace(/\s+/g, '_')}_${numPlayers}players.pdf`;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Reset button after 3 seconds
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+                btn.disabled = false;
+            }, 3000);
+            
+            return; // Exit early, no need to poll
+        }
 
         const taskId = result.task_id;
 
@@ -2277,13 +2312,27 @@ async function generateCards() {
                     // Success!
                     console.log('✅ Generation completed:', status.result);
 
-                    btn.textContent = originalText;
-                    btn.disabled = false;
+                    // Show brief success message in button (no alert modal)
+                    btn.textContent = '✅ Downloaded!';
+                    btn.style.background = 'linear-gradient(135deg, #38ef7d 0%, #11998e 100%)';
+                    
+                    // Reset button after 3 seconds
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = '';
+                        btn.disabled = false;
+                    }, 3000);
 
-                    // Show success message
-                    alert(`✅ Cards generated successfully!\n\nVenue: ${venueName}\nPlayers: ${numPlayers}\nOptimal songs: ${optimalSongs}\nEstimated duration: ${estimatedMinutes} minutes\n\nCards: ${status.result.num_cards}\nFile size: ${status.result.file_size_mb}MB\nGeneration time: ${status.result.generation_time}s\n\nDownloading now...`);
+                    // Check if it's a cached result
+                    const isCached = status.result.cached || false;
+                    
+                    // Log details to console for debugging
+                    console.log(`📄 Cards: ${status.result.num_cards || 'N/A'}`);
+                    console.log(`💾 File size: ${status.result.file_size_mb || 'N/A'} MB`);
+                    console.log(`⏱️  Generation time: ${status.result.generation_time || status.elapsed_time} s`);
+                    console.log(`📦 Cached: ${isCached ? 'Yes (instant)' : 'No (fresh generation)'}`);
 
-                    // Download the PDF automatically
+                    // Download the PDF automatically (NO ALERT)
                     const timestamp = new Date().getTime();
                     const link = document.createElement('a');
                     
@@ -2302,7 +2351,11 @@ async function generateCards() {
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-
+                    
+                    // Show optional notification (non-blocking)
+                    if (isCached) {
+                        console.log('⚡ Using cached PDF - instant download!');
+                    }
                 } else if (status.status === 'failed') {
                     // Failed
                     console.error('❌ Generation failed:', status.error);
