@@ -2185,6 +2185,56 @@ async function generateCards() {
     btn.textContent = '⏳ Starting generation...';
     btn.disabled = true;
 
+    // Open new window immediately (before async request) to avoid popup blocker
+    // This window will be updated with the PDF URL when ready
+    const pdfWindow = window.open('', '_blank');
+    if (pdfWindow) {
+        pdfWindow.document.write(`
+            <html>
+                <head>
+                    <title>Generating Bingo Cards...</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            height: 100vh;
+                            margin: 0;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                        }
+                        .container {
+                            text-align: center;
+                        }
+                        .spinner {
+                            border: 8px solid rgba(255,255,255,0.3);
+                            border-top: 8px solid white;
+                            border-radius: 50%;
+                            width: 60px;
+                            height: 60px;
+                            animation: spin 1s linear infinite;
+                            margin: 0 auto 20px;
+                        }
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                        h1 { font-size: 24px; margin-bottom: 10px; }
+                        p { font-size: 16px; opacity: 0.9; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="spinner"></div>
+                        <h1>🎵 Generating Your Bingo Cards...</h1>
+                        <p>Please wait, this will take about 30-40 seconds</p>
+                    </div>
+                </body>
+            </html>
+        `);
+    }
+
     try {
         // Get branding data from localStorage
         let pubLogo = localStorage.getItem('pubLogo') || '';
@@ -2254,25 +2304,20 @@ async function generateCards() {
             btn.textContent = '⚡ Downloaded (cached)!';
             btn.style.background = 'linear-gradient(135deg, #38ef7d 0%, #11998e 100%)';
             
-            // Download immediately
-            const timestamp = new Date().getTime();
-            const link = document.createElement('a');
-            
+            // Redirect opened window to PDF
             const downloadUrl = result.pdf_url || result.download_url;
-            if (downloadUrl && (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://'))) {
-                link.href = downloadUrl;
-            } else if (downloadUrl) {
-                link.href = `${CONFIG.API_URL}${downloadUrl}?t=${timestamp}`;
-            } else {
+            if (pdfWindow && downloadUrl) {
+                if (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://')) {
+                    pdfWindow.location.href = downloadUrl;
+                } else {
+                    const timestamp = new Date().getTime();
+                    pdfWindow.location.href = `${CONFIG.API_URL}${downloadUrl}?t=${timestamp}`;
+                }
+            } else if (!downloadUrl) {
+                if (pdfWindow) pdfWindow.close();
                 console.error('❌ No PDF URL in cached result:', result);
                 throw new Error('No PDF URL in cached response');
             }
-            
-            link.download = `music_bingo_${venueName.replace(/\s+/g, '_')}_${numPlayers}players.pdf`;
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
             
             // Reset button after 3 seconds
             setTimeout(() => {
@@ -2335,34 +2380,25 @@ async function generateCards() {
                     console.log(`⏱️  Generation time: ${status.result.generation_time || status.elapsed_time} s`);
                     console.log(`📦 Cached: ${isCached ? 'Yes (instant)' : 'No (fresh generation)'}`);
 
-                    // Download the PDF automatically (NO ALERT)
-                    const timestamp = new Date().getTime();
-                    const link = document.createElement('a');
-                    
-                    // Check if pdf_url is already a complete URL (from GCS)
+                    // Redirect opened window to PDF
                     const downloadUrl = status.result.pdf_url || status.result.download_url;
                     console.log('🔗 Download URL:', downloadUrl);
                     
-                    if (downloadUrl && (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://'))) {
-                        // Full URL from GCS (already includes signed parameters)
-                        link.href = downloadUrl;
-                        console.log('✅ Using full URL from GCS');
-                    } else if (downloadUrl) {
-                        // Relative path (fallback to local file)
-                        link.href = `${CONFIG.API_URL}${downloadUrl}?t=${timestamp}`;
-                        console.log('✅ Using relative path');
-                    } else {
+                    if (pdfWindow && downloadUrl) {
+                        if (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://')) {
+                            console.log('✅ Using full URL from GCS');
+                            pdfWindow.location.href = downloadUrl;
+                        } else {
+                            console.log('✅ Using relative path');
+                            const timestamp = new Date().getTime();
+                            pdfWindow.location.href = `${CONFIG.API_URL}${downloadUrl}?t=${timestamp}`;
+                        }
+                        console.log('✅ PDF window redirected to:', downloadUrl);
+                    } else if (!downloadUrl) {
+                        if (pdfWindow) pdfWindow.close();
                         console.error('❌ No PDF URL found in result:', status.result);
                         throw new Error('No PDF URL in response');
                     }
-                    
-                    link.download = `music_bingo_${venueName.replace(/\s+/g, '_')}_${numPlayers}players.pdf`;
-                    link.target = '_blank';
-                    console.log('📥 Creating download link:', link.href);
-                    document.body.appendChild(link);
-                    link.click();
-                    console.log('🖱️ Link clicked');
-                    document.body.removeChild(link);
                     
                     // Show optional notification (non-blocking)
                     if (isCached) {
@@ -2375,6 +2411,9 @@ async function generateCards() {
                     btn.textContent = originalText;
                     btn.disabled = false;
 
+                    // Close the PDF window
+                    if (pdfWindow) pdfWindow.close();
+
                     alert(`❌ Card generation failed:\n\n${status.error}\n\nPlease try again or contact support.`);
 
                 } else if (attempts >= maxAttempts) {
@@ -2383,6 +2422,9 @@ async function generateCards() {
 
                     btn.textContent = originalText;
                     btn.disabled = false;
+
+                    // Close the PDF window
+                    if (pdfWindow) pdfWindow.close();
 
                     alert('⏱️ Card generation is taking longer than expected.\n\nThe task may still complete in the background.\nPlease check back in a few minutes.');
 
@@ -2398,6 +2440,7 @@ async function generateCards() {
                 if (attempts >= maxAttempts) {
                     btn.textContent = originalText;
                     btn.disabled = false;
+                    if (pdfWindow) pdfWindow.close();
                     alert('Failed to check generation status. Please try again.');
                 } else {
                     // Retry
@@ -2411,6 +2454,7 @@ async function generateCards() {
 
     } catch (error) {
         console.error('❌ Error generating cards:', error);
+        if (pdfWindow) pdfWindow.close();
         alert('❌ Error generating cards. Please try again.');
     } finally {
         btn.textContent = originalText;
