@@ -79,34 +79,26 @@ from .views import (
     get_ai_announcements,
     
     # Jingle views
-    get_jingles,
-    upload_jingle,
-    delete_jingle,
     generate_jingle,
-    generate_jingle_preview,
+    get_jingle_status,
+    download_jingle,
+    generate_music_preview,
+    list_jingles,
+    manage_playlist,
     
-    # Pub Quiz views
-    get_pub_quiz_categories,
-    get_pub_quiz_questions,
-    generate_pub_quiz_cards_api,
-    get_pub_quiz_sessions,
-    create_pub_quiz_session,
-    update_pub_quiz_session,
-    delete_pub_quiz_session,
-    start_pub_quiz,
-    get_pub_quiz_teams,
-    register_pub_quiz_team,
-    submit_pub_quiz_answer,
-    get_pub_quiz_leaderboard,
-    get_pub_quiz_current_question,
-    control_pub_quiz,
-    delete_pub_quiz_team,
+    # Schedule views
+    create_jingle_schedule,
+    get_active_jingles,
+    update_jingle_schedule,
+    delete_jingle_schedule,
     
-    # Bingo session views
-    get_bingo_sessions,
-    create_bingo_session,
-    update_bingo_session,
-    delete_bingo_session,
+    # Venue views
+    venue_config,
+    
+    # Session views
+    bingo_sessions,
+    bingo_session_detail,
+    update_bingo_session_status,
 )
 
 # All views are now imported from the modular structure
