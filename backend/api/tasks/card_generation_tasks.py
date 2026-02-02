@@ -3,11 +3,13 @@ Card Generation Background Tasks
 Handles async card generation using subprocess
 """
 
+import json
 import logging
 import subprocess
 import threading
 from pathlib import Path
 from django.utils import timezone
+from api.services.storage_service import upload_to_gcs
 
 logger = logging.getLogger(__name__)
 
@@ -85,12 +87,44 @@ def run_card_generation_task(task_id: str, task_model, cmd: list, base_dir: Path
                 
                 if pdf_files:
                     latest_pdf = pdf_files[0]
-                    task_model.result = {
-                        'pdf_url': f'/api/cards/{latest_pdf.name}',
-                        'filename': latest_pdf.name,
-                        'message': 'Cards generated successfully'
-                    }
-                    logger.info(f"Task {task_id}: SUCCESS - Generated {latest_pdf.name}")
+                    
+                    # Upload PDF to Google Cloud Storage
+                    try:
+                        logger.info(f"Task {task_id}: Uploading {latest_pdf.name} to GCS...")
+                        public_url = upload_to_gcs(
+                            str(latest_pdf),
+                            f'cards/{latest_pdf.name}'
+                        )
+                        
+                        # Update session file with GCS URL for caching
+                        session_file = cards_dir / 'current_session.json'
+                        if session_file.exists():
+                            try:
+                                with open(session_file, 'r', encoding='utf-8') as f:
+                                    session_data = json.load(f)
+                                session_data['pdf_url'] = public_url
+                                with open(session_file, 'w', encoding='utf-8') as f:
+                                    json.dump(session_data, f, indent=2, ensure_ascii=False)
+                                logger.info(f"Task {task_id}: Updated session file with GCS URL")
+                            except Exception as session_error:
+                                logger.warning(f"Task {task_id}: Could not update session file: {session_error}")
+                        
+                        task_model.result = {
+                            'pdf_url': public_url,
+                            'filename': latest_pdf.name,
+                            'message': 'Cards generated and uploaded successfully'
+                        }
+                        logger.info(f"Task {task_id}: SUCCESS - Uploaded to {public_url}")
+                        
+                    except Exception as upload_error:
+                        # If upload fails, still provide local path as fallback
+                        logger.error(f"Task {task_id}: Upload failed - {upload_error}")
+                        task_model.result = {
+                            'pdf_url': f'/api/cards/{latest_pdf.name}',
+                            'filename': latest_pdf.name,
+                            'message': 'Cards generated but upload failed',
+                            'error': str(upload_error)
+                        }
                 else:
                     task_model.result = {
                         'message': 'Cards generated but PDF not found'
