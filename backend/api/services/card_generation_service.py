@@ -111,10 +111,9 @@ class CardGenerationService:
         if social_media:
             cmd.extend(['--social_media', social_media])
         
-        # Add QR code flag
+        # Add QR code flag (convert boolean to string 'true'/'false')
         include_qr = params.get('include_qr', False)
-        if include_qr:
-            cmd.append('--include_qr')
+        cmd.extend(['--include_qr', 'true' if include_qr else 'false'])
         
         # Add prizes
         prize_4corners = params.get('prize_4corners')
