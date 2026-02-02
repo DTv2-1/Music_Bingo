@@ -66,7 +66,7 @@ def bingo_sessions(request):
             
             # Use BingoSessionService to get sessions
             session_service = BingoSessionService()
-            sessions_data = session_service.get_sessions_by_venue(venue_name) if venue_name else session_service.get_recent_sessions(limit=50)
+            sessions_data = session_service.get_sessions_by_venue(venue_name) if venue_name else session_service.get_all_sessions()
             
             return Response({
                 'sessions': sessions_data,
