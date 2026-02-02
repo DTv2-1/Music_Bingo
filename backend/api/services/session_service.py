@@ -249,12 +249,13 @@ class BingoSessionService:
             'logo_url': session.logo_url,
             'social_media': session.social_media,
             'include_qr': session.include_qr,
+            'prizes': session.prizes,
+            'songs_played': session.songs_played,
+            'current_song_index': session.current_song_index,
             'status': session.status,
-            'pdf_url': session.pdf_url,
-            'songs_json': session.songs_json,
-            'current_round': session.current_round,
             'created_at': session.created_at.isoformat() if session.created_at else None,
-            'updated_at': session.updated_at.isoformat() if session.updated_at else None,
+            'started_at': session.started_at.isoformat() if session.started_at else None,
+            'completed_at': session.completed_at.isoformat() if session.completed_at else None,
         }
     
     def validate_status_transition(self, current_status: str, new_status: str) -> bool:
