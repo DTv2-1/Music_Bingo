@@ -682,21 +682,38 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"📊 Memory at start: {mem_start.rss / 1024 / 1024:.1f} MB")
     print(f"{'='*60}\n")
     
-    # Load songs
+    # Load songs - check if current_session.json exists with pre-selected songs
     step_start = time.time()
-    all_songs = load_pool()
-    mem_after_load = process.memory_info()
-    print(f"✓ Loaded {len(all_songs)} songs from pool ({time.time()-step_start:.2f}s) - Memory: {mem_after_load.rss / 1024 / 1024:.1f} MB")
+    session_file = OUTPUT_DIR / "current_session.json"
+    selected_songs = None
     
-    # Calculate optimal songs
-    step_start = time.time()
-    optimal_songs = calculate_optimal_songs(num_players)
-    print(f"✓ Using {optimal_songs} songs for {num_players} players ({time.time()-step_start:.3f}s)")
+    if session_file.exists():
+        try:
+            with open(session_file, 'r', encoding='utf-8') as f:
+                session_data = json.load(f)
+                if 'songs' in session_data and len(session_data['songs']) > 0:
+                    selected_songs = session_data['songs']
+                    print(f"✓ Loaded {len(selected_songs)} pre-selected songs from current_session.json ({time.time()-step_start:.2f}s)")
+                    print(f"   🎯 Using EXACT songs from session to match database")
+        except Exception as e:
+            print(f"⚠️  Error loading session file: {e}")
+            print(f"   Falling back to random song selection")
     
-    # Shuffle and select songs
-    step_start = time.time()
-    selected_songs = random.sample(all_songs, min(optimal_songs, len(all_songs)))
-    print(f"✓ Selected {len(selected_songs)} songs ({time.time()-step_start:.3f}s)")
+    # If no session file or no songs in it, select randomly
+    if selected_songs is None:
+        all_songs = load_pool()
+        mem_after_load = process.memory_info()
+        print(f"✓ Loaded {len(all_songs)} songs from pool ({time.time()-step_start:.2f}s) - Memory: {mem_after_load.rss / 1024 / 1024:.1f} MB")
+        
+        # Calculate optimal songs
+        step_start = time.time()
+        optimal_songs = calculate_optimal_songs(num_players)
+        print(f"✓ Using {optimal_songs} songs for {num_players} players ({time.time()-step_start:.3f}s)")
+        
+        # Shuffle and select songs
+        step_start = time.time()
+        selected_songs = random.sample(all_songs, min(optimal_songs, len(all_songs)))
+        print(f"✓ Selected {len(selected_songs)} songs ({time.time()-step_start:.3f}s)")
     
     # Create output directory
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
