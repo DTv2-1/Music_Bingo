@@ -136,7 +136,7 @@ def get_session(request):
 
 @api_view(['POST'])
 def generate_cards_async(request):
-    """Generate cards asynchronously (Django)"""
+    """Generate cards asynchronously (Django) with caching support"""
     try:
         data = request.data
         venue_name = data.get('venue_name', 'Music Bingo')
@@ -153,6 +153,72 @@ def generate_cards_async(request):
         prize_full_house = data.get('prize_full_house', '')
         
         logger.info(f"Starting async card generation: {num_players} cards for '{venue_name}'")
+        
+        # *** CHECK CACHE: Load existing session to see if we can reuse it ***
+        session_path = DATA_DIR / 'cards' / 'current_session.json'
+        cached_pdf_url = None
+        should_regenerate = True
+        
+        if session_path.exists():
+            try:
+                with open(session_path, 'r', encoding='utf-8') as f:
+                    existing_session = json.load(f)
+                
+                # Check if parameters match existing session
+                params_match = (
+                    existing_session.get('venue_name') == venue_name and
+                    existing_session.get('num_players') == num_players and
+                    existing_session.get('game_number') == game_number and
+                    existing_session.get('prize_4corners') == prize_4corners and
+                    existing_session.get('prize_first_line') == prize_first_line and
+                    existing_session.get('prize_full_house') == prize_full_house
+                )
+                
+                # If params match AND we have a cached PDF URL, reuse it
+                if params_match and existing_session.get('pdf_url'):
+                    cached_pdf_url = existing_session.get('pdf_url')
+                    logger.info(f"✅ CACHE HIT: Reusing existing PDF from session")
+                    logger.info(f"   PDF URL: {cached_pdf_url}")
+                    should_regenerate = False
+                else:
+                    logger.info(f"⚠️  CACHE MISS: Parameters changed or no PDF URL, regenerating...")
+                    if not params_match:
+                        logger.info(f"   Params changed: venue={existing_session.get('venue_name')}→{venue_name}, "
+                                  f"players={existing_session.get('num_players')}→{num_players}")
+            except Exception as e:
+                logger.warning(f"Could not load existing session for cache check: {e}")
+        
+        # If we have a cached PDF, return it immediately without regenerating
+        if not should_regenerate and cached_pdf_url:
+            task_id = str(uuid.uuid4())
+            task = TaskStatus.objects.create(
+                task_id=task_id,
+                task_type='card_generation',
+                status='completed',
+                progress=100,
+                result={
+                    'success': True,
+                    'download_url': cached_pdf_url,
+                    'cached': True,
+                    'message': 'Using cached PDF from previous generation'
+                },
+                completed_at=timezone.now(),
+                metadata={
+                    'venue_name': venue_name,
+                    'num_players': num_players,
+                    'game_number': game_number,
+                    'cached': True
+                }
+            )
+            
+            return Response({
+                'task_id': task_id,
+                'status': 'completed',
+                'cached': True,
+                'download_url': cached_pdf_url,
+                'message': 'Using cached PDF - no regeneration needed'
+            }, status=200)
+        
         logger.info(f"  pub_logo: {pub_logo[:100] if pub_logo else 'None'}...")  # Truncate for readability
         logger.info(f"  pub_logo type: {type(pub_logo)}, length: {len(pub_logo) if pub_logo else 0}")
         logger.info(f"  social_media: {social_media}, include_qr: {include_qr}")
@@ -301,6 +367,26 @@ def generate_cards_async(request):
                         blob_name = f"cards/{task_id}/music_bingo_cards.pdf"
                         download_url = upload_to_gcs(str(pdf_path), blob_name)
                         logger.info(f"Task {task_id}: PDF uploaded to GCS, signed URL generated")
+                        
+                        # *** UPDATE SESSION FILE WITH PDF URL ***
+                        # This allows future requests to reuse the same PDF without regenerating
+                        session_path = DATA_DIR / 'cards' / 'current_session.json'
+                        if session_path.exists():
+                            try:
+                                with open(session_path, 'r', encoding='utf-8') as f:
+                                    session_data = json.load(f)
+                                
+                                session_data['pdf_url'] = download_url
+                                session_data['task_id'] = task_id
+                                session_data['uploaded_at'] = time.strftime("%Y-%m-%d %H:%M:%S")
+                                
+                                with open(session_path, 'w', encoding='utf-8') as f:
+                                    json.dump(session_data, f, indent=2, ensure_ascii=False)
+                                
+                                logger.info(f"Task {task_id}: ✅ Session file updated with PDF URL for caching")
+                            except Exception as update_error:
+                                logger.warning(f"Task {task_id}: Failed to update session file: {update_error}")
+                        
                     except Exception as upload_error:
                         logger.error(f"Task {task_id}: GCS upload failed: {upload_error}")
                         download_url = '/data/cards/music_bingo_cards.pdf'  # Fallback

@@ -910,6 +910,10 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         "songs_per_card": SONGS_PER_CARD,
         "game_number": game_number,
         "game_date": game_date,
+        "prize_4corners": prize_4corners,
+        "prize_first_line": prize_first_line,
+        "prize_full_house": prize_full_house,
+        "pdf_file": str(OUTPUT_FILE),  # Local PDF path
         "songs": selected_songs  # The EXACT songs used in the cards
     }
     
