@@ -145,18 +145,18 @@ def generate_cards_async(request):
         
         # Use CardGenerationService to prepare command
         card_service = CardGenerationService()
-        cmd = card_service.prepare_generation_command(
-            venue_name=venue_name,
-            num_players=num_players,
-            game_number=game_number,
-            game_date=game_date,
-            pub_logo=pub_logo,
-            social_media=social_media,
-            include_qr=include_qr,
-            prize_4corners=prize_4corners,
-            prize_first_line=prize_first_line,
-            prize_full_house=prize_full_house
-        )
+        cmd = card_service.prepare_generation_command({
+            'venue_name': venue_name,
+            'num_players': num_players,
+            'game_number': game_number,
+            'game_date': game_date,
+            'pub_logo': pub_logo,
+            'social_media': social_media,
+            'include_qr': include_qr,
+            'prize_4corners': prize_4corners,
+            'prize_first_line': prize_first_line,
+            'prize_full_house': prize_full_house
+        })
         
         # Run task in background using task module
         run_card_generation_task(task_id, task, cmd, BASE_DIR)
