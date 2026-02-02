@@ -825,7 +825,7 @@
                 while (attempts < maxAttempts && !cardsReady) {
                     await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
                     
-                    const statusResponse = await fetch(`${API_URL}/api/task-status/${cardData.task_id}`);
+                    const statusResponse = await fetch(`${API_URL}/api/tasks/${cardData.task_id}`);
                     if (statusResponse.ok) {
                         const statusData = await statusResponse.json();
                         progressText.textContent = `Generating cards... ${statusData.progress}%`;
