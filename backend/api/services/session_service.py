@@ -42,7 +42,7 @@ class BingoSessionService:
         """Initialize Session Service"""
         pass
     
-    def create_session(self, session_data: Dict[str, Any]) -> BingoSession:
+    def create_session(self, session_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Create a new bingo session
         
@@ -59,7 +59,7 @@ class BingoSessionService:
                 - prizes: Dictionary of prize information
                 
         Returns:
-            BingoSession: Created session instance
+            dict: Created session as dictionary
             
         Raises:
             ValueError: If validation fails
@@ -96,7 +96,7 @@ class BingoSessionService:
         )
         
         logger.info(f"✅ Created session {session_id} for {venue_name}")
-        return session
+        return self._session_to_dict(session)
     
     def get_session(self, session_id: str) -> BingoSession:
         """
