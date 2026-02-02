@@ -1913,6 +1913,8 @@ function updateStatus(message, isPlaying) {
  * Update current track display
  */
 function updateCurrentTrackDisplay(track) {
+    console.log('🎵 updateCurrentTrackDisplay called with track:', track);
+    
     const container = document.getElementById('currentTrack');
     const artwork = document.getElementById('trackArtwork');
     const title = document.getElementById('trackTitle');
@@ -1920,24 +1922,42 @@ function updateCurrentTrackDisplay(track) {
 
     // Validate all elements exist before updating
     if (!container) {
-        console.warn('⚠️ currentTrack container not found in DOM');
+        console.error('❌ currentTrack container not found in DOM');
         return;
     }
+    
+    if (!artwork) {
+        console.error('❌ trackArtwork element not found in DOM');
+    }
+    
+    if (!title) {
+        console.error('❌ trackTitle element not found in DOM');
+    }
+    
+    if (!artist) {
+        console.error('❌ trackArtist element not found in DOM');
+    }
 
+    console.log('✅ All DOM elements found, updating display...');
     container.style.display = 'flex';
     
     if (artwork) {
         artwork.src = track.artwork_url || '';
         artwork.alt = `${track.title} artwork`;
+        console.log(`   Artwork: ${track.artwork_url ? 'Set' : 'None'}`);
     }
     
     if (title) {
         title.textContent = track.title;
+        console.log(`   Title: ${track.title}`);
     }
     
     if (artist) {
         artist.textContent = track.artist;
+        console.log(`   Artist: ${track.artist}`);
     }
+    
+    console.log('✅ Display updated successfully');
 }
 
 /**
