@@ -52,27 +52,57 @@ def get_pool(request):
 @api_view(['GET'])
 def get_session(request):
     """
-    Get current session data with exact songs used in printed cards
+    Get session data with exact songs used in printed cards
     
-    CRITICAL: This endpoint returns the session file created during card generation,
+    Supports two modes:
+    1. Query by session_id: /api/session?session_id=<uuid>
+       Returns session from database (recommended for production)
+       
+    2. Legacy mode: /api/session (no params)
+       Tries GCS → local file fallback (for backward compatibility)
+    
+    CRITICAL: This endpoint returns the exact songs from card generation,
     ensuring the game plays the EXACT songs that appear on the printed cards.
-    
-    This fixes the critical bug where songs played didn't match cards because
-    the game and card generation were doing independent random selections.
     
     Returns:
         JSON with session info and song list
         
     Status Codes:
-        200: Session file found and returned
-        404: No session file exists (cards haven't been generated yet)
-        500: Server error reading session file
+        200: Session found and returned
+        404: Session not found
+        500: Server error
     """
     try:
+        from api.models import BingoSession
         import requests
-        from api.services.storage_service import GCSStorageService
         
-        # Try to fetch from Google Cloud Storage first (persistent)
+        # Check if session_id provided (new database-backed approach)
+        session_id = request.GET.get('session_id')
+        
+        if session_id:
+            logger.info(f"Fetching session from database: {session_id}")
+            try:
+                session = BingoSession.objects.get(session_id=session_id)
+                data = {
+                    'session_id': session.session_id,
+                    'venue_name': session.venue_name,
+                    'num_players': session.num_players,
+                    'songs': session.song_pool,
+                    'generated_at': session.created_at.isoformat(),
+                    'game_number': session.game_number,
+                    'pdf_url': session.pdf_url,
+                    'source': 'database'
+                }
+                logger.info(f"Session loaded from database: {len(data['songs'])} songs, venue: {data['venue_name']}")
+                return Response(data)
+            except BingoSession.DoesNotExist:
+                logger.warning(f"Session not found in database: {session_id}")
+                return Response({
+                    'error': 'Session not found',
+                    'hint': 'The session may have been deleted or the session_id is incorrect'
+                }, status=404)
+        
+        # Legacy mode: Try GCS first (persistent)
         gcs_url = 'https://storage.googleapis.com/music-bingo-cards/cards/current_session.json'
         
         try:
@@ -81,6 +111,7 @@ def get_session(request):
             
             if response.status_code == 200:
                 data = response.json()
+                data['source'] = 'gcs'
                 logger.info(f"Session loaded from GCS: {len(data.get('songs', []))} songs, venue: {data.get('venue_name')}")
                 return Response(data)
             else:
@@ -102,6 +133,7 @@ def get_session(request):
         with open(session_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
+        data['source'] = 'local'
         logger.info(f"Session loaded locally: {len(data.get('songs', []))} songs, venue: {data.get('venue_name')}")
         return Response(data)
         

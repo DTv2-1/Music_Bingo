@@ -128,6 +128,57 @@ def generate_cards_async(request):
         logger.info(f"  social_media: {social_media}, include_qr: {include_qr}")
         logger.info(f"  prizes: {prize_4corners}, {prize_first_line}, {prize_full_house}")
         
+        # Create or get BingoSession for this card generation
+        from ..models import BingoSession
+        from ..services.session_service import BingoSessionService
+        
+        session_service = BingoSessionService()
+        
+        # Check if there's an existing session_id in request
+        session_id = data.get('session_id')
+        
+        if session_id:
+            # Use existing session
+            try:
+                session = session_service.get_session(session_id)
+                logger.info(f"Using existing BingoSession: {session_id}")
+            except:
+                # Create new if not found
+                session_id = str(uuid.uuid4())
+                session = session_service.create_session({
+                    'session_id': session_id,
+                    'venue_name': venue_name,
+                    'num_players': num_players,
+                    'logo_url': pub_logo,
+                    'social_media': social_media,
+                    'include_qr': include_qr,
+                    'game_number': game_number,
+                    'prizes': {
+                        '4corners': prize_4corners,
+                        'first_line': prize_first_line,
+                        'full_house': prize_full_house
+                    }
+                })
+                logger.info(f"Created new BingoSession: {session_id}")
+        else:
+            # Create new session
+            session_id = str(uuid.uuid4())
+            session = session_service.create_session({
+                'session_id': session_id,
+                'venue_name': venue_name,
+                'num_players': num_players,
+                'logo_url': pub_logo,
+                'social_media': social_media,
+                'include_qr': include_qr,
+                'game_number': game_number,
+                'prizes': {
+                    '4corners': prize_4corners,
+                    'first_line': prize_first_line,
+                    'full_house': prize_full_house
+                }
+            })
+            logger.info(f"Created new BingoSession: {session_id}")
+        
         task_id = str(uuid.uuid4())
         
         # Create task in database
@@ -139,7 +190,8 @@ def generate_cards_async(request):
             metadata={
                 'venue_name': venue_name,
                 'num_players': num_players,
-                'game_number': game_number
+                'game_number': game_number,
+                'session_id': session_id  # Link task to session
             }
         )
         

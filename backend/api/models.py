@@ -556,6 +556,21 @@ class BingoSession(models.Model):
         help_text="Prize information (4corners, first_line, full_house)"
     )
     
+    # Song Pool - CRITICAL for matching cards with game
+    song_pool = models.JSONField(
+        default=list,
+        help_text="Array of songs used to generate the cards (ensures songs match printed cards)"
+    )
+    pdf_url = models.TextField(
+        blank=True,
+        null=True,
+        help_text="URL to generated PDF cards in Google Cloud Storage"
+    )
+    game_number = models.IntegerField(
+        default=1,
+        help_text="Game number for this venue/date"
+    )
+    
     # Game State
     songs_played = models.JSONField(
         default=list,

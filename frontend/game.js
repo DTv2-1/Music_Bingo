@@ -934,7 +934,43 @@ async function loadSongPool() {
     // This ensures songs played match what's on the physical cards
     
     try {
-        // First, try to load session data from localStorage (saved after card generation)
+        // First, check if we have a session_id (from card generation)
+        const sessionId = localStorage.getItem('currentSessionId');
+        
+        if (sessionId) {
+            console.log(`🔑 Found session ID in localStorage: ${sessionId}`);
+            
+            // Fetch session from database using session_id
+            const sessionResponse = await fetch(`${CONFIG.API_URL}/api/session?session_id=${sessionId}`);
+            
+            if (sessionResponse.ok) {
+                const sessionData = await sessionResponse.json();
+                console.log('✅ Loaded session from database (session_id)');
+                console.log(`   Source: ${sessionData.source}`);
+                console.log(`   Generated: ${sessionData.generated_at}`);
+                console.log(`   Venue: ${sessionData.venue_name}`);
+                console.log(`   Songs: ${sessionData.songs.length}`);
+                
+                // Use EXACT songs from session (no filtering, no shuffling)
+                gameState.pool = sessionData.songs;
+                gameState.remaining = [...sessionData.songs];
+                
+                // Update venue name if provided in session
+                if (sessionData.venue_name) {
+                    gameState.venueName = sessionData.venue_name;
+                    document.getElementById('venueName').value = sessionData.venue_name;
+                }
+                
+                console.log(`✅ Game will use ${gameState.remaining.length} songs from database`);
+                console.log('⚠️  These songs MATCH the printed cards!');
+                
+                return; // Exit early with database session
+            } else {
+                console.warn(`⚠️  Session ${sessionId} not found in database, trying fallbacks...`);
+            }
+        }
+        
+        // Second, try to load session data from localStorage (saved after card generation)
         const storedSessionData = localStorage.getItem('currentSessionData');
         
         if (storedSessionData) {
@@ -960,12 +996,13 @@ async function loadSongPool() {
             return; // Exit early with session data
         }
         
-        // Second, try to load the session file from server (fallback)
+        // Third, try to load the session file from server (legacy fallback)
         const sessionResponse = await fetch(`${CONFIG.API_URL}/api/session`);
         
         if (sessionResponse.ok) {
             const sessionData = await sessionResponse.json();
-            console.log('✅ Loaded session file from server');
+            console.log('✅ Loaded session file from server (legacy)');
+            console.log(`   Source: ${sessionData.source}`);
             console.log(`   Generated: ${sessionData.generated_at}`);
             console.log(`   Venue: ${sessionData.venue_name}`);
             console.log(`   Songs: ${sessionData.songs.length}`);
@@ -2329,6 +2366,12 @@ async function generateCards() {
         if (result.status === 'completed' && result.cached) {
             console.log('⚡ CACHED PDF - Instant download!');
             
+            // Save session_id if provided
+            if (result.session_id) {
+                localStorage.setItem('currentSessionId', result.session_id);
+                console.log('🔑 Session ID saved (cached):', result.session_id);
+            }
+            
             // Show success immediately
             btn.textContent = '⚡ Downloaded (cached)!';
             btn.style.background = 'linear-gradient(135deg, #38ef7d 0%, #11998e 100%)';
@@ -2393,6 +2436,12 @@ async function generateCards() {
                     if (status.result.session_data) {
                         localStorage.setItem('currentSessionData', JSON.stringify(status.result.session_data));
                         console.log('💾 Session data saved to localStorage');
+                    }
+                    
+                    // Save session_id to localStorage for loading song pool later
+                    if (status.result.session_id) {
+                        localStorage.setItem('currentSessionId', status.result.session_id);
+                        console.log('🔑 Session ID saved to localStorage:', status.result.session_id);
                     }
 
                     // Show brief success message in button (no alert modal)

@@ -111,7 +111,7 @@ def run_card_generation_task(task_id: str, task_model, cmd: list, base_dir: Path
                                 with open(session_file, 'w', encoding='utf-8') as f:
                                     json.dump(session_data, f, indent=2, ensure_ascii=False)
                                 
-                                # Upload session file to GCS with unique name based on venue/players/game
+                                # Upload session file to GCS with unique name
                                 venue_safe = session_data.get('venue_name', 'venue').replace(' ', '_').replace('/', '_')
                                 players = session_data.get('num_players', 25)
                                 game_num = session_data.get('game_number', 1)
@@ -125,6 +125,19 @@ def run_card_generation_task(task_id: str, task_model, cmd: list, base_dir: Path
                                 )
                                 logger.info(f"Task {task_id}: Session file uploaded to {session_json_url}")
                                 
+                                # Update BingoSession in database with song_pool and pdf_url
+                                session_id = task_model.metadata.get('session_id') if task_model.metadata else None
+                                if session_id:
+                                    try:
+                                        from api.models import BingoSession
+                                        bingo_session = BingoSession.objects.get(session_id=session_id)
+                                        bingo_session.song_pool = session_data.get('songs', [])
+                                        bingo_session.pdf_url = public_url
+                                        bingo_session.save(update_fields=['song_pool', 'pdf_url'])
+                                        logger.info(f"Task {task_id}: Updated BingoSession {session_id} with song pool ({len(session_data.get('songs', []))} songs)")
+                                    except Exception as db_error:
+                                        logger.warning(f"Task {task_id}: Could not update BingoSession: {db_error}")
+                                
                             except Exception as session_error:
                                 logger.warning(f"Task {task_id}: Could not upload session file: {session_error}")
                         
@@ -132,6 +145,7 @@ def run_card_generation_task(task_id: str, task_model, cmd: list, base_dir: Path
                             'pdf_url': public_url,
                             'session_url': session_json_url,
                             'session_data': session_data,  # Include full session data in response
+                            'session_id': task_model.metadata.get('session_id') if task_model.metadata else None,
                             'filename': latest_pdf.name,
                             'message': 'Cards generated and uploaded successfully'
                         }
