@@ -203,7 +203,7 @@ class BingoSessionService:
             logger.warning(f"Session not found: {session_id}")
             return False
     
-    def get_sessions_by_venue(self, venue_name: str) -> List[BingoSession]:
+    def get_sessions_by_venue(self, venue_name: str) -> List[Dict[str, Any]]:
         """
         Get all sessions for a venue
         
@@ -211,20 +211,51 @@ class BingoSessionService:
             venue_name: Venue name
             
         Returns:
-            list: Sessions ordered by creation date (newest first)
+            list: Sessions as dictionaries ordered by creation date (newest first)
         """
-        return BingoSession.objects.filter(
+        sessions = BingoSession.objects.filter(
             venue_name=venue_name
         ).order_by('-created_at')
+        
+        return [self._session_to_dict(session) for session in sessions]
     
-    def get_all_sessions(self) -> List[BingoSession]:
+    def get_all_sessions(self) -> List[Dict[str, Any]]:
         """
         Get all sessions
         
         Returns:
-            list: All sessions ordered by creation date (newest first)
+            list: All sessions as dictionaries ordered by creation date (newest first)
         """
-        return BingoSession.objects.all().order_by('-created_at')
+        sessions = BingoSession.objects.all().order_by('-created_at')
+        return [self._session_to_dict(session) for session in sessions]
+    
+    def _session_to_dict(self, session: BingoSession) -> Dict[str, Any]:
+        """
+        Convert BingoSession model to dictionary
+        
+        Args:
+            session: BingoSession model instance
+            
+        Returns:
+            dict: Serializable dictionary
+        """
+        return {
+            'session_id': session.session_id,
+            'venue_name': session.venue_name,
+            'host_name': session.host_name,
+            'num_players': session.num_players,
+            'voice_id': session.voice_id,
+            'decades': session.decades,
+            'logo_url': session.logo_url,
+            'social_media': session.social_media,
+            'include_qr': session.include_qr,
+            'status': session.status,
+            'pdf_url': session.pdf_url,
+            'songs_json': session.songs_json,
+            'current_round': session.current_round,
+            'created_at': session.created_at.isoformat() if session.created_at else None,
+            'updated_at': session.updated_at.isoformat() if session.updated_at else None,
+        }
     
     def validate_status_transition(self, current_status: str, new_status: str) -> bool:
         """
