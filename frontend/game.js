@@ -929,73 +929,109 @@ async function loadVenueConfig() {
  * Load song pool from backend API
  */
 async function loadSongPool() {
-    const response = await fetch(`${CONFIG.API_URL}/api/pool`);
-    if (!response.ok) {
-        throw new Error(`Failed to load pool.json. Did you run generate_pool.py?`);
-    }
-
-    const data = await response.json();
-    gameState.pool = data.songs;
-
-    // Get selected decades from localStorage or gameState
-    let selectedDecades = gameState.selectedDecades;
-    if (!selectedDecades) {
-        const savedDecades = localStorage.getItem('selectedDecades');
-        selectedDecades = savedDecades ? JSON.parse(savedDecades) : ['1960s', '1970s', '1980s', '1990s'];
-        gameState.selectedDecades = selectedDecades;
-    }
-
-    // Filter songs by selected decades
-    const filteredSongs = data.songs.filter(song => {
-        const year = parseInt(song.release_year);
-        return selectedDecades.some(decade => {
-            const startYear = parseInt(decade.substring(0, 4));
-            const endYear = startYear + 9;
-            return year >= startYear && year <= endYear;
-        });
-    });
-
-    console.log(`✓ Filtered ${filteredSongs.length}/${data.songs.length} songs for decades: ${selectedDecades.join(', ')}`);
-
-    if (filteredSongs.length === 0) {
-        console.warn('⚠️ No songs found for selected decades, using all songs');
-        gameState.pool = data.songs;
-    } else {
-        gameState.pool = filteredSongs;
-    }
-
-    // Limit songs based on player count
-    const numPlayers = parseInt(document.getElementById('numPlayers')?.value) || 25;
-    const optimalSongs = calculateOptimalSongs(numPlayers);
-
-    // Shuffle all songs first
-    const shuffled = [...gameState.pool];
-    shuffleArray(shuffled);
-
-    // Take only the optimal number of songs for this game
-    gameState.remaining = shuffled.slice(0, optimalSongs);
-
-    // Try to restore saved game state ONLY if songs were already called
-    const savedState = localStorage.getItem('gameState');
-    if (savedState) {
-        try {
-            const state = JSON.parse(savedState);
-            // Only restore if there were songs already played (not a fresh start)
-            if (state.called && state.called.length > 0) {
-                restoreGameState();
+    // *** CRITICAL CHANGE: Load session file instead of pool ***
+    // The session file contains EXACTLY the songs printed on the cards
+    // This ensures songs played match what's on the physical cards
+    
+    try {
+        // First, try to load the session file (created when cards are generated)
+        const sessionResponse = await fetch(`${CONFIG.API_URL}/api/session`);
+        
+        if (sessionResponse.ok) {
+            const sessionData = await sessionResponse.json();
+            console.log('✅ Loaded session file from card generation');
+            console.log(`   Generated: ${sessionData.generated_at}`);
+            console.log(`   Venue: ${sessionData.venue_name}`);
+            console.log(`   Songs: ${sessionData.songs.length}`);
+            
+            // Use EXACT songs from session (no filtering, no shuffling)
+            gameState.pool = sessionData.songs;
+            gameState.remaining = [...sessionData.songs]; // Use all session songs in order
+            
+            // Update venue name if provided in session
+            if (sessionData.venue_name) {
+                gameState.venueName = sessionData.venue_name;
+                document.getElementById('venueName').value = sessionData.venue_name;
+            }
+            
+            console.log(`✅ Game will use ${gameState.remaining.length} songs from session file`);
+            console.log('⚠️  These songs MATCH the printed cards!');
+            
+        } else {
+            // Fallback: Use old pool.json method if no session file exists
+            console.warn('⚠️  No session file found - falling back to pool.json');
+            console.warn('⚠️  WARNING: Songs may NOT match printed cards!');
+            console.warn('⚠️  Please generate cards first to create session file.');
+            
+            const poolResponse = await fetch(`${CONFIG.API_URL}/api/pool`);
+            if (!poolResponse.ok) {
+                throw new Error(`Failed to load pool.json`);
+            }
+            
+            const poolData = await poolResponse.json();
+            gameState.pool = poolData.songs;
+            
+            // Get selected decades from localStorage or gameState
+            let selectedDecades = gameState.selectedDecades;
+            if (!selectedDecades) {
+                const savedDecades = localStorage.getItem('selectedDecades');
+                selectedDecades = savedDecades ? JSON.parse(savedDecades) : ['1960s', '1970s', '1980s', '1990s'];
+                gameState.selectedDecades = selectedDecades;
+            }
+            
+            // Filter songs by selected decades
+            const filteredSongs = poolData.songs.filter(song => {
+                const year = parseInt(song.release_year);
+                return selectedDecades.some(decade => {
+                    const startYear = parseInt(decade.substring(0, 4));
+                    const endYear = startYear + 9;
+                    return year >= startYear && year <= endYear;
+                });
+            });
+            
+            if (filteredSongs.length === 0) {
+                console.warn('⚠️ No songs found for selected decades, using all songs');
+                gameState.pool = poolData.songs;
             } else {
-                console.log('ℹ️ No songs called yet, starting fresh game');
+                gameState.pool = filteredSongs;
+            }
+            
+            // Limit songs based on player count
+            const numPlayers = parseInt(document.getElementById('numPlayers')?.value) || 25;
+            const optimalSongs = calculateOptimalSongs(numPlayers);
+            
+            // Shuffle all songs first
+            const shuffled = [...gameState.pool];
+            shuffleArray(shuffled);
+            
+            // Take only the optimal number of songs for this game
+            gameState.remaining = shuffled.slice(0, optimalSongs);
+        }
+        
+        // Try to restore saved game state ONLY if songs were already called
+        const savedState = localStorage.getItem('gameState');
+        if (savedState) {
+            try {
+                const state = JSON.parse(savedState);
+                // Only restore if there were songs already played (not a fresh start)
+                if (state.called && state.called.length > 0) {
+                    restoreGameState();
+                } else {
+                    console.log('ℹ️ No songs called yet, starting fresh game');
+                    localStorage.removeItem('gameState');
+                }
+            } catch (e) {
+                console.warn('Could not parse saved state:', e);
                 localStorage.removeItem('gameState');
             }
-        } catch (e) {
-            console.warn('Could not parse saved state:', e);
-            localStorage.removeItem('gameState');
         }
+        
+        console.log(`✓ Loaded ${gameState.pool.length} songs`);
+        
+    } catch (error) {
+        console.error('❌ Failed to load songs:', error);
+        throw error;
     }
-
-    console.log(`✓ Game will use ${gameState.remaining.length} songs for ${numPlayers} players`);
-
-    console.log(`✓ Loaded ${gameState.pool.length} songs`);
 }
 
 /**

@@ -24,6 +24,7 @@ except Exception as e:
 urlpatterns = [
     path('health', views.health_check, name='health'),
     path('pool', views.get_pool, name='pool'),
+    path('session', views.get_session, name='session'),
     path('config', views.get_config, name='config'),
     path('announcements', views.get_announcements, name='announcements'),
     path('announcements-ai', views.get_ai_announcements, name='announcements-ai'),

@@ -93,6 +93,47 @@ def get_pool(request):
         logger.error(f"Error loading pool: {e}", exc_info=True)
         return Response({'error': str(e)}, status=500)
 
+
+@api_view(['GET'])
+def get_session(request):
+    """
+    Get current session data with exact songs used in printed cards
+    
+    CRITICAL: This endpoint returns the session file created during card generation,
+    ensuring the game plays the EXACT songs that appear on the printed cards.
+    
+    This fixes the critical bug where songs played didn't match cards because
+    the game and card generation were doing independent random selections.
+    
+    Returns:
+        JSON with session info and song list
+        
+    Status Codes:
+        200: Session file found and returned
+        404: No session file exists (cards haven't been generated yet)
+        500: Server error reading session file
+    """
+    try:
+        session_path = DATA_DIR / 'cards' / 'current_session.json'
+        logger.info(f"get_session called - looking for: {session_path}")
+        
+        if not session_path.exists():
+            logger.warning(f"Session file not found at: {session_path}")
+            return Response({
+                'error': 'No session file found. Generate cards first.',
+                'hint': 'Use the "Generate Cards" button to create a new game session'
+            }, status=404)
+        
+        with open(session_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        logger.info(f"Session loaded: {len(data.get('songs', []))} songs, venue: {data.get('venue_name')}")
+        return Response(data)
+        
+    except Exception as e:
+        logger.error(f"Error loading session: {e}", exc_info=True)
+        return Response({'error': str(e)}, status=500)
+
 @api_view(['POST'])
 def generate_cards_async(request):
     """Generate cards asynchronously (Django)"""
