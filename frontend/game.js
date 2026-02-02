@@ -255,6 +255,12 @@ window.addEventListener('DOMContentLoaded', async () => {
  */
 async function loadSessionAndStart(sessionId) {
     try {
+        console.log(`📦 Loading session: ${sessionId}`);
+        
+        // Save session_id to localStorage for loading song pool
+        localStorage.setItem('currentSessionId', sessionId);
+        console.log(`🔑 Session ID saved to localStorage: ${sessionId}`);
+        
         const API_URL = CONFIG.API_URL || '';
         const response = await fetch(`${API_URL}/api/bingo/session/${sessionId}`);
         
@@ -2332,6 +2338,12 @@ async function generateCards() {
         console.log('   Prizes:', { prize4Corners, prizeFirstLine, prizeFullHouse });
         console.log('📤 Sending async request to backend...');
 
+        // Check if we have an existing session_id (from URL param when session was loaded)
+        const existingSessionId = localStorage.getItem('currentSessionId');
+        if (existingSessionId) {
+            console.log('🔗 Using existing session_id:', existingSessionId);
+        }
+
         // Use new async endpoint
         const response = await fetch(`${CONFIG.API_URL}/api/generate-cards-async`, {
             method: 'POST',
@@ -2347,7 +2359,8 @@ async function generateCards() {
                 include_qr: includeQR,
                 prize_4corners: prize4Corners,
                 prize_first_line: prizeFirstLine,
-                prize_full_house: prizeFullHouse
+                prize_full_house: prizeFullHouse,
+                session_id: existingSessionId  // Pass existing session_id if available
             })
         });
 
