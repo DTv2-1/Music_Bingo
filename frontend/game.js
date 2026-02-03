@@ -317,10 +317,110 @@ async function loadSessionAndStart(sessionId) {
 
         await saveVenueConfig(session.venue_name, config);
 
-        // Update UI with venue name
+        // Update UI with session data (hidden inputs and displays)
         const venueNameInput = document.getElementById('venueName');
         if (venueNameInput) {
             venueNameInput.value = session.venue_name;
+        }
+        const venueNameDisplay = document.getElementById('venueNameDisplay');
+        if (venueNameDisplay) {
+            venueNameDisplay.textContent = session.venue_name;
+        }
+        
+        const numPlayersInput = document.getElementById('numPlayers');
+        if (numPlayersInput) {
+            numPlayersInput.value = session.num_players;
+        }
+        const numPlayersDisplay = document.getElementById('numPlayersDisplay');
+        if (numPlayersDisplay) {
+            numPlayersDisplay.textContent = session.num_players;
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('numPlayers', session.num_players.toString());
+        
+        // Update song estimation
+        updateSongEstimation();
+        
+        // Update voice display
+        const voiceDisplay = document.getElementById('voiceDisplay');
+        if (voiceDisplay && session.voice_id) {
+            const voiceNames = {
+                'XrExE9yKIg1WjnnlVkGX': 'Charlotte',
+                'JBFqnCBsd6RMkjVDRZzb': 'George',
+                'pFZP5JQG7iQjIQuC4Bku': 'Lily',
+                'nPczCjzI2devNBz1zQrb': 'Brian'
+            };
+            voiceDisplay.textContent = voiceNames[session.voice_id] || 'George';
+        }
+        
+        // Update decades display
+        const decadesDisplay = document.getElementById('decadesDisplay');
+        if (decadesDisplay && session.decades && session.decades.length > 0) {
+            const decadeLabels = session.decades.map(d => d.replace('19', "'").replace('20', "'"));
+            decadesDisplay.textContent = decadeLabels.join(', ');
+        }
+        
+        // Update logo display
+        const logoDisplayContainer = document.getElementById('logoDisplayContainer');
+        if (logoDisplayContainer && session.logo_url) {
+            logoDisplayContainer.style.display = 'flex';
+        }
+        
+        // Update QR code display
+        const qrDisplayContainer = document.getElementById('qrDisplayContainer');
+        const qrDisplay = document.getElementById('qrDisplay');
+        if (qrDisplayContainer && qrDisplay && session.include_qr && session.social_media) {
+            qrDisplayContainer.style.display = 'flex';
+            // Extract platform from URL or show URL
+            let displayText = session.social_media;
+            if (session.social_media.includes('instagram.com')) {
+                displayText = 'Instagram: ' + session.social_media.split('/').pop();
+            } else if (session.social_media.includes('facebook.com')) {
+                displayText = 'Facebook: ' + session.social_media.split('/').pop();
+            } else if (session.social_media.includes('tiktok.com')) {
+                displayText = 'TikTok: ' + session.social_media.split('@').pop();
+            } else if (session.social_media.includes('twitter.com')) {
+                displayText = 'Twitter: ' + session.social_media.split('/').pop();
+            }
+            qrDisplay.textContent = displayText;
+        }
+        
+        // Update prizes display
+        const prizesDisplayContainer = document.getElementById('prizesDisplayContainer');
+        if (prizesDisplayContainer && session.prizes) {
+            let hasPrizes = false;
+            
+            if (session.prizes.four_corners) {
+                const prize4CornersDisplay = document.getElementById('prize4CornersDisplay');
+                if (prize4CornersDisplay) {
+                    prize4CornersDisplay.style.display = 'block';
+                    prize4CornersDisplay.querySelector('span:last-child').textContent = session.prizes.four_corners;
+                    hasPrizes = true;
+                }
+            }
+            
+            if (session.prizes.first_line) {
+                const prizeFirstLineDisplay = document.getElementById('prizeFirstLineDisplay');
+                if (prizeFirstLineDisplay) {
+                    prizeFirstLineDisplay.style.display = 'block';
+                    prizeFirstLineDisplay.querySelector('span:last-child').textContent = session.prizes.first_line;
+                    hasPrizes = true;
+                }
+            }
+            
+            if (session.prizes.full_house) {
+                const prizeFullHouseDisplay = document.getElementById('prizeFullHouseDisplay');
+                if (prizeFullHouseDisplay) {
+                    prizeFullHouseDisplay.style.display = 'block';
+                    prizeFullHouseDisplay.querySelector('span:last-child').textContent = session.prizes.full_house;
+                    hasPrizes = true;
+                }
+            }
+            
+            if (hasPrizes) {
+                prizesDisplayContainer.style.display = 'block';
+            }
         }
 
         // Start the game with the session configuration

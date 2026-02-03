@@ -275,7 +275,8 @@
         
         <!-- Venue Configuration (Read-only display) -->
         <div class="venue-config">
-            <div style="display: flex; align-items: center; gap: 30px; flex-wrap: wrap;">
+            <!-- Primary Info Row -->
+            <div style="display: flex; align-items: center; gap: 30px; flex-wrap: wrap; margin-bottom: 15px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-weight: 600;">🏠 Venue:</span>
                     <span id="venueNameDisplay" style="color: #667eea; font-weight: 500;">The Red Lion Pub</span>
@@ -292,7 +293,49 @@
                 </div>
             </div>
             
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <!-- Secondary Info Row -->
+            <div style="display: flex; align-items: center; gap: 30px; flex-wrap: wrap; padding: 12px; background: rgba(102, 126, 234, 0.05); border-radius: 8px; margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-weight: 600;">🎤 Voice:</span>
+                    <span id="voiceDisplay" style="color: #667eea; font-weight: 500;">George</span>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-weight: 600;">📻 Decades:</span>
+                    <span id="decadesDisplay" style="color: #667eea; font-weight: 500;">60s, 70s, 80s, 90s</span>
+                </div>
+                
+                <div id="logoDisplayContainer" style="display: none; align-items: center; gap: 8px;">
+                    <span style="font-weight: 600;">🖼️ Logo:</span>
+                    <span style="color: #10b981; font-weight: 500;">✓ Included</span>
+                </div>
+                
+                <div id="qrDisplayContainer" style="display: none; align-items: center; gap: 8px;">
+                    <span style="font-weight: 600;">📱 QR Code:</span>
+                    <span id="qrDisplay" style="color: #667eea; font-weight: 500; font-size: 12px;">Instagram</span>
+                </div>
+            </div>
+            
+            <!-- Prizes Row (if any) -->
+            <div id="prizesDisplayContainer" style="display: none; padding: 12px; background: linear-gradient(135deg, rgba(252,211,77,0.1) 0%, rgba(251,191,36,0.1) 100%); border-radius: 8px; margin-bottom: 15px;">
+                <div style="font-weight: 600; margin-bottom: 8px; color: #f59e0b;">🏆 Prizes:</div>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px;">
+                    <div id="prize4CornersDisplay" style="display: none;">
+                        <span style="font-weight: 500;">4 Corners:</span>
+                        <span style="color: #667eea; margin-left: 4px;"></span>
+                    </div>
+                    <div id="prizeFirstLineDisplay" style="display: none;">
+                        <span style="font-weight: 500;">First Line:</span>
+                        <span style="color: #667eea; margin-left: 4px;"></span>
+                    </div>
+                    <div id="prizeFullHouseDisplay" style="display: none;">
+                        <span style="font-weight: 500;">Full House:</span>
+                        <span style="color: #667eea; margin-left: 4px;"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
                 <button onclick="generateCards()" class="generate-cards-btn">📋 View Cards</button>
                 <button onclick="resetSetup()" class="reset-setup-btn" title="Reconfigure game">⚙️ Setup</button>
             </div>
