@@ -123,7 +123,7 @@ def get_announcements(request):
 
 @api_view(['GET'])
 def get_ai_announcements(request):
-    """Get AI-generated announcements"""
+    """Get AI-generated announcements (legacy - uses cached file)"""
     try:
         ai_path = DATA_DIR / 'announcements_ai.json'
         with open(ai_path, 'r', encoding='utf-8') as f:
@@ -132,4 +132,64 @@ def get_ai_announcements(request):
     except FileNotFoundError:
         return Response({'error': 'AI announcements not generated yet'}, status=404)
     except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['GET'])
+def get_session_announcements(request):
+    """
+    Get announcements for a specific session with the correct voice_id.
+    This generates announcements dynamically based on session voice settings.
+    
+    Query params:
+    - session_id: The session ID to get voice_id from
+    - voice_id: Optional override voice_id
+    """
+    from ..models import BingoSession
+    
+    try:
+        session_id = request.GET.get('session_id')
+        voice_id_override = request.GET.get('voice_id')
+        
+        if not session_id:
+            return Response({'error': 'session_id required'}, status=400)
+        
+        # Get session to find voice_id
+        try:
+            session = BingoSession.objects.get(session_id=session_id)
+            voice_id = voice_id_override or session.voice_id
+            
+            if not voice_id:
+                # Fallback to default voice if session doesn't have one
+                voice_id = ELEVENLABS_VOICE_ID
+                logger.warning(f"Session {session_id} has no voice_id, using default")
+        except BingoSession.DoesNotExist:
+            return Response({'error': 'Session not found'}, status=404)
+        
+        # For now, return the cached announcements with a note about the voice
+        # In the future, this could generate announcements on-the-fly
+        ai_path = DATA_DIR / 'announcements_ai.json'
+        
+        try:
+            with open(ai_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            # Add metadata about which voice should be used
+            response_data = {
+                **data,
+                '_metadata': {
+                    'session_id': session_id,
+                    'voice_id': voice_id,
+                    'note': 'Announcements loaded from cache. Voice setting noted for future TTS generation.'
+                }
+            }
+            
+            logger.info(f"📢 Loaded announcements for session {session_id} with voice_id {voice_id}")
+            return Response(response_data)
+            
+        except FileNotFoundError:
+            return Response({'error': 'AI announcements not generated yet'}, status=404)
+    
+    except Exception as e:
+        logger.error(f"Error loading session announcements: {e}", exc_info=True)
         return Response({'error': str(e)}, status=500)

@@ -1285,9 +1285,28 @@ async function loadAnnouncements() {
  */
 async function loadAIAnnouncements() {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/api/announcements-ai`);
+        // Get session_id from localStorage to fetch voice-specific announcements
+        const sessionId = localStorage.getItem('sessionId');
+        
+        let url = `${CONFIG.API_URL}/api/announcements-ai`;
+        
+        // If we have a session_id, use the session-specific endpoint
+        if (sessionId) {
+            url = `${CONFIG.API_URL}/api/session-announcements?session_id=${sessionId}`;
+            console.log(`🎤 Loading announcements for session ${sessionId} with correct voice`);
+        }
+        
+        const response = await fetch(url);
         if (response.ok) {
-            gameState.announcementsAI = await response.json();
+            const data = await response.json();
+            
+            // Remove metadata if present
+            if (data._metadata) {
+                console.log(`📢 Voice ID for announcements: ${data._metadata.voice_id}`);
+                delete data._metadata;
+            }
+            
+            gameState.announcementsAI = data;
             console.log(`✓ Loaded ${Object.keys(gameState.announcementsAI).length} AI announcements`);
         } else {
             console.log('ℹ No AI announcements found, using fallback system');

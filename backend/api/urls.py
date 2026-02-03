@@ -28,6 +28,7 @@ urlpatterns = [
     path('config', views.get_config, name='config'),
     path('announcements', views.get_announcements, name='announcements'),
     path('announcements-ai', views.get_ai_announcements, name='announcements-ai'),
+    path('session-announcements', views.get_session_announcements, name='session-announcements'),
     path('generate-cards-async', views.generate_cards_async, name='generate-cards-async'),
     path('generate-tts', views.generate_tts, name='generate-tts'),
     path('generate-tts-preview', views.generate_tts_preview, name='generate-tts-preview'),
