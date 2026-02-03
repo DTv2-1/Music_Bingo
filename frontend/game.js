@@ -845,6 +845,18 @@ function loadVenueNameFromStorage() {
         document.getElementById('venueName').value = savedName;
         console.log(`✓ Loaded venue: ${savedName}`);
     }
+    
+    // Load number of players
+    const savedPlayers = localStorage.getItem('numPlayers');
+    if (savedPlayers) {
+        const numPlayersInput = document.getElementById('numPlayers');
+        if (numPlayersInput) {
+            numPlayersInput.value = savedPlayers;
+            console.log(`✓ Loaded players: ${savedPlayers}`);
+            // Update song estimation
+            updateSongEstimation();
+        }
+    }
 }
 
 /**
