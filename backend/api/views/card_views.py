@@ -73,7 +73,7 @@ def generate_cards_async(request):
         prize_first_line = data.get('prize_first_line', '')
         prize_full_house = data.get('prize_full_house', '')
         
-        logger.info(f"Starting async card generation: {num_players} cards for '{venue_name}'"))
+        logger.info(f"Starting async card generation: {num_players} cards for '{venue_name}'")
         
         # *** CHECK CACHE: Load existing session to see if we can reuse it ***
         session_path = DATA_DIR / 'cards' / 'current_session.json'
