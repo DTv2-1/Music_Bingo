@@ -75,8 +75,10 @@ def calculate_optimal_songs(num_players: int) -> int:
 
 def distribute_songs_unique(all_songs: List[Dict], num_cards: int, songs_per_card: int) -> List[List[Dict]]:
     """
-    Distribute songs uniquely across all cards - NO REPEATS in a session
-    Each song appears on AT MOST ONE card to avoid duplicates during gameplay
+    Distribute songs uniquely across all cards - NO DUPLICATE SONGS WITHIN A SINGLE CARD
+    Each card must have completely unique songs (no song appears twice on same card)
+    
+    CRITICAL: This function GUARANTEES that each card has exactly songs_per_card UNIQUE songs.
     
     Args:
         all_songs: Full pool of available songs
@@ -84,30 +86,75 @@ def distribute_songs_unique(all_songs: List[Dict], num_cards: int, songs_per_car
         songs_per_card: Songs per card (24 for 5x5 grid with FREE space)
     
     Returns:
-        List of card song lists, each with unique songs
+        List of card song lists, each with UNIQUE songs (no duplicates within a card)
     """
     total_songs_needed = num_cards * songs_per_card
     
-    # Shuffle all songs
-    shuffled = all_songs.copy()
-    random.shuffle(shuffled)
+    # Validate we have enough songs to create cards with unique songs
+    if len(all_songs) < songs_per_card:
+        raise ValueError(f"Cannot create cards: need {songs_per_card} unique songs per card but only have {len(all_songs)}")
     
-    # If we don't have enough unique songs, we need to use some songs multiple times
-    # but we'll minimize repetition by cycling through the pool
-    if len(shuffled) < total_songs_needed:
-        print(f"⚠️  Warning: Need {total_songs_needed} songs but only have {len(shuffled)}")
-        print(f"   Some songs will appear on multiple cards")
-        # Repeat the pool enough times to have enough songs
-        times_to_repeat = (total_songs_needed // len(shuffled)) + 1
-        shuffled = (shuffled * times_to_repeat)[:total_songs_needed]
-        random.shuffle(shuffled)
+    # Create an infinite pool by repeating songs
+    print(f"⚠️  Warning: Need {total_songs_needed} songs but only have {len(all_songs)}")
+    print(f"   Songs will appear on multiple cards (but NEVER twice on same card)")
     
-    # Distribute songs into cards
+    # Calculate how many times we need to repeat the pool
+    times_to_repeat = (total_songs_needed // len(all_songs)) + 2  # +2 for safety margin
+    
+    # Create extended pool with deep copies
+    extended_pool = []
+    for repeat_idx in range(times_to_repeat):
+        for song in all_songs:
+            song_copy = song.copy()
+            # Add a unique marker so we can track which "copy" this is
+            song_copy['_copy_index'] = repeat_idx
+            extended_pool.append(song_copy)
+    
+    # Shuffle the extended pool
+    random.shuffle(extended_pool)
+    
+    # Distribute songs to cards
     card_songs = []
-    for i in range(num_cards):
-        start_idx = i * songs_per_card
-        end_idx = start_idx + songs_per_card
-        card_songs.append(shuffled[start_idx:end_idx])
+    pool_index = 0
+    
+    for card_idx in range(num_cards):
+        card = []
+        used_song_ids = set()
+        attempts = 0
+        max_attempts = len(extended_pool) * 2
+        
+        while len(card) < songs_per_card and attempts < max_attempts:
+            # Wrap around if we reach the end of the pool
+            if pool_index >= len(extended_pool):
+                pool_index = 0
+                random.shuffle(extended_pool)  # Re-shuffle for variety
+            
+            song = extended_pool[pool_index]
+            song_id = song.get('id')
+            
+            # Check if this song ID is already in the current card
+            if song_id not in used_song_ids:
+                # Add to card
+                card.append(song)
+                used_song_ids.add(song_id)
+                # Remove from pool to avoid using again
+                extended_pool.pop(pool_index)
+            else:
+                # Skip this song, move to next
+                pool_index += 1
+            
+            attempts += 1
+        
+        # Validate we got enough songs
+        if len(card) != songs_per_card:
+            raise ValueError(f"CRITICAL: Card {card_idx + 1} only has {len(card)} songs (expected {songs_per_card}). This should never happen!")
+        
+        # Validate no duplicates
+        card_ids = [s.get('id') for s in card]
+        if len(card_ids) != len(set(card_ids)):
+            raise ValueError(f"CRITICAL: Card {card_idx + 1} has duplicate song IDs! This should never happen!")
+        
+        card_songs.append(card)
     
     return card_songs
 
@@ -266,6 +313,12 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
                      qr_buffer: BytesIO = None, 
                      prize_4corners: str = '', prize_first_line: str = '', prize_full_house: str = '') -> List:
     """Create a single bingo card with ReportLab elements"""
+    
+    # CRITICAL: Validate song count
+    expected_songs = 24  # 5x5 grid - 1 FREE space
+    if len(songs) != expected_songs:
+        raise ValueError(f"Card {card_num}: Expected {expected_songs} songs but got {len(songs)}")
+    
     elements = []
     
     # Styles
@@ -772,6 +825,25 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"✓ Songs distributed uniquely ({time.time()-step_start:.2f}s)")
     print(f"   Each card has {SONGS_PER_CARD} unique songs")
     print(f"   Total unique songs used: {len(set(song['id'] for card in all_card_songs for song in card))}")
+    
+    # *** CRITICAL VALIDATION: Check for duplicate songs within each card ***
+    print(f"\n🔍 Validating cards for duplicates...")
+    duplicates_found = False
+    for card_idx, card in enumerate(all_card_songs):
+        song_ids = [s.get('id', s.get('title')) for s in card]
+        unique_ids = set(song_ids)
+        if len(song_ids) != len(unique_ids):
+            duplicates_found = True
+            duplicates = [sid for sid in song_ids if song_ids.count(sid) > 1]
+            print(f"❌ ERROR: Card {card_idx + 1} has DUPLICATE songs:")
+            for dup in set(duplicates):
+                count = song_ids.count(dup)
+                print(f"   - '{dup}' appears {count} times")
+    
+    if duplicates_found:
+        raise ValueError("CRITICAL ERROR: Duplicate songs found within cards! Cannot generate PDF.")
+    
+    print(f"✅ Validation passed: All {NUM_CARDS} cards have unique songs (no duplicates within any card)")
     
     # Check if parallel processing is beneficial
     # MEMORY-OPTIMIZED: Limit workers to avoid OOM on App Platform
