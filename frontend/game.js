@@ -766,9 +766,14 @@ async function completeSetup() {
             jingleManagerLink.href = '/jingle-manager';
         }
 
-        // Update main UI inputs
+        // Update main UI inputs (hidden) and display elements
         document.getElementById('venueName').value = venueName;
         document.getElementById('numPlayers').value = numPlayers;
+        document.getElementById('venueNameDisplay').textContent = venueName;
+        document.getElementById('numPlayersDisplay').textContent = numPlayers;
+        
+        // Update song estimation display
+        updateSongEstimation();
 
         // Hide modal
         document.getElementById('setupModal').classList.add('hidden');
@@ -843,6 +848,8 @@ function loadVenueNameFromStorage() {
     if (savedName) {
         gameState.venueName = savedName;
         document.getElementById('venueName').value = savedName;
+        const venueDisplay = document.getElementById('venueNameDisplay');
+        if (venueDisplay) venueDisplay.textContent = savedName;
         console.log(`✓ Loaded venue: ${savedName}`);
     }
     
@@ -852,10 +859,14 @@ function loadVenueNameFromStorage() {
         const numPlayersInput = document.getElementById('numPlayers');
         if (numPlayersInput) {
             numPlayersInput.value = savedPlayers;
-            console.log(`✓ Loaded players: ${savedPlayers}`);
-            // Update song estimation
-            updateSongEstimation();
         }
+        const numPlayersDisplay = document.getElementById('numPlayersDisplay');
+        if (numPlayersDisplay) {
+            numPlayersDisplay.textContent = savedPlayers;
+        }
+        console.log(`✓ Loaded players: ${savedPlayers}`);
+        // Update song estimation
+        updateSongEstimation();
     }
 }
 
