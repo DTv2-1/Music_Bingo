@@ -818,10 +818,11 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
             print(f"✓ Generated QR code ({time.time()-step_start:.2f}s) - Memory: {mem_after_qr.rss / 1024 / 1024:.1f} MB")
     
     # *** DISTRIBUTE SONGS UNIQUELY ACROSS ALL CARDS ***
-    # Each song appears on AT MOST ONE card to prevent duplicates during gameplay
+    # Calculate number of cards based on num_players (2 cards per player)
+    num_cards = num_players * 2
     step_start = time.time()
-    print(f"\n🎵 Distributing songs uniquely across {NUM_CARDS} cards...")
-    all_card_songs = distribute_songs_unique(selected_songs, NUM_CARDS, SONGS_PER_CARD)
+    print(f"\n🎵 Distributing songs uniquely across {num_cards} cards...")
+    all_card_songs = distribute_songs_unique(selected_songs, num_cards, SONGS_PER_CARD)
     print(f"✓ Songs distributed uniquely ({time.time()-step_start:.2f}s)")
     print(f"   Each card has {SONGS_PER_CARD} unique songs")
     print(f"   Total unique songs used: {len(set(song['id'] for card in all_card_songs for song in card))}")
@@ -843,7 +844,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     if duplicates_found:
         raise ValueError("CRITICAL ERROR: Duplicate songs found within cards! Cannot generate PDF.")
     
-    print(f"✅ Validation passed: All {NUM_CARDS} cards have unique songs (no duplicates within any card)")
+    print(f"✅ Validation passed: All {num_cards} cards have unique songs (no duplicates within any card)")
     
     # Check if parallel processing is beneficial
     # MEMORY-OPTIMIZED: Limit workers to avoid OOM on App Platform
@@ -864,9 +865,9 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         
         # Prepare batch data with pre-assigned songs
         batches = []
-        for i in range(0, NUM_CARDS, batch_size):
+        for i in range(0, num_cards, batch_size):
             batch_cards = []
-            for card_idx in range(i, min(i + batch_size, NUM_CARDS)):
+            for card_idx in range(i, min(i + batch_size, num_cards)):
                 card_num = card_idx + 1
                 card_songs = all_card_songs[card_idx]
                 batch_cards.append((card_num, card_songs))
@@ -947,7 +948,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         story = []
         cards_start = time.time()
         
-        for i in range(NUM_CARDS):
+        for i in range(num_cards):
             # Use pre-assigned unique songs instead of random.sample
             card_songs = all_card_songs[i]
             
@@ -965,13 +966,13 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
             
             story.extend(card_elements)
             
-            if (i + 1) % 2 == 0 and i < NUM_CARDS - 1:
+            if (i + 1) % 2 == 0 and i < num_cards - 1:
                 story.append(PageBreak())
-            elif i < NUM_CARDS - 1:
+            elif i < num_cards - 1:
                 story.append(Spacer(1, 5*mm))
             
             if (i + 1) % 10 == 0:
-                print(f"  ✓ Generated {i + 1}/{NUM_CARDS} cards ({time.time()-cards_start:.2f}s)")
+                print(f"  ✓ Generated {i + 1}/{num_cards} cards ({time.time()-cards_start:.2f}s)")
         
         print(f"\n📝 Building PDF document...")
         build_start = time.time()
@@ -995,7 +996,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         "venue_name": venue_name,
         "num_players": num_players,
-        "num_cards": NUM_CARDS,
+        "num_cards": num_cards,
         "songs_per_card": SONGS_PER_CARD,
         "game_number": game_number,
         "game_date": game_date,
@@ -1017,8 +1018,8 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"✅ SUCCESS!")
     print(f"{'='*60}")
     print(f"Generated: {OUTPUT_FILE}")
-    print(f"Cards: {NUM_CARDS}")
-    print(f"Pages: {(NUM_CARDS + 1) // 2} (2 cards per page)")
+    print(f"Cards: {num_cards}")
+    print(f"Pages: {(num_cards + 1) // 2} (2 cards per page)")
     print(f"Songs per card: {SONGS_PER_CARD}")
     print(f"Total songs available: {len(selected_songs)}")
     print(f"Session file: {session_file}")
@@ -1026,8 +1027,8 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"{'='*60}\n")
     
     return {
-        'num_cards': NUM_CARDS,
-        'num_pages': (NUM_CARDS + 1) // 2,  # 2 cards per page
+        'num_cards': num_cards,
+        'num_pages': (num_cards + 1) // 2,  # 2 cards per page
         'songs_per_card': SONGS_PER_CARD,
         'total_songs': len(selected_songs),
         'session_file': str(session_file)
