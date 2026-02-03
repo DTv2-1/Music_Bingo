@@ -13,6 +13,12 @@ venv.bak/
 dist/
 build/
 
+# Database (should not be in Git - use Cloud SQL in production)
+*.sqlite3
+*.db
+db.sqlite3
+backend/db.sqlite3
+
 # Data files (regenerate these)
 # data/pool.json - NEEDED for production, don't ignore
 data/cards/*.pdf
