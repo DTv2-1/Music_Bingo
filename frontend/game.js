@@ -2285,13 +2285,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Generate Cards function
 async function generateCards() {
-    const venueName = document.getElementById('venueName').value.trim();
-    const numPlayers = parseInt(document.getElementById('numPlayers').value) || 25;
+    // Get values from localStorage (set during setup)
+    const venueName = localStorage.getItem('venueName') || document.getElementById('venueName').value.trim();
+    const numPlayers = parseInt(localStorage.getItem('numPlayers')) || parseInt(document.getElementById('numPlayers').value) || 25;
 
     if (!venueName) {
-        alert('Please enter a venue name first!');
+        alert('Please complete setup first!');
         return;
     }
+    
+    console.log('📋 Generating cards with:', { venueName, numPlayers });
 
     // Calculate optimal songs
     const optimalSongs = calculateOptimalSongs(numPlayers);
