@@ -725,6 +725,8 @@
             const numPlayers = parseInt(document.getElementById('setupNumPlayers').value);
             const voiceId = document.getElementById('setupVoice').value;
             
+            console.log('🎵 Creating session with voice_id:', voiceId);
+            
             // Get selected decades
             const decades = Array.from(document.querySelectorAll('input[name="decades"]:checked'))
                 .map(cb => cb.value);
@@ -865,7 +867,9 @@
 
         // Voice preview functionality
         let currentAudio = null;
-        async function previewVoice(voiceId, voiceName) {
+        window.previewVoice = async function(voiceId, voiceName) {
+            console.log(`🎤 Previewing voice: ${voiceName} (${voiceId})`);
+            
             if (currentAudio) {
                 currentAudio.pause();
                 currentAudio = null;
@@ -873,8 +877,14 @@
 
             // Select the voice card
             document.querySelectorAll('.voice-card').forEach(card => card.classList.remove('selected'));
-            event.target.closest('.voice-card').classList.add('selected');
+            const selectedCard = document.querySelector(`.voice-card[data-voice-id="${voiceId}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
+            
+            // Update the hidden input
             document.getElementById('setupVoice').value = voiceId;
+            console.log(`✅ Voice ID set to: ${voiceId}`);
 
             // Play preview
             const sampleText = `Hello! I'm ${voiceName}, and I'll be your music bingo host tonight!`;
