@@ -880,7 +880,7 @@
             const sampleText = `Hello! I'm ${voiceName}, and I'll be your music bingo host tonight!`;
             
             try {
-                const response = await fetch(`${API_URL}/api/tts/preview`, {
+                const response = await fetch(`${API_URL}/api/generate-tts-preview`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
