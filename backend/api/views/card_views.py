@@ -43,8 +43,25 @@ def generate_cards_async(request):
     """
     try:
         data = request.data
+        
+        # 🔍 DEBUG: Log raw request data
+        logger.info("🔍 [DEBUG] Raw request.data type: %s", type(data))
+        logger.info("🔍 [DEBUG] Raw request.data: %s", data)
+        logger.info("🔍 [DEBUG] num_players in request: %s (type: %s)", data.get('num_players'), type(data.get('num_players')))
+        
         venue_name = data.get('venue_name', 'Music Bingo')
         num_players = data.get('num_players', 25)
+        
+        # 🔍 DEBUG: Log after extraction
+        logger.info("🔍 [DEBUG] num_players after get(): %s (type: %s)", num_players, type(num_players))
+        
+        # Ensure num_players is integer
+        if isinstance(num_players, str):
+            logger.warning("⚠️  num_players is string '%s', converting to int", num_players)
+            num_players = int(num_players)
+        
+        logger.info("🔍 [DEBUG] num_players FINAL: %s (type: %s)", num_players, type(num_players))
+        
         pub_logo = data.get('pub_logo')
         social_media = data.get('social_media')
         include_qr = data.get('include_qr', False)
@@ -56,7 +73,7 @@ def generate_cards_async(request):
         prize_first_line = data.get('prize_first_line', '')
         prize_full_house = data.get('prize_full_house', '')
         
-        logger.info(f"Starting async card generation: {num_players} cards for '{venue_name}'")
+        logger.info(f"Starting async card generation: {num_players} cards for '{venue_name}'"))
         
         # *** CHECK CACHE: Load existing session to see if we can reuse it ***
         session_path = DATA_DIR / 'cards' / 'current_session.json'

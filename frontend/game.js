@@ -2043,22 +2043,14 @@ function updateCurrentTrackDisplay(track) {
     const title = document.getElementById('trackTitle');
     const artist = document.getElementById('trackArtist');
 
-    // Validate all elements exist before updating
-    if (!container) {
-        console.error('❌ currentTrack container not found in DOM');
+    // Validate all required elements exist before updating
+    if (!container || !artwork || !title || !artist) {
+        console.warn('⚠️  Track display elements not yet loaded in DOM, skipping update');
+        if (!container) console.log('   Missing: currentTrack container');
+        if (!artwork) console.log('   Missing: trackArtwork element');
+        if (!title) console.log('   Missing: trackTitle element');
+        if (!artist) console.log('   Missing: trackArtist element');
         return;
-    }
-    
-    if (!artwork) {
-        console.error('❌ trackArtwork element not found in DOM');
-    }
-    
-    if (!title) {
-        console.error('❌ trackTitle element not found in DOM');
-    }
-    
-    if (!artist) {
-        console.error('❌ trackArtist element not found in DOM');
     }
 
     console.log('✅ All DOM elements found, updating display...');
@@ -2473,7 +2465,10 @@ async function generateCards() {
 
         console.log('📋 Preparing to generate cards (ASYNC MODE)...');
         console.log('   Venue:', venueName);
-        console.log('   Players:', numPlayers);
+        console.log('🔍 [DEBUG] Players from localStorage:', localStorage.getItem('numPlayers'));
+        console.log('🔍 [DEBUG] numPlayers variable type:', typeof numPlayers);
+        console.log('🔍 [DEBUG] numPlayers variable value:', numPlayers);
+        console.log('   Players (final):', numPlayers);
         console.log('   Pub Logo (stored):', pubLogo ? `${pubLogo.substring(0, 100)}...` : 'None');
 
         // If pubLogo is a relative path, convert to full URL
@@ -2508,24 +2503,33 @@ async function generateCards() {
         }
 
         // Use new async endpoint
+        const requestBody = {
+            venue_name: venueName,
+            num_players: numPlayers,
+            optimal_songs: optimalSongs,
+            pub_logo: pubLogo,
+            social_media: socialMedia,
+            include_qr: includeQR,
+            prize_4corners: prize4Corners,
+            prize_first_line: prizeFirstLine,
+            prize_full_house: prizeFullHouse,
+            session_id: existingSessionId
+        };
+        
+        console.log('📦 [DEBUG] Request body BEFORE stringify:', requestBody);
+        console.log('📦 [DEBUG] num_players in body:', requestBody.num_players, 'type:', typeof requestBody.num_players);
+        
+        const jsonString = JSON.stringify(requestBody);
+        console.log('📦 [DEBUG] JSON string being sent:', jsonString);
+        
         const response = await fetch(`${CONFIG.API_URL}/api/generate-cards-async`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                venue_name: venueName,
-                num_players: numPlayers,
-                optimal_songs: optimalSongs,
-                pub_logo: pubLogo,
-                social_media: socialMedia,
-                include_qr: includeQR,
-                prize_4corners: prize4Corners,
-                prize_first_line: prizeFirstLine,
-                prize_full_house: prizeFullHouse,
-                session_id: existingSessionId  // Pass existing session_id if available
-            })
+            body: jsonString
         });
+
 
         console.log('📨 Response status:', response.status);
 

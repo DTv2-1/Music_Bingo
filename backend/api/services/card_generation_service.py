@@ -84,14 +84,23 @@ class CardGenerationService:
         # Validate first
         self.validate_generation_params(params)
         
+        # 🔍 DEBUG: Log params before building command
+        logger.info("🔍 [DEBUG] prepare_generation_command params: %s", params)
+        logger.info("🔍 [DEBUG] num_players in params: %s (type: %s)", params.get('num_players'), type(params.get('num_players')))
+        
+        num_players_value = str(params.get('num_players', AppConfig.DEFAULT_NUM_PLAYERS))
+        logger.info("🔍 [DEBUG] num_players_value for command: %s", num_players_value)
+        
         # Build base command
         cmd = [
             'python3',
             str(self.script_path),
             '--venue_name', params.get('venue_name', ''),
-            '--num_players', str(params.get('num_players', AppConfig.DEFAULT_NUM_PLAYERS)),
+            '--num_players', num_players_value,
             '--game_number', str(params.get('game_number', 1))
         ]
+        
+        logger.info("🔍 [DEBUG] Command being built: %s", ' '.join(cmd))
         
         # Add game date if provided
         game_date = params.get('game_date')

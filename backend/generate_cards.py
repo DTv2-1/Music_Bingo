@@ -720,6 +720,13 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     import time
     start_time = time.time()
     
+    # 🔍 DEBUG: Log function parameters
+    print(f"\n🔍 [DEBUG] generate_cards() called with:")
+    print(f"   venue_name: {venue_name} (type: {type(venue_name)})")
+    print(f"   num_players: {num_players} (type: {type(num_players)})")
+    print(f"   pub_logo: {pub_logo if pub_logo else 'None'}")
+    print(f"   Expected num_cards: {num_players * 2}")
+    
     # Memory monitoring
     process = psutil.Process()
     mem_start = process.memory_info()
