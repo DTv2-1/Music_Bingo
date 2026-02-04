@@ -2146,7 +2146,18 @@ function updateCalledList() {
  * Update statistics
  */
 function updateStats() {
-    const totalSongs = gameState.called.length + gameState.remaining.length;
+    // If game hasn't started and we're loading old session data, use calculated optimal value
+    const numPlayers = parseInt(localStorage.getItem('numPlayers')) || 25;
+    let totalSongs;
+    
+    if (gameState.called.length === 0 && gameState.pool.length > 0) {
+        // Game not started yet - show optimal calculated songs instead of old pool size
+        totalSongs = calculateOptimalSongs(numPlayers);
+    } else {
+        // Game in progress - show actual pool size
+        totalSongs = gameState.called.length + gameState.remaining.length;
+    }
+    
     const estimatedMinutes = estimateGameDuration(totalSongs);
 
     // Update the stats counters
@@ -2159,7 +2170,12 @@ function updateStats() {
     }
     
     if (remainingCount) {
-        remainingCount.textContent = gameState.remaining.length;
+        // Show calculated optimal songs if game hasn't started
+        if (gameState.called.length === 0) {
+            remainingCount.textContent = totalSongs;
+        } else {
+            remainingCount.textContent = gameState.remaining.length;
+        }
     }
 
     // Update the top estimation text to show actual game total

@@ -797,21 +797,27 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         # This ensures different song selection for each session
         step_start = time.time()
         import hashlib
+        import uuid
         
-        # Create a unique seed from current timestamp + venue + game number
-        seed_str = f"{time.time()}-{venue_name}-{game_number}-{num_players}"
+        # Create a UNIQUE seed using UUID + timestamp + venue + game number + random component
+        # This ensures maximum randomness even for rapid successive generations
+        unique_id = str(uuid.uuid4())
+        random_component = random.random()
+        seed_str = f"{time.time()}-{unique_id}-{venue_name}-{game_number}-{num_players}-{random_component}"
         seed_hash = int(hashlib.md5(seed_str.encode()).hexdigest()[:8], 16)
         random.seed(seed_hash)
         
-        # Shuffle the entire pool first
+        # Shuffle the entire pool MULTIPLE times for better randomization
         shuffled_pool = all_songs.copy()
-        random.shuffle(shuffled_pool)
+        for _ in range(3):  # Shuffle 3 times
+            random.shuffle(shuffled_pool)
         
         # Then select from shuffled pool
         selected_songs = shuffled_pool[:min(optimal_songs, len(shuffled_pool))]
         
         print(f"✓ Selected {len(selected_songs)} songs with seed {seed_hash} ({time.time()-step_start:.3f}s)")
-        print(f"   First 3 songs: {[s['title'] for s in selected_songs[:3]]}")
+        print(f"   Unique ID: {unique_id[:8]}...")
+        print(f"   First 5 songs: {[s['title'] for s in selected_songs[:5]]}")
     
     # Create output directory
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
