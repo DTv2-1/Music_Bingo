@@ -309,10 +309,18 @@ async function loadSessionAndStart(sessionId) {
         localStorage.setItem('prize4Corners', session.prizes?.four_corners || '');
         localStorage.setItem('prizeFirstLine', session.prizes?.first_line || '');
         localStorage.setItem('prizeFullHouse', session.prizes?.full_house || '');
+        
+        // ⚠️ CRITICAL FIX: Save voice_id and decades for TTS announcements
+        localStorage.setItem('voiceId', session.voice_id || 'JBFqnCBsd6RMkjVDRZzb');
+        localStorage.setItem('selectedDecades', JSON.stringify(session.decades || []));
+        localStorage.setItem('numPlayers', session.num_players || 25);
+        
         console.log('💾 Saved session branding to localStorage:', {
             pubLogo: session.logo_url,
             socialMedia: session.social_media,
-            includeQR: session.include_qr
+            includeQR: session.include_qr,
+            voiceId: session.voice_id,
+            decades: session.decades
         });
 
         await saveVenueConfig(session.venue_name, config);
@@ -2512,6 +2520,12 @@ async function generateCards() {
         console.log('   Prizes:', { prize4Corners, prizeFirstLine, prizeFullHouse });
         console.log('📤 Sending async request to backend...');
 
+        // Get voice_id and decades from localStorage
+        const voiceId = localStorage.getItem('voiceId') || '21m00Tcm4TlvDq8ikWAM';
+        const selectedDecades = JSON.parse(localStorage.getItem('selectedDecades') || '[]');
+        console.log('   Voice ID:', voiceId);
+        console.log('   Selected Decades:', selectedDecades);
+
         // Check if we have an existing session_id (from URL param when session was loaded)
         const existingSessionId = localStorage.getItem('currentSessionId');
         if (existingSessionId) {
@@ -2532,6 +2546,8 @@ async function generateCards() {
             prize_4corners: prize4Corners,
             prize_first_line: prizeFirstLine,
             prize_full_house: prizeFullHouse,
+            voice_id: voiceId,
+            decades: selectedDecades,
             session_id: existingSessionId
         };
         

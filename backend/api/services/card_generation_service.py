@@ -137,6 +137,19 @@ class CardGenerationService:
         if prize_full_house:
             cmd.extend(['--prize_full_house', prize_full_house])
         
+        # Add voice_id
+        voice_id = params.get('voice_id')
+        if voice_id:
+            cmd.extend(['--voice_id', voice_id])
+            logger.info(f"Voice ID: {voice_id}")
+        
+        # Add decades filter (pass as comma-separated string)
+        decades = params.get('decades')
+        if decades:
+            decades_str = ','.join(decades)
+            cmd.extend(['--decades', decades_str])
+            logger.info(f"Decades filter: {decades_str}")
+        
         logger.info(f"Command prepared: {' '.join(cmd[:6])}... ({len(cmd)} args)")
         return cmd
     
