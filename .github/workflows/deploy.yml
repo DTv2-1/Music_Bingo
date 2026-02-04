@@ -44,7 +44,7 @@ jobs:
             --region=europe-west2 \
             --source=. \
             --project=smart-arc-466414-p9 \
-            --set-env-vars="DATABASE_URL=postgresql://music_bingo_user:${{ secrets.MUSIC_BINGO_DB_PASSWORD }}@/music_bingo?host=/cloudsql/smart-arc-466414-p9:europe-west2:music-bingo-db" \
+            --set-env-vars="DATABASE_URL=postgresql://postgres:${{ secrets.MUSIC_BINGO_DB_PASSWORD }}@/music_bingo?host=/cloudsql/smart-arc-466414-p9:europe-west2:music-bingo-db" \
             --set-env-vars="ELEVENLABS_API_KEY=${{ secrets.ELEVENLABS_API_KEY }}" \
             --set-env-vars="ELEVENLABS_VOICE_ID=21m00Tcm4TlvDq8ikWAM" \
             --set-env-vars="OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" \
