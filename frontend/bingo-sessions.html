@@ -339,6 +339,58 @@
                     </div>
                 </div>
                 
+                <div class="setup-field">
+                    <label>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18V5l12-2v13M9 18c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3zm12-2c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3z"/>
+                        </svg>
+                        Music Genres (Optional)
+                    </label>
+                    <small>Select specific genres. Leave empty for all genres from selected decades.</small>
+                    
+                    <div class="decades-grid">
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="genres" value="Rock">
+                            <span class="decade-label">Rock<br><small>Classic Rock</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="genres" value="Pop">
+                            <span class="decade-label">Pop<br><small>Pop Hits</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="genres" value="Dance">
+                            <span class="decade-label">Dance<br><small>EDM & House</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="genres" value="Hard Rock">
+                            <span class="decade-label">Hard Rock<br><small>Heavy Metal</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="genres" value="R&B/Soul">
+                            <span class="decade-label">R&B/Soul<br><small>Soul & Funk</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="genres" value="Hip-Hop/Rap">
+                            <span class="decade-label">Hip-Hop<br><small>Rap & Urban</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="genres" value="Alternative">
+                            <span class="decade-label">Alternative<br><small>Indie & Alt</small></span>
+                        </label>
+                        
+                        <label class="decade-checkbox">
+                            <input type="checkbox" name="genres" value="Country">
+                            <span class="decade-label">Country<br><small>Country & Folk</small></span>
+                        </label>
+                    </div>
+                </div>
+                
                 <div class="setup-field voice-selector">
                     <label>
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -739,6 +791,13 @@
                 return;
             }
             
+            // Get selected genres (optional)
+            const genres = Array.from(document.querySelectorAll('input[name="genres"]:checked'))
+                .map(cb => cb.value);
+            
+            console.log('🎵 Selected decades:', decades);
+            console.log('🎸 Selected genres:', genres.length > 0 ? genres : 'All genres');
+            
             // Get branding data
             const logoUrl = document.getElementById('setupPubLogo').value.trim();
             const includeQr = document.getElementById('setupIncludeQR').checked;
@@ -780,6 +839,7 @@
                         num_players: numPlayers,
                         voice_id: voiceId,
                         decades: decades,
+                        genres: genres.length > 0 ? genres : null,
                         logo_url: logoUrl || null,
                         social_media: socialMedia,
                         include_qr: includeQr,
@@ -812,7 +872,8 @@
                         prize_first_line: prizes.first_line,
                         prize_full_house: prizes.full_house,
                         voice_id: voiceId,
-                        decades: decades
+                        decades: decades,
+                        genres: genres.length > 0 ? genres : null
                     })
                 });
                 

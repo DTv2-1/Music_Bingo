@@ -150,6 +150,13 @@ class CardGenerationService:
             cmd.extend(['--decades', decades_str])
             logger.info(f"Decades filter: {decades_str}")
         
+        # Add genres filter (pass as comma-separated string)
+        genres = params.get('genres')
+        if genres:
+            genres_str = ','.join(genres)
+            cmd.extend(['--genres', genres_str])
+            logger.info(f"Genres filter: {genres_str}")
+        
         # Add session_id for unique PDF filenames
         session_id = params.get('session_id')
         if session_id:

@@ -76,10 +76,12 @@ def generate_cards_async(request):
         # Get voice_id and decades
         voice_id = data.get('voice_id', 'JBFqnCBsd6RMkjVDRZzb')
         decades = data.get('decades', [])
+        genres = data.get('genres', [])
         
         logger.info(f"Starting async card generation: {num_players} cards for '{venue_name}'")
         logger.info(f"  Voice ID: {voice_id}")
         logger.info(f"  Decades: {decades}")
+        logger.info(f"  Genres: {genres if genres else 'All genres'}")
         
         # *** CHECK CACHE: Load existing session to see if we can reuse it ***
         session_path = DATA_DIR / 'cards' / 'current_session.json'
@@ -100,7 +102,8 @@ def generate_cards_async(request):
                     existing_session.get('prize_first_line') == prize_first_line and
                     existing_session.get('prize_full_house') == prize_full_house and
                     existing_session.get('voice_id') == voice_id and
-                    existing_session.get('decades') == decades
+                    existing_session.get('decades') == decades and
+                    existing_session.get('genres') == genres
                 )
                 
                 # If params match AND we have a cached PDF URL, reuse it
@@ -222,6 +225,7 @@ def generate_cards_async(request):
                 'game_number': game_number,
                 'voice_id': voice_id,
                 'decades': decades,
+                'genres': genres,
                 'session_id': session_id  # Link task to session
             }
         )
@@ -241,6 +245,7 @@ def generate_cards_async(request):
             'prize_full_house': prize_full_house,
             'voice_id': voice_id,
             'decades': decades,
+            'genres': genres,
             'session_id': session_id
         })
         
