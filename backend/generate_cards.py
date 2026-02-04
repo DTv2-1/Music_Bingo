@@ -918,8 +918,8 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
             print(f"✓ Generated QR code ({time.time()-step_start:.2f}s) - Memory: {mem_after_qr.rss / 1024 / 1024:.1f} MB")
     
     # *** DISTRIBUTE SONGS UNIQUELY ACROSS ALL CARDS ***
-    # Calculate number of cards based on num_players (2 cards per player)
-    num_cards = num_players * 2
+    # Calculate number of cards based on num_players (1 card per player)
+    num_cards = num_players * 1
     step_start = time.time()
     print(f"\n🎵 Distributing songs uniquely across {num_cards} cards...")
     all_card_songs = distribute_songs_unique(selected_songs, num_cards, SONGS_PER_CARD)
