@@ -714,10 +714,25 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     optimal_songs = calculate_optimal_songs(num_players)
     print(f"✓ Using {optimal_songs} songs for {num_players} players ({time.time()-step_start:.3f}s)")
     
-    # Shuffle and select songs
+    # Shuffle and select songs with randomization based on timestamp
+    # This ensures different song selection for each session
     step_start = time.time()
-    selected_songs = random.sample(all_songs, min(optimal_songs, len(all_songs)))
-    print(f"✓ Selected {len(selected_songs)} songs ({time.time()-step_start:.3f}s)")
+    import hashlib
+    
+    # Create a unique seed from current timestamp + venue + game number
+    seed_str = f"{time.time()}-{venue_name}-{game_number}-{num_players}"
+    seed_hash = int(hashlib.md5(seed_str.encode()).hexdigest()[:8], 16)
+    random.seed(seed_hash)
+    
+    # Shuffle the entire pool first
+    shuffled_pool = all_songs.copy()
+    random.shuffle(shuffled_pool)
+    
+    # Then select from shuffled pool
+    selected_songs = shuffled_pool[:min(optimal_songs, len(shuffled_pool))]
+    
+    print(f"✓ Selected {len(selected_songs)} songs with seed {seed_hash} ({time.time()-step_start:.3f}s)")
+    print(f"   First 3 songs: {[s['title'] for s in selected_songs[:3]]}")
     
     # Create output directory
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
