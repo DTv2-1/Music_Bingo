@@ -1153,11 +1153,3 @@ if __name__ == '__main__':
         decades=decades_list,
         session_id=args.session_id
     )
-        game_number=args.game_number,
-        game_date=args.game_date,
-        prize_4corners=args.prize_4corners,
-        prize_first_line=args.prize_first_line,
-        prize_full_house=args.prize_full_house,
-        voice_id=args.voice_id,
-        decades=decades_list
-    )
