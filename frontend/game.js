@@ -2049,6 +2049,23 @@ function resetGame() {
     gameState.welcomeAnnounced = false;
     gameState.halfwayAnnounced = false;
 
+    // Clear saved game state
+    clearGameState();
+
+    // Reset UI
+    document.getElementById('currentTrack').style.display = 'none';
+    document.getElementById('calledList').innerHTML = `
+        <p style="opacity: 0.6; text-align: center; grid-column: 1/-1;">
+            No songs called yet. Press "NEXT SONG" to begin!
+        </p>
+    `;
+
+    updateStats();
+    updateStatus('✅ Game reset! Ready to start.', false);
+
+    console.log('🔄 Game reset');
+}
+
 /**
  * Toggle the full song list visibility
  */
@@ -2110,23 +2127,6 @@ function displayFullSongList() {
     }).join('');
     
     console.log(`📜 Displayed ${sortedSongs.length} songs in full list`);
-}
-
-    // Clear saved game state
-    clearGameState();
-
-    // Reset UI
-    document.getElementById('currentTrack').style.display = 'none';
-    document.getElementById('calledList').innerHTML = `
-        <p style="opacity: 0.6; text-align: center; grid-column: 1/-1;">
-            No songs called yet. Press "NEXT SONG" to begin!
-        </p>
-    `;
-
-    updateStats();
-    updateStatus('✅ Game reset! Ready to start.', false);
-
-    console.log('🔄 Game reset');
 }
 
 // ============================================================================
