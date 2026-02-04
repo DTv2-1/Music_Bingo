@@ -2049,6 +2049,69 @@ function resetGame() {
     gameState.welcomeAnnounced = false;
     gameState.halfwayAnnounced = false;
 
+/**
+ * Toggle the full song list visibility
+ */
+function toggleSongList() {
+    const songListSection = document.getElementById('fullSongListSection');
+    const isVisible = songListSection.style.display !== 'none';
+    
+    if (isVisible) {
+        // Hide the list
+        songListSection.style.display = 'none';
+    } else {
+        // Show the list and populate it
+        songListSection.style.display = 'block';
+        displayFullSongList();
+        
+        // Scroll to the list
+        songListSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+/**
+ * Display all songs that will be played tonight
+ */
+function displayFullSongList() {
+    const fullSongList = document.getElementById('fullSongList');
+    const totalSongsCount = document.getElementById('totalSongsCount');
+    
+    if (!gameState.pool || gameState.pool.length === 0) {
+        fullSongList.innerHTML = '<p style="opacity: 0.6; text-align: center; grid-column: 1/-1;">No songs loaded yet. Start a session first.</p>';
+        return;
+    }
+    
+    // Update total count
+    totalSongsCount.textContent = gameState.pool.length;
+    
+    // Sort songs alphabetically by title for easy searching
+    const sortedSongs = [...gameState.pool].sort((a, b) => 
+        a.title.localeCompare(b.title)
+    );
+    
+    // Generate HTML for all songs
+    fullSongList.innerHTML = sortedSongs.map((track, index) => {
+        // Check if this song has been called already
+        const isCalled = gameState.called.some(calledTrack => calledTrack.id === track.id);
+        const calledClass = isCalled ? 'style="opacity: 0.5; background: #f0fdf4;"' : '';
+        const calledBadge = isCalled ? '<span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px;">✓ Called</span>' : '';
+        
+        return `
+            <div class="track-card" ${calledClass}>
+                <img src="${track.artwork_url || 'https://via.placeholder.com/60?text=🎵'}" 
+                     alt="${track.title}" 
+                     onerror="this.src='https://via.placeholder.com/60?text=🎵'">
+                <div class="track-details">
+                    <strong>${track.title}</strong>${calledBadge}
+                    <span>${track.artist}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    console.log(`📜 Displayed ${sortedSongs.length} songs in full list`);
+}
+
     // Clear saved game state
     clearGameState();
 

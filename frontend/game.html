@@ -353,6 +353,9 @@
                 <button id="playAnnouncement" onclick="playCustomAnnouncement()">
                     📢 Announcement
                 </button>
+                <button id="showSongList" onclick="toggleSongList()">
+                    📜 Song List
+                </button>
                 <button id="resetGame" onclick="resetGame()">
                     🔄 Reset Game
                 </button>
@@ -390,6 +393,24 @@
             <div id="calledList" class="tracks-grid">
                 <p style="opacity: 0.6; text-align: center; grid-column: 1/-1;">
                     No songs called yet. Press "NEXT SONG" to begin!
+                </p>
+            </div>
+        </div>
+        
+        <!-- Full Song List (collapsible) -->
+        <div class="called-list" id="fullSongListSection" style="margin-top: 30px; display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>🎵 Complete Song List for Tonight</h3>
+                <button onclick="toggleSongList()" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    ✕ Close
+                </button>
+            </div>
+            <p style="opacity: 0.7; margin-bottom: 15px; font-size: 14px;">
+                Here are all <span id="totalSongsCount">0</span> songs that will be played tonight (in random order)
+            </p>
+            <div id="fullSongList" class="tracks-grid">
+                <p style="opacity: 0.6; text-align: center; grid-column: 1/-1;">
+                    Loading song list...
                 </p>
             </div>
         </div>
