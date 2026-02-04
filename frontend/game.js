@@ -377,6 +377,14 @@ async function loadSessionAndStart(sessionId) {
             decadesDisplay.textContent = decadeLabels.join(', ');
         }
         
+        // Update genres display
+        const genresDisplayContainer = document.getElementById('genresDisplayContainer');
+        const genresDisplay = document.getElementById('genresDisplay');
+        if (genresDisplayContainer && genresDisplay && session.genres && session.genres.length > 0) {
+            genresDisplayContainer.style.display = 'flex';
+            genresDisplay.textContent = session.genres.join(', ');
+        }
+        
         // Update logo display
         const logoDisplayContainer = document.getElementById('logoDisplayContainer');
         if (logoDisplayContainer && session.logo_url) {
