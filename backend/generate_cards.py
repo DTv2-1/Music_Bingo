@@ -779,6 +779,11 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         mem_after_load = process.memory_info()
         print(f"✓ Loaded {len(all_songs)} songs from pool ({time.time()-step_start:.2f}s) - Memory: {mem_after_load.rss / 1024 / 1024:.1f} MB")
         
+        # Log first songs in pool to verify what we loaded
+        print(f"\n📚 [POOL DEBUG] First 5 songs in pool.json:")
+        for i, song in enumerate(all_songs[:5], 1):
+            print(f"   #{i}: {song['title']} - {song['artist']} ({song.get('year', 'N/A')})")
+        
         # Filter by decades if specified
         if decades:
             filtered_songs = []
@@ -792,6 +797,11 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
             
             print(f"✓ Filtered to {len(filtered_songs)} songs from decades {decades}")
             all_songs = filtered_songs
+            
+            # Log first songs after filtering
+            print(f"\n🎚️ [FILTER DEBUG] First 5 songs after decade filter:")
+            for i, song in enumerate(all_songs[:5], 1):
+                print(f"   #{i}: {song['title']} - {song['artist']} ({song.get('year', 'N/A')})")
             
             if len(all_songs) == 0:
                 print("⚠️  WARNING: No songs found for selected decades, using all songs")
@@ -816,17 +826,43 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         seed_hash = int(hashlib.md5(seed_str.encode()).hexdigest()[:8], 16)
         random.seed(seed_hash)
         
+        # Log BEFORE shuffling to see original order
+        print(f"\n{'='*80}")
+        print(f"🔍 [SONG SELECTION DEBUG - DETAILED]")
+        print(f"{'='*80}")
+        print(f"   📊 Total songs in pool: {len(all_songs)}")
+        print(f"   🎯 Need to select: {optimal_songs} songs for {num_players} players")
+        print(f"   🔢 Random seed string: {seed_str}")
+        print(f"   🔑 Random seed hash: {seed_hash}")
+        print(f"   🆔 Unique ID: {unique_id}")
+        print(f"\n   📋 First 10 songs BEFORE shuffle:")
+        for i, s in enumerate(all_songs[:10], 1):
+            print(f"      {i:2d}. {s['title']:40s} - {s['artist']:30s} [ID: {s.get('id', 'N/A')}]")
+        
         # Shuffle the entire pool MULTIPLE times for better randomization
         shuffled_pool = all_songs.copy()
-        for _ in range(3):  # Shuffle 3 times
+        print(f"\n   🔀 Shuffling pool 3 times for maximum randomness...")
+        for shuffle_round in range(3):  # Shuffle 3 times
             random.shuffle(shuffled_pool)
+            print(f"\n   After shuffle #{shuffle_round + 1} - First 5 songs:")
+            for i, s in enumerate(shuffled_pool[:5], 1):
+                print(f"      {i}. {s['title']:40s} - {s['artist']}")
         
         # Then select from shuffled pool
         selected_songs = shuffled_pool[:min(optimal_songs, len(shuffled_pool))]
         
-        print(f"✓ Selected {len(selected_songs)} songs with seed {seed_hash} ({time.time()-step_start:.3f}s)")
-        print(f"   Unique ID: {unique_id[:8]}...")
-        print(f"   First 5 songs: {[s['title'] for s in selected_songs[:5]]}")
+        print(f"\n{'='*80}")
+        print(f"✅ FINAL SELECTION: {len(selected_songs)} songs selected (seed: {seed_hash})")
+        print(f"{'='*80}")
+        print(f"   ⏱️  Selection time: {time.time()-step_start:.3f}s")
+        print(f"   🆔 Session UUID: {unique_id}")
+        print(f"\n   🎵 First 15 songs that will be used in cards:")
+        for i, song in enumerate(selected_songs[:15], 1):
+            print(f"      {i:2d}. {song['title']:40s} - {song['artist']:30s} [Year: {song.get('year', 'N/A')}]")
+        print(f"\n   🎵 Last 5 songs in selection:")
+        for i, song in enumerate(selected_songs[-5:], len(selected_songs)-4):
+            print(f"      {i:2d}. {song['title']:40s} - {song['artist']:30s} [Year: {song.get('year', 'N/A')}]")
+        print(f"{'='*80}\n")
     
     # Create output directory
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -886,6 +922,14 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"✓ Songs distributed uniquely ({time.time()-step_start:.2f}s)")
     print(f"   Each card has {SONGS_PER_CARD} unique songs")
     print(f"   Total unique songs used: {len(set(song['id'] for card in all_card_songs for song in card))}")
+    
+    # Log first card's songs for debugging
+    print(f"\n{'='*80}")
+    print(f"🎴 [CARD #1 SONGS - Will appear on actual printed card]")
+    print(f"{'='*80}")
+    for i, song in enumerate(all_card_songs[0][:SONGS_PER_CARD], 1):
+        print(f"   {i:2d}. {song['title']:40s} - {song['artist']:30s} [ID: {song.get('id', 'N/A')}]")
+    print(f"{'='*80}\n")
     
     # *** CRITICAL VALIDATION: Check for duplicate songs within each card ***
     print(f"\n🔍 Validating cards for duplicates...")
