@@ -150,6 +150,12 @@ class CardGenerationService:
             cmd.extend(['--decades', decades_str])
             logger.info(f"Decades filter: {decades_str}")
         
+        # Add session_id for unique PDF filenames
+        session_id = params.get('session_id')
+        if session_id:
+            cmd.extend(['--session_id', session_id])
+            logger.info(f"Session ID: {session_id}")
+        
         logger.info(f"Command prepared: {' '.join(cmd[:6])}... ({len(cmd)} args)")
         return cmd
     

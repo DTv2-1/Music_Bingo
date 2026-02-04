@@ -49,7 +49,7 @@ SCRIPT_DIR = Path(__file__).parent
 PROJECT_ROOT = SCRIPT_DIR.parent if (SCRIPT_DIR.parent / "data").exists() else SCRIPT_DIR
 INPUT_POOL = PROJECT_ROOT / "data" / "pool.json"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "cards"
-OUTPUT_FILE = OUTPUT_DIR / "music_bingo_cards.pdf"
+# OUTPUT_FILE is now generated dynamically per session (see generate_cards function)
 NUM_CARDS = 50  # Back to 50 with Professional XS resources
 GRID_SIZE = 5  # 5x5 bingo
 SONGS_PER_CARD = 24  # 25 cells - 1 FREE
@@ -716,7 +716,8 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
                   pub_logo: str = None, social_media: str = None, include_qr: bool = False,
                   game_number: int = 1, game_date: str = None,
                   prize_4corners: str = '', prize_first_line: str = '', prize_full_house: str = '',
-                  voice_id: str = 'JBFqnCBsd6RMkjVDRZzb', decades: List[str] = None):
+                  voice_id: str = 'JBFqnCBsd6RMkjVDRZzb', decades: List[str] = None,
+                  session_id: str = None):
     """Generate all bingo cards"""
     import time
     start_time = time.time()
@@ -729,6 +730,14 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"   decades: {decades}")
     print(f"   pub_logo: {pub_logo if pub_logo else 'None'}")
     print(f"   Expected num_cards: {num_players * 2}")
+    
+    # Generate unique PDF filename per session
+    if session_id:
+        OUTPUT_FILE = OUTPUT_DIR / f"music_bingo_cards_{session_id}.pdf"
+    else:
+        OUTPUT_FILE = OUTPUT_DIR / "music_bingo_cards.pdf"
+    
+    print(f"📄 PDF will be saved to: {OUTPUT_FILE.name}")
     
     # Memory monitoring
     process = psutil.Process()
@@ -1119,6 +1128,7 @@ if __name__ == '__main__':
     parser.add_argument('--prize_full_house', default='', help='Prize for Full House')
     parser.add_argument('--voice_id', default='JBFqnCBsd6RMkjVDRZzb', help='Voice ID for TTS')
     parser.add_argument('--decades', default=None, help='Comma-separated list of decades to filter (e.g., 1980s,1990s,2000s)')
+    parser.add_argument('--session_id', default=None, help='Unique session ID for PDF filename')
     
     args = parser.parse_args()
     
@@ -1134,6 +1144,15 @@ if __name__ == '__main__':
         pub_logo=args.pub_logo,
         social_media=args.social_media,
         include_qr=args.include_qr,
+        game_number=args.game_number,
+        game_date=args.game_date,
+        prize_4corners=args.prize_4corners,
+        prize_first_line=args.prize_first_line,
+        prize_full_house=args.prize_full_house,
+        voice_id=args.voice_id,
+        decades=decades_list,
+        session_id=args.session_id
+    )
         game_number=args.game_number,
         game_date=args.game_date,
         prize_4corners=args.prize_4corners,

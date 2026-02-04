@@ -240,7 +240,8 @@ def generate_cards_async(request):
             'prize_first_line': prize_first_line,
             'prize_full_house': prize_full_house,
             'voice_id': voice_id,
-            'decades': decades
+            'decades': decades,
+            'session_id': session_id
         })
         
         # Run task in background using task module
