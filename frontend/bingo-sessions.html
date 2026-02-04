@@ -791,12 +791,72 @@
                 return;
             }
             
+            if (decades.length < 3) {
+                alert('⚠️ Please select at least 3 decades\n\nThis ensures enough song variety for a good game.');
+                createBtn.disabled = false;
+                createBtn.style.opacity = '1';
+                progressDiv.style.display = 'none';
+                return;
+            }
+            
             // Get selected genres (optional)
             const genres = Array.from(document.querySelectorAll('input[name="genres"]:checked'))
                 .map(cb => cb.value);
             
+            if (genres.length > 0 && genres.length < 3) {
+                alert('⚠️ Please select at least 3 genres or leave all unselected\n\nFor the best experience, either:\n• Select 3+ genres for variety\n• Leave all unselected to include all genres');
+                createBtn.disabled = false;
+                createBtn.style.opacity = '1';
+                progressDiv.style.display = 'none';
+                return;
+            }
+            
             console.log('🎵 Selected decades:', decades);
             console.log('🎸 Selected genres:', genres.length > 0 ? genres : 'All genres');
+            
+            // Validate song availability
+            try {
+                const poolResponse = await fetch('/data/pool.json');
+                const poolData = await poolResponse.json();
+                
+                // Filter songs by decades and genres
+                let availableSongs = poolData.songs.filter(song => {
+                    // Check decade
+                    const songYear = song.release_year || song.year;
+                    if (!songYear) return false;
+                    const songDecade = `${Math.floor(parseInt(songYear) / 10) * 10}s`;
+                    if (!decades.includes(songDecade)) return false;
+                    
+                    // Check genre (if genres selected)
+                    if (genres.length > 0 && !genres.includes(song.genre)) return false;
+                    
+                    return true;
+                });
+                
+                const songsNeeded = numPlayers * 24; // 24 songs per card
+                
+                if (availableSongs.length < songsNeeded) {
+                    alert(`⚠️ Not enough songs!\n\n` +
+                          `With your current filters:\n` +
+                          `• Decades: ${decades.join(', ')}\n` +
+                          `• Genres: ${genres.length > 0 ? genres.join(', ') : 'All'}\n\n` +
+                          `Only ${availableSongs.length} songs available.\n` +
+                          `Need at least ${songsNeeded} songs for ${numPlayers} players.\n\n` +
+                          `Please:\n` +
+                          `• Select more decades\n` +
+                          `• Select more genres (or none for all genres)\n` +
+                          `• Reduce number of players`);
+                    createBtn.disabled = false;
+                    createBtn.style.opacity = '1';
+                    progressDiv.style.display = 'none';
+                    return;
+                }
+                
+                console.log(`✅ ${availableSongs.length} songs available for ${songsNeeded} needed`);
+            } catch (error) {
+                console.warn('Could not validate song pool:', error);
+                // Continue anyway - backend will validate
+            }
             
             // Get branding data
             const logoUrl = document.getElementById('setupPubLogo').value.trim();
