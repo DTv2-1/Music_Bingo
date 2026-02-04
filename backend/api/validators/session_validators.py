@@ -42,6 +42,18 @@ def validate_session_data(data: Dict[str, Any]) -> Dict[str, Any]:
         if decade not in valid_decades:
             raise ValueError(f'Invalid decade: {decade}. Must be one of: {", ".join(valid_decades)}')
     
+    # Validate genres (optional)
+    genres = data.get('genres', [])
+    if genres is None:
+        genres = []
+    if not isinstance(genres, list):
+        raise ValueError('Genres must be a list')
+    
+    valid_genres = ['Rock', 'Pop', 'Dance', 'Hard Rock', 'R&B/Soul', 'Hip-Hop/Rap', 'Alternative', 'Country']
+    for genre in genres:
+        if genre not in valid_genres:
+            raise ValueError(f'Invalid genre: {genre}. Must be one of: {", ".join(valid_genres)}')
+    
     # Return normalized data
     return {
         'venue_name': venue_name or 'Music Bingo',
@@ -49,6 +61,7 @@ def validate_session_data(data: Dict[str, Any]) -> Dict[str, Any]:
         'num_players': num_players,
         'voice_id': data.get('voice_id', 'JBFqnCBsd6RMkjVDRZzb').strip(),
         'decades': decades,
+        'genres': genres,
         'logo_url': data.get('logo_url', ''),
         'social_media': data.get('social_media', '').strip(),
         'include_qr': bool(data.get('include_qr', False)),
@@ -112,6 +125,8 @@ def validate_card_generation_params(data: Dict[str, Any]) -> Dict[str, Any]:
         'game_number': game_number,
         'game_date': data.get('game_date'),
         'pub_logo': data.get('pub_logo'),
+        'decades': data.get('decades', []),
+        'genres': data.get('genres', []),
         'social_media': data.get('social_media'),
         'include_qr': bool(data.get('include_qr', False)),
         'prize_4corners': data.get('prize_4corners', ''),
