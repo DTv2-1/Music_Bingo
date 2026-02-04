@@ -98,8 +98,12 @@ def run_card_generation_task(task_id: str, task_model, cmd: list, base_dir: Path
                             f'cards/{latest_pdf.name}'
                         )
                         
+                        # Get session_id from task metadata
+                        session_id = task_model.metadata.get('session_id') if task_model.metadata else None
+                        
                         # Update session file with GCS URL and upload to GCS
-                        session_file = cards_dir / 'current_session.json'
+                        # Use session-specific file if session_id exists
+                        session_file = cards_dir / f'session_{session_id}.json' if session_id else cards_dir / 'current_session.json'
                         session_json_url = None
                         session_data = None
                         
@@ -128,7 +132,7 @@ def run_card_generation_task(task_id: str, task_model, cmd: list, base_dir: Path
                                 logger.info(f"Task {task_id}: Session file uploaded to {session_json_url}")
                                 
                                 # Update BingoSession in database with song_pool and pdf_url
-                                session_id = task_model.metadata.get('session_id') if task_model.metadata else None
+                                # (session_id already retrieved above)
                                 logger.info(f"Task {task_id}: Attempting to update BingoSession {session_id}")
                                 
                                 if session_id:

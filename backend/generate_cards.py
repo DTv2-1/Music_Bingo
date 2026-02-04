@@ -756,18 +756,19 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"📊 Memory at start: {mem_start.rss / 1024 / 1024:.1f} MB")
     print(f"{'='*60}\n")
     
-    # Load songs - check if current_session.json exists with pre-selected songs
+    # Load songs - ALWAYS generate fresh random selection per session
     step_start = time.time()
-    session_file = OUTPUT_DIR / "current_session.json"
+    session_file = OUTPUT_DIR / f"session_{session_id}.json" if session_id else OUTPUT_DIR / "current_session.json"
     selected_songs = None
     
-    if session_file.exists():
+    # Check if THIS specific session already has songs selected
+    if session_id and session_file.exists():
         try:
             with open(session_file, 'r', encoding='utf-8') as f:
                 session_data = json.load(f)
                 if 'songs' in session_data and len(session_data['songs']) > 0:
                     selected_songs = session_data['songs']
-                    print(f"✓ Loaded {len(selected_songs)} pre-selected songs from current_session.json ({time.time()-step_start:.2f}s)")
+                    print(f"✓ Loaded {len(selected_songs)} pre-selected songs from {session_file.name} ({time.time()-step_start:.2f}s)")
                     print(f"   🎯 Using EXACT songs from session to match database")
         except Exception as e:
             print(f"⚠️  Error loading session file: {e}")
@@ -1099,7 +1100,8 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     
     # *** CRITICAL: Save session file with exact songs used ***
     # This ensures the game plays THE SAME songs that are printed on cards
-    session_file = OUTPUT_DIR / "current_session.json"
+    # Use session-specific filename to avoid conflicts between sessions
+    session_file = OUTPUT_DIR / f"session_{session_id}.json" if session_id else OUTPUT_DIR / "current_session.json"
     session_data = {
         "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         "venue_name": venue_name,
@@ -1119,6 +1121,12 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     
     with open(session_file, 'w', encoding='utf-8') as f:
         json.dump(session_data, f, indent=2, ensure_ascii=False)
+    
+    # Also save to current_session.json for backwards compatibility
+    if session_id:
+        current_path = OUTPUT_DIR / "current_session.json"
+        with open(current_path, 'w', encoding='utf-8') as f:
+            json.dump(session_data, f, indent=2, ensure_ascii=False)
     
     print(f"\n✅ Session file saved: {session_file}")
     print(f"   ⚠️  IMPORTANT: Use this session file when starting the game!")
