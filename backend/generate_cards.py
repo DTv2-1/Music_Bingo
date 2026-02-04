@@ -717,7 +717,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
                   game_number: int = 1, game_date: str = None,
                   prize_4corners: str = '', prize_first_line: str = '', prize_full_house: str = '',
                   voice_id: str = 'JBFqnCBsd6RMkjVDRZzb', decades: List[str] = None,
-                  session_id: str = None):
+                  genres: List[str] = None, session_id: str = None):
     """Generate all bingo cards"""
     import time
     start_time = time.time()
@@ -728,6 +728,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"   num_players: {num_players} (type: {type(num_players)})")
     print(f"   voice_id: {voice_id}")
     print(f"   decades: {decades}")
+    print(f"   genres: {genres}")
     print(f"   pub_logo: {pub_logo if pub_logo else 'None'}")
     print(f"   Expected num_cards: {num_players * 2}")
     
@@ -783,7 +784,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         # Log first songs in pool to verify what we loaded
         print(f"\n📚 [POOL DEBUG] First 5 songs in pool.json:")
         for i, song in enumerate(all_songs[:5], 1):
-            print(f"   #{i}: {song['title']} - {song['artist']} ({song.get('year', 'N/A')})")
+            print(f"   #{i}: {song['title']} - {song['artist']} ({song.get('release_year', 'N/A')})")
         sys.stdout.flush()
         
         # Filter by decades if specified
@@ -810,11 +811,32 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
             # Log first songs after filtering
             print(f"\n🎚️ [FILTER DEBUG] First 5 songs after decade filter:")
             for i, song in enumerate(all_songs[:5], 1):
-                print(f"   #{i}: {song['title']} - {song['artist']} ({song.get('year', 'N/A')})")
+                print(f"   #{i}: {song['title']} - {song['artist']} ({song.get('release_year', 'N/A')})")
             sys.stdout.flush()
             
             if len(all_songs) == 0:
                 print("⚠️  WARNING: No songs found for selected decades, using all songs")
+                all_songs = load_pool()
+        
+        # Filter by genres if specified
+        if genres:
+            filtered_songs = []
+            for song in all_songs:
+                song_genre = song.get('genre')
+                if song_genre and song_genre in genres:
+                    filtered_songs.append(song)
+            
+            print(f"✓ Filtered to {len(filtered_songs)} songs from genres {genres}")
+            all_songs = filtered_songs
+            
+            # Log first songs after filtering
+            print(f"\n🎸 [GENRE FILTER DEBUG] First 5 songs after genre filter:")
+            for i, song in enumerate(all_songs[:5], 1):
+                print(f"   #{i}: {song['title']} - {song['artist']} ({song.get('genre', 'N/A')})")
+            sys.stdout.flush()
+            
+            if len(all_songs) == 0:
+                print("⚠️  WARNING: No songs found for selected genres, using all songs")
                 all_songs = load_pool()
         
         # Calculate optimal songs
@@ -868,10 +890,10 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         print(f"   🆔 Session UUID: {unique_id}")
         print(f"\n   🎵 First 15 songs that will be used in cards:")
         for i, song in enumerate(selected_songs[:15], 1):
-            print(f"      {i:2d}. {song['title']:40s} - {song['artist']:30s} [Year: {song.get('year', 'N/A')}]")
+            print(f"      {i:2d}. {song['title']:40s} - {song['artist']:30s} [Year: {song.get('release_year', 'N/A')}]")
         print(f"\n   🎵 Last 5 songs in selection:")
         for i, song in enumerate(selected_songs[-5:], len(selected_songs)-4):
-            print(f"      {i:2d}. {song['title']:40s} - {song['artist']:30s} [Year: {song.get('year', 'N/A')}]")
+            print(f"      {i:2d}. {song['title']:40s} - {song['artist']:30s} [Year: {song.get('release_year', 'N/A')}]")
         print(f"{'='*80}\n")
         sys.stdout.flush()
     
@@ -1191,6 +1213,7 @@ if __name__ == '__main__':
     parser.add_argument('--prize_full_house', default='', help='Prize for Full House')
     parser.add_argument('--voice_id', default='JBFqnCBsd6RMkjVDRZzb', help='Voice ID for TTS')
     parser.add_argument('--decades', default=None, help='Comma-separated list of decades to filter (e.g., 1980s,1990s,2000s)')
+    parser.add_argument('--genres', default=None, help='Comma-separated list of genres to filter (e.g., Rock,Pop,Dance)')
     parser.add_argument('--session_id', default=None, help='Unique session ID for PDF filename')
     
     args = parser.parse_args()
@@ -1200,6 +1223,12 @@ if __name__ == '__main__':
     if args.decades:
         decades_list = [d.strip() for d in args.decades.split(',')]
         print(f"📅 Filtering songs by decades: {decades_list}")
+    
+    # Parse genres if provided
+    genres_list = None
+    if args.genres:
+        genres_list = [g.strip() for g in args.genres.split(',')]
+        print(f"🎸 Filtering songs by genres: {genres_list}")
     
     generate_cards(
         venue_name=args.venue_name,
@@ -1214,5 +1243,6 @@ if __name__ == '__main__':
         prize_full_house=args.prize_full_house,
         voice_id=args.voice_id,
         decades=decades_list,
+        genres=genres_list,
         session_id=args.session_id
     )
