@@ -532,6 +532,11 @@ class BingoSession(models.Model):
         default=list,
         help_text="Selected decades (e.g., ['1960s', '1970s', '1980s'])"
     )
+    genres = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Selected genres (e.g., ['Rock', 'Pop', 'Dance']). Empty means all genres."
+    )
     
     # Branding (Optional)
     logo_url = models.TextField(
