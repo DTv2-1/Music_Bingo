@@ -790,8 +790,15 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         if decades:
             filtered_songs = []
             for song in all_songs:
-                song_year = song.get('year')
+                # Try both 'year' and 'release_year' fields
+                song_year = song.get('year') or song.get('release_year')
                 if song_year:
+                    # Convert to int if it's a string
+                    if isinstance(song_year, str):
+                        try:
+                            song_year = int(song_year)
+                        except ValueError:
+                            continue
                     # Determine decade from year
                     song_decade = f"{(song_year // 10) * 10}s"
                     if song_decade in decades:

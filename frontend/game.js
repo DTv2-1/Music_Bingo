@@ -39,7 +39,8 @@ let gameState = {
     announcementsAI: null,   // AI-generated announcements (optional)
     venueName: localStorage.getItem('venueName') || 'this venue', // Venue name from localStorage
     welcomeAnnounced: false, // Track if welcome was announced
-    halfwayAnnounced: false  // Track if halfway announcement was made
+    halfwayAnnounced: false, // Track if halfway announcement was made
+    autoNextTimer: null      // Timer ID for auto-next playback
 };
 
 /**
@@ -47,6 +48,13 @@ let gameState = {
  */
 function resetGameState() {
     console.log('🔄 Resetting game state to initial values...');
+    
+    // Cancel any pending auto-next timer
+    if (gameState.autoNextTimer) {
+        clearTimeout(gameState.autoNextTimer);
+        gameState.autoNextTimer = null;
+    }
+    
     gameState.pool = [];
     gameState.remaining = [];
     gameState.called = [];
@@ -1462,6 +1470,13 @@ function clearGameState() {
  * Play next track in sequence
  */
 async function playNextTrack() {
+    // Cancel auto-next timer if button was pressed manually
+    if (gameState.autoNextTimer) {
+        clearTimeout(gameState.autoNextTimer);
+        gameState.autoNextTimer = null;
+        console.log('⏹️ Auto-next timer cancelled (manual button press)');
+    }
+
     // Check if game is over
     if (gameState.remaining.length === 0) {
         updateStatus('🎉 All songs called! Game complete!', false);
@@ -1531,8 +1546,18 @@ async function playNextTrack() {
         updateStatus('🎵 Playing song preview...', true);
         await playSongPreview(track);
 
-        // Done
-        updateStatus(`✅ Ready for next song (${gameState.remaining.length} remaining)`, false);
+        // Done - wait for auto-next delay
+        const delaySeconds = CONFIG.AUTO_NEXT_DELAY_MS / 1000;
+        updateStatus(`⏱️ Next song in ${delaySeconds} seconds... (or press button to skip wait)`, false);
+
+        // Schedule auto-play next track after delay
+        const autoNextTimer = setTimeout(() => {
+            console.log('⏰ Auto-playing next track...');
+            playNextTrack();
+        }, CONFIG.AUTO_NEXT_DELAY_MS);
+
+        // Store timer ID so it can be cancelled if button is pressed
+        gameState.autoNextTimer = autoNextTimer;
 
     } catch (error) {
         console.error('Error playing track:', error);
