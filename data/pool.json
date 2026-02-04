@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-01-28 13:09:20",
-  "total_songs": 1560,
+  "total_songs": 1279,
   "songs": [
     {
       "id": "445095730",
@@ -22,17 +22,6 @@
       "duration_ms": 175520,
       "genre": "Pop",
       "release_year": "2001",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1799994492",
-      "title": "The Living Daylights (Single Version)",
-      "artist": "a-ha",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ce/f3/a7/cef3a73f-f8f0-a31f-f003-473d6aef87eb/mzaf_5841655135542906029.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/95/74/81/95748130-0ce5-a31d-7036-d85e1f82b19e/5059460377356.jpg/600x600bb.jpg",
-      "duration_ms": 256333,
-      "genre": "Pop",
-      "release_year": "1987",
       "has_duplicate_artist": false
     },
     {
@@ -163,17 +152,6 @@
       "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/56/9b/8c/569b8c9e-d9cd-094f-cdfb-77c3de62cee8/mzaf_11999897808980542285.plus.aac.p.m4a",
       "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/6c/c5/c2/6cc5c243-7151-05b8-6942-b98168cefa01/21UMGIM47963.rgb.jpg/600x600bb.jpg",
       "duration_ms": 160766,
-      "genre": "Dance",
-      "release_year": "2021",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1576214378",
-      "title": "My Heart Goes (La Di Da)",
-      "artist": "Becky Hill & Topic",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/f1/de/9d/f1de9d8f-8028-83c2-1943-0b196b6499d0/mzaf_2849627252004474250.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/fa/fb/0e/fafb0e1a-2e1c-4514-db16-276be83d588a/21UMGIM18808.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 148960,
       "genre": "Dance",
       "release_year": "2021",
       "has_duplicate_artist": false
@@ -531,17 +509,6 @@
       "has_duplicate_artist": true
     },
     {
-      "id": "1380753466",
-      "title": "Solo (feat. Demi Lovato)",
-      "artist": "Clean Bandit",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/2a/c4/3a/2ac43aa5-9403-4c8f-1376-279ed26c24f2/mzaf_4857197715920258345.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/62/9f/d5/629fd57a-c611-1c60-9a0e-248af09f4ee9/190295624286.jpg/600x600bb.jpg",
-      "duration_ms": 222653,
-      "genre": "Dance",
-      "release_year": "2018",
-      "has_duplicate_artist": true
-    },
-    {
       "id": "693526009",
       "title": "Christmas Lights",
       "artist": "Coldplay",
@@ -564,17 +531,6 @@
       "has_duplicate_artist": true
     },
     {
-      "id": "1737022838",
-      "title": "Viva La Vida",
-      "artist": "Coldplay",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/97/7d/a5/977da5a8-f58b-b7c6-9493-3bf9b1e2daea/mzaf_11941563585640370468.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/c0/39/0d/c0390ddf-8181-5e6e-486c-a50aac837c9a/5059460279230.jpg/600x600bb.jpg",
-      "duration_ms": 242373,
-      "genre": "Pop",
-      "release_year": "2008",
-      "has_duplicate_artist": true
-    },
-    {
       "id": "1737023138",
       "title": "Yellow",
       "artist": "Coldplay",
@@ -584,17 +540,6 @@
       "genre": "Alternative",
       "release_year": "2000",
       "has_duplicate_artist": true
-    },
-    {
-      "id": "1605189373",
-      "title": "Gangsta's Paradise (feat. L.V.) [2023 Remaster]",
-      "artist": "Coolio",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/56/58/f7/5658f7ec-2bb5-0ef0-0f9f-5adcd1a96363/mzaf_7433975646947882823.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/c2/23/0b/c2230b5f-e753-e9b0-c032-b9ea0713450f/016998513262.png/600x600bb.jpg",
-      "duration_ms": 241013,
-      "genre": "Hip-Hop/Rap",
-      "release_year": "1995",
-      "has_duplicate_artist": false
     },
     {
       "id": "1807417346",
@@ -619,17 +564,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1473319246",
-      "title": "It's All Coming Back to Me Now",
-      "artist": "Céline Dion",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/94/07/1b/94071b51-c4a3-27ca-1f5e-3de71a401b8e/mzaf_2302761538324107215.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/fd/2c/fa/fd2cfa89-c6c4-e564-8e6e-7f03a5377744/886447854761.jpg/600x600bb.jpg",
-      "duration_ms": 456867,
-      "genre": "Pop",
-      "release_year": "1996",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1737025906",
       "title": "Titanium (feat. Sia)",
       "artist": "David Guetta",
@@ -649,17 +583,6 @@
       "duration_ms": 140018,
       "genre": "Dance",
       "release_year": "2023",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1614270485",
-      "title": "Crazy What Love Can Do",
-      "artist": "David Guetta, Becky Hill & Ella Henderson",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/dc/44/19/dc441936-d29f-e536-4a6e-c65c7642dd5b/mzaf_4929084554670499641.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/ed/f9/c9/edf9c917-474f-4359-ab80-d059c785134b/190296152818.jpg/600x600bb.jpg",
-      "duration_ms": 169756,
-      "genre": "Dance",
-      "release_year": "2022",
       "has_duplicate_artist": false
     },
     {
@@ -817,17 +740,6 @@
       "has_duplicate_artist": true
     },
     {
-      "id": "1671187989",
-      "title": "Rio (Single Version)",
-      "artist": "Duran Duran",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/23/55/c9/2355c950-a5ae-1524-c09b-74759c61e00c/mzaf_233600602777368123.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/91/15/58/9115581d-205d-bea7-e401-2370ed594f47/5059460173118.jpg/600x600bb.jpg",
-      "duration_ms": 312733,
-      "genre": "Pop",
-      "release_year": "1982",
-      "has_duplicate_artist": true
-    },
-    {
       "id": "1714984206",
       "title": "Save a Prayer (2009 Remaster)",
       "artist": "Duran Duran",
@@ -903,17 +815,6 @@
       "genre": "Pop",
       "release_year": "2017",
       "has_duplicate_artist": true
-    },
-    {
-      "id": "1550157763",
-      "title": "Let’s Go Home Together",
-      "artist": "Ella Henderson & Tom Grennan",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/1c/2b/7e/1c2b7e2b-dcb0-9507-9a65-11b5b568ef49/mzaf_5076140395976347299.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/28/3a/4e/283a4e43-8599-b261-9b6c-2a5d504c2e5b/190295016494.jpg/600x600bb.jpg",
-      "duration_ms": 208692,
-      "genre": "Pop",
-      "release_year": "2022",
-      "has_duplicate_artist": false
     },
     {
       "id": "1578986673",
@@ -1122,17 +1023,6 @@
       "duration_ms": 177689,
       "genre": "Dance",
       "release_year": "2022",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1518804165",
-      "title": "Head & Heart (feat. MNEK)",
-      "artist": "Joel Corry",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/2b/f4/b2/2bf4b236-5e2b-8824-4564-0603fae71217/mzaf_14135801356850167654.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/cd/f2/89/cdf289a0-1e05-12fa-4d57-a03dbb62f2a6/190295193508.jpg/600x600bb.jpg",
-      "duration_ms": 166028,
-      "genre": "Dance",
-      "release_year": "2020",
       "has_duplicate_artist": false
     },
     {
@@ -1345,17 +1235,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1318467526",
-      "title": "Vibrations",
-      "artist": "Lila Liu",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/ba/04/a0/ba04a0fd-5d5e-f78e-a279-691975d45569/mzaf_1472354852356835483.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/f6/34/8a/f6348af7-7448-1317-75f1-9f66b9ffccc5/191773949525.jpg/600x600bb.jpg",
-      "duration_ms": 223250,
-      "genre": "Electronic",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "528437514",
       "title": "Numb",
       "artist": "LINKIN PARK",
@@ -1364,17 +1243,6 @@
       "duration_ms": 187508,
       "genre": "Hard Rock",
       "release_year": "2003",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1807417342",
-      "title": "Funkytown (Single Version)",
-      "artist": "Lipps, Inc.",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/1b/3e/7f/1b3e7f93-84b5-d623-dfa4-b1292a381251/mzaf_9406231036501951282.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/97/ee/10/97ee1019-f3e1-b6bf-b0be-cf6be1f46eb0/25UMGIM54686.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 234800,
-      "genre": "Disco",
-      "release_year": "1979",
       "has_duplicate_artist": false
     },
     {
@@ -1543,39 +1411,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1737022821",
-      "title": "Scared to Start",
-      "artist": "Michael Marcagi",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/62/fd/69/62fd6968-ea5d-9485-bd62-1eddb230e8af/mzaf_4387602830283792168.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/c0/39/0d/c0390ddf-8181-5e6e-486c-a50aac837c9a/5059460279230.jpg/600x600bb.jpg",
-      "duration_ms": 159636,
-      "genre": "Alternative",
-      "release_year": "2024",
-      "has_duplicate_artist": true
-    },
-    {
-      "id": "1746030389",
-      "title": "Scared to Start",
-      "artist": "Michael Marcagi",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/95/43/37/9543375c-41a9-d1e6-8e39-8a7fb1701526/mzaf_6488497390863105792.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/9f/6f/cc/9f6fcc2a-ee36-9a11-009e-f9d2971e1e04/5059460295636.jpg/600x600bb.jpg",
-      "duration_ms": 159636,
-      "genre": "Alternative",
-      "release_year": "2024",
-      "has_duplicate_artist": true
-    },
-    {
-      "id": "1778036626",
-      "title": "Scared to Start",
-      "artist": "Michael Marcagi",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/fb/4c/bc/fb4cbc6c-0bcb-c005-d7ed-f2941adfff72/mzaf_10064166331076917980.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/e4/35/89/e4358988-da87-7b74-4382-1cb2643e3535/5059460349261.jpg/600x600bb.jpg",
-      "duration_ms": 159636,
-      "genre": "Alternative",
-      "release_year": "2024",
-      "has_duplicate_artist": true
-    },
-    {
       "id": "1446859735",
       "title": "Party In the U.S.A.",
       "artist": "Miley Cyrus",
@@ -1716,17 +1551,6 @@
       "duration_ms": 138592,
       "genre": "Pop",
       "release_year": "2024",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "899159193",
-      "title": "Tarantula (feat. Fresh, $Pyda & Tenor Fly)",
-      "artist": "Pendulum",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview123/v4/3d/f9/1d/3df91da7-70fa-a0c6-f6ae-fc72a9aa330f/mzaf_4613571176977704185.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/44/f9/88/44f9888a-5085-5256-9605-c0d525316571/5060072303626.png/600x600bb.jpg",
-      "duration_ms": 331240,
-      "genre": "Dance",
-      "release_year": "2005",
       "has_duplicate_artist": false
     },
     {
@@ -2005,17 +1829,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1685171169",
-      "title": "Feel the Love (feat. John Newman)",
-      "artist": "Rudimental",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/12/fe/06/12fe0674-eb79-5599-3539-3628d7d9455e/mzaf_14411646840775713655.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/d7/65/61/d76561cc-90ae-c746-534f-a00f3ea0eb27/5059460182172.jpg/600x600bb.jpg",
-      "duration_ms": 245187,
-      "genre": "Electronic",
-      "release_year": "2012",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1680232062",
       "title": "Dancing is Healing",
       "artist": "Rudimental, Charlotte Plank & Vibe Chemistry",
@@ -2115,17 +1928,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1713844385",
-      "title": "Man! I Feel Like A Woman! (Remastered 2023)",
-      "artist": "Shania Twain",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/bd/71/bf/bd71bf78-9623-f282-1bbd-3397d7265f7b/mzaf_175581475143113028.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/1a/69/f7/1a69f728-24af-dfc9-1e09-fe96d78e0e0f/23UM1IM14819.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 236776,
-      "genre": "Country",
-      "release_year": "1997",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1055074639",
       "title": "Unstoppable",
       "artist": "Sia",
@@ -2181,17 +1983,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1807417360",
-      "title": "Higher Love (Single Version)",
-      "artist": "Steve Winwood",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/91/08/c8/9108c87c-d93b-6234-1d16-44843bff4dd9/mzaf_908695793070463513.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/97/ee/10/97ee1019-f3e1-b6bf-b0be-cf6be1f46eb0/25UMGIM54686.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 347440,
-      "genre": "Pop",
-      "release_year": "1986",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1807417571",
       "title": "Part-Time Lover",
       "artist": "Stevie Wonder",
@@ -2233,17 +2024,6 @@
       "duration_ms": 212862,
       "genre": "Dance",
       "release_year": "2012",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1442971188",
-      "title": "Dance (Disco Heat) [12\" Version]",
-      "artist": "Sylvester",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/e5/17/25/e5172506-27df-161c-680c-0219b9716f98/mzaf_338261051814623609.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/66/da/a1/66daa1b6-e397-39e8-318f-1891b4e5d66c/00888072344884.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 498973,
-      "genre": "R&B/Soul",
-      "release_year": "2013",
       "has_duplicate_artist": false
     },
     {
@@ -2324,39 +2104,6 @@
       "has_duplicate_artist": true
     },
     {
-      "id": "1746029919",
-      "title": "Lose Control",
-      "artist": "Teddy Swims",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/26/6d/06/266d0629-0b48-27d0-234a-7be34d23b3c7/mzaf_14377277247688403927.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/9f/6f/cc/9f6fcc2a-ee36-9a11-009e-f9d2971e1e04/5059460295636.jpg/600x600bb.jpg",
-      "duration_ms": 210689,
-      "genre": "Pop",
-      "release_year": "2023",
-      "has_duplicate_artist": true
-    },
-    {
-      "id": "1737022526",
-      "title": "Lose Control",
-      "artist": "Teddy Swims",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/cc/58/f7/cc58f7e1-6081-7f8f-79f7-809121ae50f7/mzaf_7136245222621390937.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/c0/39/0d/c0390ddf-8181-5e6e-486c-a50aac837c9a/5059460279230.jpg/600x600bb.jpg",
-      "duration_ms": 210689,
-      "genre": "Pop",
-      "release_year": "2023",
-      "has_duplicate_artist": true
-    },
-    {
-      "id": "1778036324",
-      "title": "Lose Control",
-      "artist": "Teddy Swims",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8a/38/89/8a3889bb-e8ac-43d9-2881-06554926b831/mzaf_1010178352938151932.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/e4/35/89/e4358988-da87-7b74-4382-1cb2643e3535/5059460349261.jpg/600x600bb.jpg",
-      "duration_ms": 210689,
-      "genre": "Pop",
-      "release_year": "2023",
-      "has_duplicate_artist": true
-    },
-    {
       "id": "1710052037",
       "title": "Me & U",
       "artist": "Tems",
@@ -2431,17 +2178,6 @@
       "duration_ms": 236920,
       "genre": "Pop",
       "release_year": "1981",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "357653191",
-      "title": "All Along the Watchtower",
-      "artist": "The Jimi Hendrix Experience",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/7a/75/19/7a751906-e3c9-b945-aaed-f5d2c9fab3c7/mzaf_7452473214220700286.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/a6/b8/45/a6b84589-6ff7-a462-9ff9-170b724980d5/dj.wjkdwlks.jpg/600x600bb.jpg",
-      "duration_ms": 240800,
-      "genre": "Rock",
-      "release_year": "1968",
       "has_duplicate_artist": false
     },
     {
@@ -2552,17 +2288,6 @@
       "duration_ms": 226306,
       "genre": "Pop",
       "release_year": "2006",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1605736496",
-      "title": "Private Dancer (Single Edit)",
-      "artist": "Tina Turner",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/42/64/06/42640687-93db-c704-6768-c82fc3c64eaa/mzaf_11256257842636027310.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/0d/cb/9c/0dcb9c2f-cba1-2b18-97a0-c74ef880d590/5059460116702.jpg/600x600bb.jpg",
-      "duration_ms": 240480,
-      "genre": "Pop",
-      "release_year": "1984",
       "has_duplicate_artist": false
     },
     {
@@ -2794,17 +2519,6 @@
       "duration_ms": 223827,
       "genre": "Dance",
       "release_year": "1993",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1677012839",
-      "title": "Teardrops (Single Version)",
-      "artist": "Womack & Womack",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/35/30/8d/35308d01-7253-a9b3-7a26-4b9d0d9f505e/mzaf_17012008585861061705.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/7a/cf/65/7acf65e7-1b0a-9a84-b0d9-c8039f81cb4d/23UMGIM24164.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 230760,
-      "genre": "R&B/Soul",
-      "release_year": "2001",
       "has_duplicate_artist": false
     },
     {
@@ -3047,17 +2761,6 @@
       "duration_ms": 285587,
       "genre": "R&B/Soul",
       "release_year": "2002",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "974485474",
-      "title": "Stressed Out",
-      "artist": "twenty one pilots",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a9/74/e8/a974e8f2-0693-9371-bb6c-87047a486254/mzaf_1898989387861959316.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/8e/e2/89/8ee28904-0821-610d-5011-a61845f62756/075679926951.jpg/600x600bb.jpg",
-      "duration_ms": 202335,
-      "genre": "Alternative",
-      "release_year": "2015",
       "has_duplicate_artist": false
     },
     {
@@ -3311,17 +3014,6 @@
       "duration_ms": 187840,
       "genre": "Pop",
       "release_year": "2002",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1440650781",
-      "title": "She's So Gone",
-      "artist": "Naomi Scott",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/46/35/35/463535ad-d518-cb38-3b1a-78d6539c387c/mzaf_11724326880197450806.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/d5/12/ee/d512ee59-a017-97db-6530-858c2a7dda36/11DMGIM02227.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 186453,
-      "genre": "Soundtrack",
-      "release_year": "2011",
       "has_duplicate_artist": false
     },
     {
@@ -3688,17 +3380,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1353057518",
-      "title": "Angel of Mine",
-      "artist": "Eternal",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/f5/bf/81/f5bf81b4-6d6b-a1ae-d619-bae8e1402322/mzaf_13614544379837589382.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/9b/f0/57/9bf0576f-7869-b3de-f8a4-9fcf6a07cbc8/842474155448.jpg/600x600bb.jpg",
-      "duration_ms": 258933,
-      "genre": "Pop",
-      "release_year": "1997",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1353057494",
       "title": "Bachelorette",
       "artist": "Tori Amos",
@@ -3809,17 +3490,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "492546138",
-      "title": "Missing",
-      "artist": "Pat Benesta",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/92/2c/08/922c086c-c7e0-dfd4-9bad-d32d219cfd6a/mzaf_27699148798099572.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/5a/d7/ca/mzi.kuiknlbm.jpg/600x600bb.jpg",
-      "duration_ms": 238936,
-      "genre": "Dance",
-      "release_year": "2011",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1353057513",
       "title": "Hello Hey",
       "artist": "Victoria Silvstedt",
@@ -3897,17 +3567,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "318675593",
-      "title": "Footloose (Single Version)",
-      "artist": "Kenny Loggins",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b1/78/1e/b1781e61-1bb1-b1d3-ac7c-6ac4cb38a50a/mzaf_1338305001424161191.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c9/c0/d1/c9c0d17d-389f-50ad-0475-8ef1e70f217a/mzi.nuojehpg.jpg/600x600bb.jpg",
-      "duration_ms": 225716,
-      "genre": "Pop",
-      "release_year": "1984",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "318675500",
       "title": "How 'Bout Us",
       "artist": "Champaign",
@@ -3963,17 +3622,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "318675448",
-      "title": "Can't We Try (Single Version)",
-      "artist": "Dan Hill & Vonda Shepard",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/74/44/a3/7444a3ef-ea75-74db-e5a0-67643f453759/mzaf_11490881416878189524.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c9/c0/d1/c9c0d17d-389f-50ad-0475-8ef1e70f217a/mzi.nuojehpg.jpg/600x600bb.jpg",
-      "duration_ms": 239611,
-      "genre": "Pop",
-      "release_year": "1987",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "318675298",
       "title": "Keep On Loving You",
       "artist": "REO Speedwagon",
@@ -4015,17 +3663,6 @@
       "duration_ms": 180200,
       "genre": "Pop",
       "release_year": "1983",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "318675359",
-      "title": "Total Eclipse of the Heart (Single Version)",
-      "artist": "Bonnie Tyler",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/36/83/4a/36834a5a-0da2-76c5-90de-a26ce64ccec8/mzaf_5527064459003609996.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c9/c0/d1/c9c0d17d-389f-50ad-0475-8ef1e70f217a/mzi.nuojehpg.jpg/600x600bb.jpg",
-      "duration_ms": 270039,
-      "genre": "Pop",
-      "release_year": "1982",
       "has_duplicate_artist": false
     },
     {
@@ -4084,17 +3721,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "318675444",
-      "title": "Shake You Down (Single Version)",
-      "artist": "Gregory Abbott",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a4/d6/ef/a4d6efb1-c572-8753-0eab-6a22e2acb113/mzaf_4088878903726960177.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c9/c0/d1/c9c0d17d-389f-50ad-0475-8ef1e70f217a/mzi.nuojehpg.jpg/600x600bb.jpg",
-      "duration_ms": 245908,
-      "genre": "Pop",
-      "release_year": "1986",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "318675594",
       "title": "Who Can It Be Now?",
       "artist": "Men At Work",
@@ -4103,17 +3729,6 @@
       "duration_ms": 200995,
       "genre": "Pop",
       "release_year": "2001",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "318675471",
-      "title": "The Flame (Single Edit)",
-      "artist": "Cheap Trick",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4f/53/8b/4f538b05-1d46-df12-a741-f3881724ba57/mzaf_8143292329232716544.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c9/c0/d1/c9c0d17d-389f-50ad-0475-8ef1e70f217a/mzi.nuojehpg.jpg/600x600bb.jpg",
-      "duration_ms": 279070,
-      "genre": "Pop",
-      "release_year": "1988",
       "has_duplicate_artist": false
     },
     {
@@ -4136,50 +3751,6 @@
       "duration_ms": 279874,
       "genre": "Pop",
       "release_year": "1980",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "318675573",
-      "title": "Every Time You Go Away (Single Version)",
-      "artist": "Paul Young",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/92/79/65/927965d3-6dab-e5db-456c-9912093fc33a/mzaf_11776337347173202618.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c9/c0/d1/c9c0d17d-389f-50ad-0475-8ef1e70f217a/mzi.nuojehpg.jpg/600x600bb.jpg",
-      "duration_ms": 265698,
-      "genre": "Pop",
-      "release_year": "1995",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "318675490",
-      "title": "Eternal Flame (La Flama Enterna)",
-      "artist": "The Bangles",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/6a/38/f1/6a38f1f3-8dc9-65ba-3746-900051468dee/mzaf_15480551070717258697.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c9/c0/d1/c9c0d17d-389f-50ad-0475-8ef1e70f217a/mzi.nuojehpg.jpg/600x600bb.jpg",
-      "duration_ms": 234400,
-      "genre": "Pop",
-      "release_year": "1988",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "318675495",
-      "title": "How Am I Supposed to Live Without You",
-      "artist": "Michael Bolton",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b2/7f/56/b27f5665-7dc0-f066-ec1b-a3bd2156513d/mzaf_10368097243859570544.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c9/c0/d1/c9c0d17d-389f-50ad-0475-8ef1e70f217a/mzi.nuojehpg.jpg/600x600bb.jpg",
-      "duration_ms": 255635,
-      "genre": "Pop",
-      "release_year": "1989",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "318675445",
-      "title": "Carrie (Single Version)",
-      "artist": "Europe",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/de/ca/96/deca960c-ee33-9a76-6b80-b0fe3ed8cd08/mzaf_5422203268482020622.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c9/c0/d1/c9c0d17d-389f-50ad-0475-8ef1e70f217a/mzi.nuojehpg.jpg/600x600bb.jpg",
-      "duration_ms": 270294,
-      "genre": "Pop",
-      "release_year": "1986",
       "has_duplicate_artist": false
     },
     {
@@ -4447,17 +4018,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "257766697",
-      "title": "Rock Classics",
-      "artist": "Muziekkapel van de Belgische Luchtmacht",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/ef/fa/8d/effa8d2c-f7d9-7b54-845c-28795fcd18ba/mzaf_3174564231693448753.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/c1/a5/e9/mzi.ywguzwjs.jpg/600x600bb.jpg",
-      "duration_ms": 514707,
-      "genre": "Pop",
-      "release_year": "2007",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1739816633",
       "title": "Bitter Sweet Symphony",
       "artist": "David Garrett",
@@ -4554,17 +4114,6 @@
       "duration_ms": 338733,
       "genre": "Pop",
       "release_year": "1973",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1629902319",
-      "title": "Blue Monday (Single Version)",
-      "artist": "Orgy",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/a3/8c/5e/a38c5e7a-0c01-a0ad-d5e2-e9eecdda8f5b/mzaf_12613833911116129976.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/54/ac/d8/54acd834-079d-644e-08a9-6ed3a2950f6f/5059460139398.jpg/600x600bb.jpg",
-      "duration_ms": 269693,
-      "genre": "Rock",
-      "release_year": "1998",
       "has_duplicate_artist": false
     },
     {
@@ -4788,17 +4337,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1440651715",
-      "title": "Give Your Heart a Break",
-      "artist": "Demi Lovato",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/1a/00/8c/1a008c5e-84fe-af12-7b04-3ab661edbad2/mzaf_15519070650365088774.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/f3/28/fe/f328fef5-772d-740c-6d51-628fa729bfd5/11DMGIM02735.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 205347,
-      "genre": "Pop",
-      "release_year": "2011",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1099848811",
       "title": "Change (In the House of Flies)",
       "artist": "Deftones",
@@ -4931,17 +4469,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "215739235",
-      "title": "You Rock My World",
-      "artist": "Michael Jackson",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/d2/f0/2b/d2f02b0c-479a-6b54-792f-848e6e1e0720/mzaf_14774990669974649429.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/dc/02/ef/dc02eff2-027c-a468-7d7b-aa9404e74f1a/mzi.mgytcnob.jpg/600x600bb.jpg",
-      "duration_ms": 338947,
-      "genre": "Pop",
-      "release_year": "2001",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "258619690",
       "title": "Nobody's Supposed to Be Here",
       "artist": "Deborah Cox",
@@ -4950,17 +4477,6 @@
       "duration_ms": 262281,
       "genre": "Rock",
       "release_year": "1998",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "266221967",
-      "title": "Animal I Have Become",
-      "artist": "Three Days Grace",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/c9/12/59/c91259ba-d503-92c8-7623-535245e0c4a2/mzaf_12059368180397361482.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/cf/b4/5f/mzi.vgwnjneb.jpg/600x600bb.jpg",
-      "duration_ms": 231400,
-      "genre": "Hard Rock",
-      "release_year": "2006",
       "has_duplicate_artist": false
     },
     {
@@ -5049,17 +4565,6 @@
       "duration_ms": 211533,
       "genre": "Dance",
       "release_year": "1982",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1442886531",
-      "title": "Dance (Disco Heat) [12\" Version]",
-      "artist": "Sylvester",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/57/da/cd/57dacd2f-58d2-92fa-9af9-2ffd280da592/mzaf_14420176470596039265.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/9a/fd/a6/9afda6b4-ef57-b7cb-3c0f-483657454acb/00888072344976.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 498973,
-      "genre": "Dance",
-      "release_year": "2013",
       "has_duplicate_artist": false
     },
     {
@@ -5173,17 +4678,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "804066142",
-      "title": "Dance (Hits Bravo 2013 Edit)",
-      "artist": "Electrica Salsa",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/0c/ae/7d/0cae7dbf-5b25-0ed0-cece-a26141af6c7f/mzaf_17293403127756851223.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music4/v4/87/2c/9a/872c9a0c-ba8f-f283-685f-3aff015b5879/4250783621046_1448.jpg/600x600bb.jpg",
-      "duration_ms": 202539,
-      "genre": "Dance",
-      "release_year": "2013",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1444640518",
       "title": "Dance (Radio Edit)",
       "artist": "Dan & Bass",
@@ -5239,17 +4733,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1444143453",
-      "title": "Dance (Disco Heat)",
-      "artist": "Sylvester",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/31/41/a9/3141a93a-f7fa-9437-6464-9abd0793458b/mzaf_2939209080292638086.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/8a/cd/2f/8acd2f29-bf0f-13b0-5bf1-4b186888ba2f/00025218771023.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 351027,
-      "genre": "Dance",
-      "release_year": "1989",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "529516785",
       "title": "Seek Bromance (Avicii's Vocal Edit)",
       "artist": "Tim Berg",
@@ -5272,17 +4755,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1318467734",
-      "title": "With Every Heartbeat",
-      "artist": "Lila Liu",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/19/b9/36/19b9362a-f174-3fe8-014d-3cb05ff1cf0c/mzaf_8223325817176596141.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/f6/34/8a/f6348af7-7448-1317-75f1-9f66b9ffccc5/191773949525.jpg/600x600bb.jpg",
-      "duration_ms": 205500,
-      "genre": "Electronic",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1689688327",
       "title": "Walking On Sunshine",
       "artist": "Katrina and the Waves",
@@ -5291,17 +4763,6 @@
       "duration_ms": 221333,
       "genre": "Pop",
       "release_year": "2009",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1696222357",
-      "title": "LA CANCIÓN",
-      "artist": "J Balvin & Bad Bunny",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/dd/aa/6d/ddaa6d9d-34f1-6b98-082f-51ed8f6c3176/mzaf_8800108352228762426.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/df/e4/ef/dfe4efc4-7cc9-8f63-1ecd-6a3ca654f407/23UMGIM77444.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 242573,
-      "genre": "Urbano latino",
-      "release_year": "2019",
       "has_duplicate_artist": false
     },
     {
@@ -5368,17 +4829,6 @@
       "duration_ms": 179331,
       "genre": "Pop",
       "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1516503241",
-      "title": "O Saki Saki (From \"Batla House\")",
-      "artist": "Neha Kakkar, Tulsi Kumar & B. Praak",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/16/63/2c/16632cd6-b022-96e9-2fa5-3b209fd568b6/mzaf_10747445059300180724.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music113/v4/26/19/fd/2619fd1b-47e4-79e3-ea21-76701c1b7b40/8903431777126_cover.jpg/600x600bb.jpg",
-      "duration_ms": 191089,
-      "genre": "Bollywood",
-      "release_year": "2019",
       "has_duplicate_artist": false
     },
     {
@@ -5503,17 +4953,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1440223674",
-      "title": "Dance",
-      "artist": "Parmalee",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview118/v4/9f/64/6c/9f646c20-8608-f506-5298-e521aa4b6994/mzaf_7005960474657997342.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/c2/f7/68/c2f76897-9f79-cacb-9427-4a40d0749772/0859381127109.jpg/600x600bb.jpg",
-      "duration_ms": 192783,
-      "genre": "Country",
-      "release_year": "2013",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1218178771",
       "title": "Thodakkam Mangalyam (From \"Bangalore Naatkal\")",
       "artist": "Vijay Yesudas, Sachin Warrier & Divya S Menon",
@@ -5522,17 +4961,6 @@
       "duration_ms": 232752,
       "genre": "Tamil",
       "release_year": "2016",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1017047159",
-      "title": "Electronic Music (Love & Sex)",
-      "artist": "Bella K.Twobaby",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/27/05/ab/2705abd8-3b7c-2d99-f41a-fc8278406a92/mzaf_641555147048820821.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/34/b2/13/34b21364-5437-b078-ca6a-49e8f09c66fd/DEEP_HOUSE_2.jpg/600x600bb.jpg",
-      "duration_ms": 312960,
-      "genre": "House",
-      "release_year": "2015",
       "has_duplicate_artist": false
     },
     {
@@ -5701,17 +5129,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1434429743",
-      "title": "Drive and Disconnect",
-      "artist": "Nao",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/12/cc/cb/12cccbc1-0d7c-623c-9496-d90c9e211da2/mzaf_13151521652654253805.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/3b/92/43/3b924304-e0ca-bef6-48c8-f912b446b3c0/886447118528.jpg/600x600bb.jpg",
-      "duration_ms": 210173,
-      "genre": "R&B/Soul",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1014142025",
       "title": "The Bomb! (These Sound Fall Into My Mind) [Radio Edit]",
       "artist": "The Bucketheads",
@@ -5763,17 +5180,6 @@
       "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/bc/c2/4e/bcc24e7c-b389-682c-8f17-5bcb3c4e5f8f/889030016157.png/600x600bb.jpg",
       "duration_ms": 224133,
       "genre": "Alternative",
-      "release_year": "2016",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1460430750",
-      "title": "Forward (feat. James Blake)",
-      "artist": "Beyoncé",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/33/67/12/336712cd-63b6-9c11-bca4-031af872f990/mzaf_8270846592940110441.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/db/25/a1/db25a1c0-8a4a-3b4d-226d-7c7704dc92da/886447680711.jpg/600x600bb.jpg",
-      "duration_ms": 79200,
-      "genre": "Pop",
       "release_year": "2016",
       "has_duplicate_artist": false
     },
@@ -5844,17 +5250,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1240362778",
-      "title": "Higher Ground (feat. Naomi Wild)",
-      "artist": "ODESZA",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2c/e7/e9/2ce7e947-2e72-a633-1a9d-fd3809d86316/mzaf_13079818860292048497.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/eb/d4/22/ebd422d1-b959-dd5d-b395-f9413044cff1/5054429119183.png/600x600bb.jpg",
-      "duration_ms": 215131,
-      "genre": "Electronic",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1434429547",
       "title": "Another Lifetime",
       "artist": "Nao",
@@ -5877,17 +5272,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1486190753",
-      "title": "A Palé",
-      "artist": "ROSALÍA",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/13/0a/27/130a279e-a14a-41ef-39ad-a80c1c3f9f84/mzaf_3613793695723927812.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/ee/be/24/eebe2456-30ca-d611-faff-6ee0a315cff4/886448093916.jpg/600x600bb.jpg",
-      "duration_ms": 143773,
-      "genre": "Pop",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1771694856",
       "title": "Crave You (feat. Giselle)",
       "artist": "Flight Facilities",
@@ -5896,17 +5280,6 @@
       "duration_ms": 234787,
       "genre": "Electronic",
       "release_year": "2010",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1506269787",
-      "title": "I'm God",
-      "artist": "Clams Casino & Imogen Heap",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/56/5b/e2/565be2d0-76eb-f0ed-3f51-8f64054e8725/mzaf_14112148466308110375.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/5d/34/d4/5d34d457-8cd6-4483-1216-70bf0a50e087/193436208420_01_img001.jpg/600x600bb.jpg",
-      "duration_ms": 277711,
-      "genre": "Electronic",
-      "release_year": "2020",
       "has_duplicate_artist": false
     },
     {
@@ -6064,17 +5437,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1799080776",
-      "title": "Best Part (feat. H.E.R.)",
-      "artist": "Daniel Caesar",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/cc/95/ed/cc95edc8-4f9b-0c56-bc74-31ba76a057f9/mzaf_11346187551197903108.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/b6/cd/1a/b6cd1a5b-83af-a1e2-0ad7-ea530fcf2522/859722261219.jpg/600x600bb.jpg",
-      "duration_ms": 209831,
-      "genre": "R&B/Soul",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1612543554",
       "title": "Spread Thin",
       "artist": "Mariah the Scientist",
@@ -6083,17 +5445,6 @@
       "duration_ms": 202520,
       "genre": "R&B/Soul",
       "release_year": "2022",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "386153613",
-      "title": "Confessions, Pt. II (Confessions Special Edition Version)",
-      "artist": "USHER",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d1/82/7f/d1827fe9-d59d-f2df-6871-b6caf8f468f9/mzaf_8236970874420673634.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/02/c6/e1/02c6e1cd-8d57-97b4-6ef1-77d2be004509/mzi.sjrqsmrq.jpg/600x600bb.jpg",
-      "duration_ms": 211200,
-      "genre": "R&B/Soul",
-      "release_year": "2004",
       "has_duplicate_artist": false
     },
     {
@@ -6127,17 +5478,6 @@
       "duration_ms": 196795,
       "genre": "R&B/Soul",
       "release_year": "2020",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "626205216",
-      "title": "Love On Top",
-      "artist": "Beyoncé",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/0c/88/63/0c886300-bdef-b47f-1629-0ee98913e654/mzaf_7009449995904544992.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c9/6b/3f/c96b3ff3-9cf6-4ce6-05aa-9f11474bd569/886443938373.jpg/600x600bb.jpg",
-      "duration_ms": 267541,
-      "genre": "Pop",
-      "release_year": "2011",
       "has_duplicate_artist": false
     },
     {
@@ -6328,17 +5668,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "269573364",
-      "title": "Billie Jean",
-      "artist": "Michael Jackson",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/dc/bc/8a/dcbc8a3e-4ce1-c00d-cc02-eda2212053c7/mzaf_8347559338388601510.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/32/4f/fd/324ffda2-9e51-8f6a-0c2d-c6fd2b41ac55/074643811224.jpg/600x600bb.jpg",
-      "duration_ms": 293802,
-      "genre": "Pop",
-      "release_year": "1982",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1455151648",
       "title": "Talk (feat. Disclosure)",
       "artist": "Khalid",
@@ -6383,39 +5712,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "386153641",
-      "title": "Burn (Confessions Special Edition Version)",
-      "artist": "USHER",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/68/9c/a8/689ca8a7-3925-0ee4-e259-ed869f945063/mzaf_17109772183640198729.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/02/c6/e1/02c6e1cd-8d57-97b4-6ef1-77d2be004509/mzi.sjrqsmrq.jpg/600x600bb.jpg",
-      "duration_ms": 231933,
-      "genre": "R&B/Soul",
-      "release_year": "2004",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "261707067",
-      "title": "Irreplaceable",
-      "artist": "Beyoncé",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/fe/91/83/fe918372-8da5-0f6e-3842-04dcea8e9dfe/mzaf_8483822826889482312.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/47/b2/b2/47b2b26b-5abd-0953-6688-7dfff80508ec/mzi.sozuruch.jpg/600x600bb.jpg",
-      "duration_ms": 227780,
-      "genre": "Pop",
-      "release_year": "2006",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "201275913",
-      "title": "Me, Myself and I",
-      "artist": "Beyoncé",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/31/e7/38/31e738a9-e84c-6351-b23d-8d5ab2f90cd7/mzaf_11672063210764199012.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/03/c5/d4/mzi.ldvrmhxt.jpg/600x600bb.jpg",
-      "duration_ms": 301133,
-      "genre": "Pop",
-      "release_year": "2003",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "328449358",
       "title": "Say Aah (feat. Fabolous)",
       "artist": "Trey Songz",
@@ -6457,28 +5753,6 @@
       "duration_ms": 249867,
       "genre": "R&B/Soul",
       "release_year": "1987",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "201277862",
-      "title": "Dangerously in Love 2",
-      "artist": "Beyoncé",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/2d/e2/e9/2de2e9bd-f7fe-2402-673b-d0b4a4313d46/mzaf_2220946249864182868.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/03/c5/d4/mzi.ldvrmhxt.jpg/600x600bb.jpg",
-      "duration_ms": 293045,
-      "genre": "Pop",
-      "release_year": "2003",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "626205219",
-      "title": "Countdown",
-      "artist": "Beyoncé",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/e5/0f/c0/e50fc0f8-638b-eb8f-173e-4cddb0fdf266/mzaf_15933152060254146675.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c9/6b/3f/c96b3ff3-9cf6-4ce6-05aa-9f11474bd569/886443938373.jpg/600x600bb.jpg",
-      "duration_ms": 213486,
-      "genre": "Pop",
-      "release_year": "2011",
       "has_duplicate_artist": false
     },
     {
@@ -6614,17 +5888,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1773317865",
-      "title": "Just Dropped In (To See What Condition My Condition Was In)",
-      "artist": "The First Edition",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ac/25/d5/ac25d546-ddf5-395b-170e-75bf0fda72b4/mzaf_11648230746001342698.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/3b/bf/1e/3bbf1e83-9194-a118-c93f-9e8e71f90b6d/24UM1IM06941.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 198280,
-      "genre": "Country",
-      "release_year": "1967",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1560127153",
       "title": "Tighten Up",
       "artist": "Archie Bell & The Drells",
@@ -6757,17 +6020,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1773318050",
-      "title": "My Destiny",
-      "artist": "Lionel Richie",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a9/a1/8d/a9a18d84-84ad-3333-9b67-10329c42a93f/mzaf_14145825802403427269.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/3b/bf/1e/3bbf1e83-9194-a118-c93f-9e8e71f90b6d/24UM1IM06941.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 288440,
-      "genre": "R&B/Soul",
-      "release_year": "1992",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1443506522",
       "title": "Soul Power",
       "artist": "Maceo Parker",
@@ -6875,17 +6127,6 @@
       "duration_ms": 275347,
       "genre": "R&B/Soul",
       "release_year": "2012",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "164470603",
-      "title": "Gonna Get Along Without You Now (Re-Recording)",
-      "artist": "Viola Wills",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/84/ce/1f/84ce1fc2-ce12-2677-0bcd-b7194cb3064d/mzaf_18205516181442217674.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/54/94/d6/mzi.rgyxrsvw.jpg/600x600bb.jpg",
-      "duration_ms": 195750,
-      "genre": "R&B/Soul",
-      "release_year": "1996",
       "has_duplicate_artist": false
     },
     {
@@ -7076,17 +6317,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1443506371",
-      "title": "Yesterday I Had the Blues",
-      "artist": "Maceo Parker",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/9f/63/5d/9f635d24-3e51-63b6-fd52-a038b8da2606/mzaf_910825971161959132.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/3a/b2/0f/3ab20f0c-f825-d471-2cf8-1908807a29ad/00793018336437.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 475627,
-      "genre": "R&B/Soul",
-      "release_year": "2012",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1443506517",
       "title": "Rock Steady",
       "artist": "Maceo Parker",
@@ -7153,67 +6383,12 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "83090867",
-      "title": "Oye Mi Canto",
-      "artist": "N.O.R.E.",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/c9/4c/98/c94c986d-fdd1-c7b0-f482-144a8c82db1a/mzaf_1117898296465389054.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Features114/v4/46/46/6a/46466a3b-bd39-5941-9d02-0bb5da7ee705/dj.vugpwnty.jpg/600x600bb.jpg",
-      "duration_ms": 235120,
-      "genre": "Urbano latino",
-      "release_year": "2004",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "83090564",
-      "title": "Baila Morena",
-      "artist": "Héctor & Tito",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/b4/a5/a2/b4a5a2ab-c913-46a7-b370-5c7ee4415a09/mzaf_5869949790258602350.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Features114/v4/46/46/6a/46466a3b-bd39-5941-9d02-0bb5da7ee705/dj.vugpwnty.jpg/600x600bb.jpg",
-      "duration_ms": 185307,
-      "genre": "Urbano latino",
-      "release_year": "2005",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "891373088",
-      "title": "El Taxi (feat. Osmani Garcia & Sensato) [Extended Mix]",
-      "artist": "Pitbull",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/3d/e1/f5/3de1f575-dbb4-8a88-6c76-c7afb4a75170/mzaf_15937620825058742459.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/7e/d2/1c/7ed21cf6-d221-223b-09e1-761da48b861f/latinhitsummer.jpg/600x600bb.jpg",
-      "duration_ms": 327267,
-      "genre": "Música tropical",
-      "release_year": "2005",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1239565854",
-      "title": "Ay Mi Dios (feat. Pitbull, Yandel & Chacal)",
-      "artist": "IAmChino",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/e7/81/c7/e781c711-1414-c559-4542-85ea7f78749b/mzaf_5931000895373827935.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music117/v4/ff/df/e1/ffdfe1df-2d0b-dd59-90a1-f9c64d427c77/REGGAETON_Hits_v2_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 252167,
-      "genre": "Urbano latino",
-      "release_year": "2016",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1239565868",
       "title": "Soy Peor (Mambo Remix)",
       "artist": "Bad Bunny & Omega",
       "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/d6/1f/cf/d61fcf76-f715-a0de-90de-e358db372616/mzaf_7646885203363273885.plus.aac.p.m4a",
       "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music117/v4/ff/df/e1/ffdfe1df-2d0b-dd59-90a1-f9c64d427c77/REGGAETON_Hits_v2_iTunes.jpg/600x600bb.jpg",
       "duration_ms": 224222,
-      "genre": "Urbano latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1689438461",
-      "title": "Hasta el Amanecer",
-      "artist": "Nicky Jam",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/bb/3b/55/bb3b55e6-82b5-302d-244a-f4daadb6b843/mzaf_8553039850815088793.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/d8/a5/c0/d8a5c0a2-e278-280c-49b3-8a6c07190c51/196871151252.jpg/600x600bb.jpg",
-      "duration_ms": 197467,
       "genre": "Urbano latino",
       "release_year": "2017",
       "has_duplicate_artist": false
@@ -7230,72 +6405,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1440652101",
-      "title": "Ahora Dice (feat. Arcángel)",
-      "artist": "Chris Jedi, J Balvin & Ozuna",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/32/cf/fd/32cffdc5-b140-843d-b366-0903e9683fa9/mzaf_2715257226986468706.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/db/d6/1d/dbd61df5-8431-a665-d881-cb72cfab14e5/17UM1IM03492.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 271133,
-      "genre": "Urbano latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1239565855",
-      "title": "Klok Con Klok",
-      "artist": "Ceky Viciny",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/82/c8/1f/82c81f26-e660-9c0d-5430-71b19217c12f/mzaf_17077689575870401334.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music117/v4/ff/df/e1/ffdfe1df-2d0b-dd59-90a1-f9c64d427c77/REGGAETON_Hits_v2_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 163667,
-      "genre": "Urbano latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1067408100",
-      "title": "La Llamada De Mi Ex",
-      "artist": "Chiquito Team Band",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/92/a1/80/92a18013-e022-9e71-da6e-b0e66e64b16c/mzaf_566421899749013283.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/22/4a/91/224a91be-f4c4-3e72-4b38-b8ff338635e9/dj.ixwyutwn.jpg/600x600bb.jpg",
-      "duration_ms": 211720,
-      "genre": "Música tropical",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "83090739",
-      "title": "Ven báilalo (Reggaeton Mix)",
-      "artist": "Angel y Khriz",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/c3/d1/26/c3d1261d-0fd3-a98f-d061-cdae2cf520e8/mzaf_14988098671903415873.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Features114/v4/46/46/6a/46466a3b-bd39-5941-9d02-0bb5da7ee705/dj.vugpwnty.jpg/600x600bb.jpg",
-      "duration_ms": 252773,
-      "genre": "Urbano latino",
-      "release_year": "2005",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1067408433",
-      "title": "La Dura (Reggaeton Version)",
-      "artist": "Jacob Forever",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/dd/db/17/dddb1702-09d3-e58e-9962-e079a88da368/mzaf_5042916800710741545.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/22/4a/91/224a91be-f4c4-3e72-4b38-b8ff338635e9/dj.ixwyutwn.jpg/600x600bb.jpg",
-      "duration_ms": 233400,
-      "genre": "Música tropical",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1067408990",
-      "title": "El Dolido",
-      "artist": "Kiko Rodriguez",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/fa/3e/b8/fa3eb899-a580-5697-2c26-0a0d90fc08ec/mzaf_5933906305577043430.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/22/4a/91/224a91be-f4c4-3e72-4b38-b8ff338635e9/dj.ixwyutwn.jpg/600x600bb.jpg",
-      "duration_ms": 194933,
-      "genre": "Música tropical",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1135440495",
       "title": "Punto Y Aparte",
       "artist": "Chiquito Team Band",
@@ -7304,61 +6413,6 @@
       "duration_ms": 189707,
       "genre": "Música tropical",
       "release_year": "2016",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1689438232",
-      "title": "El Perdón",
-      "artist": "Nicky Jam & Enrique Iglesias",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/cd/39/06/cd390639-de30-0070-c152-59625bf7cad3/mzaf_6218555333808739031.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/d8/a5/c0/d8a5c0a2-e278-280c-49b3-8a6c07190c51/196871151252.jpg/600x600bb.jpg",
-      "duration_ms": 207837,
-      "genre": "Urbano latino",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1526959180",
-      "title": "Klok Con Klok",
-      "artist": "Ceky Viciny",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/79/f6/d3/79f6d3ab-f750-3059-148d-2dc6b3fa2ff5/mzaf_3248178961444546427.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/e0/e4/9e/e0e49e4c-7f8d-ac86-8537-7e5eb3500152/812429011587.png/600x600bb.jpg",
-      "duration_ms": 163800,
-      "genre": "Urbano latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1239565891",
-      "title": "Banda De Camión",
-      "artist": "El Alfa",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/f2/55/73/f2557372-d553-d468-1bd4-dfe862963182/mzaf_13381966474245020249.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music117/v4/ff/df/e1/ffdfe1df-2d0b-dd59-90a1-f9c64d427c77/REGGAETON_Hits_v2_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 194000,
-      "genre": "Urbano latino",
-      "release_year": "2016",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1320872995",
-      "title": "La Nota Se Me Encampana (with Tali Goya, Ceky Viciny, Quimico Ultra Mega & Shelow Shaq) [Remix]",
-      "artist": "Yofrangel, Tali Goya, Ceky Viciny, Quimico Ultra Mega & Shelow Shaq",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/bc/53/2d/bc532dd8-6280-2bef-6559-1d946b8dbd88/mzaf_698958565430319176.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/65/f9/3a/65f93a3e-97ca-f42b-23c1-b448d098074c/LatinHits2018ClubEdition_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 274667,
-      "genre": "Música tropical",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "83091016",
-      "title": "Lo Grande Que Es Perdonar",
-      "artist": "Vico C",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/1f/2f/f0/1f2ff05f-f62a-1b02-3e80-5d6e87769523/mzaf_3562865052850011799.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Features114/v4/46/46/6a/46466a3b-bd39-5941-9d02-0bb5da7ee705/dj.vugpwnty.jpg/600x600bb.jpg",
-      "duration_ms": 282400,
-      "genre": "Urbano latino",
-      "release_year": "2005",
       "has_duplicate_artist": false
     },
     {
@@ -7373,72 +6427,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1135440494",
-      "title": "Pa' La Camara",
-      "artist": "Chacal",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/b4/df/c1/b4dfc1e7-31ad-464c-498a-b510dc07d71d/mzaf_16263538961515804287.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/36/97/cb/3697cbd5-a344-fa2c-82b4-ad57267a0fe9/LatinHits2016Summer_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 203187,
-      "genre": "Música tropical",
-      "release_year": "2016",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "945507958",
-      "title": "Pero Me Acuerdo de Ti",
-      "artist": "Los 4 & Laritza Bacallao",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/ed/24/11/ed24112b-809f-6f41-14ad-a00ebb188ac0/mzaf_14140052076361958719.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/30/70/b4/3070b49b-b7fd-b31e-3e33-1203af0b4973/latinhits2015_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 236213,
-      "genre": "Música tropical",
-      "release_year": "2014",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "945507931",
-      "title": "Amanecí Contento",
-      "artist": "Secreto El Famoso Biberón",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/de/14/38/de14383c-28bc-66a4-0475-0e0935fa1894/mzaf_7000314169866801765.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/30/70/b4/3070b49b-b7fd-b31e-3e33-1203af0b4973/latinhits2015_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 241733,
-      "genre": "Música tropical",
-      "release_year": "2014",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1320872954",
-      "title": "Corazón Con Candado",
-      "artist": "Raulin Rodriguez",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/b4/02/a1/b402a19d-eadb-e240-4586-785b11a50948/mzaf_14259383520012279971.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/65/f9/3a/65f93a3e-97ca-f42b-23c1-b448d098074c/LatinHits2018ClubEdition_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 262667,
-      "genre": "Música tropical",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "83090653",
-      "title": "Solteras",
-      "artist": "La Factoría",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/d2/36/76/d23676cb-c04f-19b1-db2d-1fe91e29765f/mzaf_44999613285548694.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Features114/v4/46/46/6a/46466a3b-bd39-5941-9d02-0bb5da7ee705/dj.vugpwnty.jpg/600x600bb.jpg",
-      "duration_ms": 168320,
-      "genre": "Urbano latino",
-      "release_year": "2005",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1269286851",
-      "title": "Dile Que Tú Me Quieres",
-      "artist": "Ozuna",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/02/04/ec/0204ec12-f2e1-28ad-930f-2879b30c4dfd/mzaf_11737615212077973561.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/df/7c/1b/df7c1b32-0fca-94f0-866b-ba89e420ca04/697691884103.jpg/600x600bb.jpg",
-      "duration_ms": 226520,
-      "genre": "Urbano latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1682500319",
       "title": "un x100to",
       "artist": "Grupo Frontera & Bad Bunny",
@@ -7447,17 +6435,6 @@
       "duration_ms": 194563,
       "genre": "Música Mexicana",
       "release_year": "2023",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1135440460",
-      "title": "Ponme To Eso Pa' Lante (Toyota US Commercial)",
-      "artist": "El Chuape",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/e5/b2/b0/e5b2b03f-0eb9-e25d-ca59-a73687f3e6ab/mzaf_5341757744744306266.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/36/97/cb/3697cbd5-a344-fa2c-82b4-ad57267a0fe9/LatinHits2016Summer_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 171947,
-      "genre": "Música tropical",
-      "release_year": "2012",
       "has_duplicate_artist": false
     },
     {
@@ -7472,39 +6449,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1067408272",
-      "title": "Chapa De Callejón",
-      "artist": "Farruko & El mayor clasico",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/61/c1/30/61c13066-06ea-cd4a-06e0-88606e0424a4/mzaf_14275783916488830210.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/22/4a/91/224a91be-f4c4-3e72-4b38-b8ff338635e9/dj.ixwyutwn.jpg/600x600bb.jpg",
-      "duration_ms": 197667,
-      "genre": "Música tropical",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "945507892",
-      "title": "Como Yo Le Doy (feat. Don Miguelo) [Spanglish Version]",
-      "artist": "Pitbull",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/79/8d/c4/798dc43c-2944-b88a-95d2-d422dd5ddcd6/mzaf_4544631147044795735.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/30/70/b4/3070b49b-b7fd-b31e-3e33-1203af0b4973/latinhits2015_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 262253,
-      "genre": "Música tropical",
-      "release_year": "2014",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1196006953",
-      "title": "La Varita (Remix)",
-      "artist": "El mayor clasico & Musicologo The Libro",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/79/26/63/7926631f-6c3a-68be-8d40-98937a380d6b/mzaf_4484854275866735551.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/55/f1/5f/55f15f89-9a80-88f9-641c-5a5f5af02ba2/LatinHits2017_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 225333,
-      "genre": "Música tropical",
-      "release_year": "2016",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1591005156",
       "title": "Bum Bum Tam Tam",
       "artist": "MC Fioti",
@@ -7513,28 +6457,6 @@
       "duration_ms": 155454,
       "genre": "Brazilian",
       "release_year": "2014",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1239565852",
-      "title": "Oye Tu Si Suena",
-      "artist": "El Micha",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/4b/06/c0/4b06c019-9461-f0ec-b111-2979cbc8fac9/mzaf_13398574695516440789.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music117/v4/ff/df/e1/ffdfe1df-2d0b-dd59-90a1-f9c64d427c77/REGGAETON_Hits_v2_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 215333,
-      "genre": "Urbano latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1196006797",
-      "title": "La Llamada De Mi Ex",
-      "artist": "Chiquito Team Band",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/be/fc/81/befc813d-e552-09d5-532f-b586433ac890/mzaf_5687067078130200731.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/55/f1/5f/55f15f89-9a80-88f9-641c-5a5f5af02ba2/LatinHits2017_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 211667,
-      "genre": "Música tropical",
-      "release_year": "2015",
       "has_duplicate_artist": false
     },
     {
@@ -7549,28 +6471,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "83090840",
-      "title": "Gozando Viviré",
-      "artist": "Fulanito",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/af/28/0a/af280a58-82c5-c07f-b816-4dcbef81549f/mzaf_14764787607793366090.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Features114/v4/46/46/6a/46466a3b-bd39-5941-9d02-0bb5da7ee705/dj.vugpwnty.jpg/600x600bb.jpg",
-      "duration_ms": 239893,
-      "genre": "Urbano latino",
-      "release_year": "2005",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1067408101",
-      "title": "El Taxi (feat. Osmani Garcia & Sensato)",
-      "artist": "Pitbull",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/35/62/ee/3562ee3a-2661-1b5e-d680-ca2c6007d8f7/mzaf_717897941832647223.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/22/4a/91/224a91be-f4c4-3e72-4b38-b8ff338635e9/dj.ixwyutwn.jpg/600x600bb.jpg",
-      "duration_ms": 249000,
-      "genre": "Música tropical",
-      "release_year": "2000",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1622045948",
       "title": "Neverita",
       "artist": "Bad Bunny",
@@ -7579,72 +6479,6 @@
       "duration_ms": 173119,
       "genre": "Latin",
       "release_year": "2022",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1733069730",
-      "title": "Si No Quieres No",
-      "artist": "Luis R Conriquez & Neton Vega",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3b/f4/95/3bf495f7-391f-fba7-8273-df871f91b01d/mzaf_17332798300197175198.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/a4/f9/58/a4f95869-c2cc-0615-237f-7e2a45ede2c3/1963621990404_cover.jpg/600x600bb.jpg",
-      "duration_ms": 147011,
-      "genre": "Latin",
-      "release_year": "2024",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1461912470",
-      "title": "11 PM",
-      "artist": "Maluma",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/59/1d/f8/591df83d-71ec-0438-c309-658dbbdbbde0/mzaf_16546689805069919157.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/09/c5/c2/09c5c2c4-b022-bcbe-a3ab-7e85e1d7084d/886447616321.jpg/600x600bb.jpg",
-      "duration_ms": 175733,
-      "genre": "Urbano latino",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "891373140",
-      "title": "Como Yo Le Doy (feat. Don Miguelo) [Spanglish Version]",
-      "artist": "Pitbull",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/8a/1d/80/8a1d80d6-1eeb-0027-ffcf-522059ef836b/mzaf_12817331012312333134.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/7e/d2/1c/7ed21cf6-d221-223b-09e1-761da48b861f/latinhitsummer.jpg/600x600bb.jpg",
-      "duration_ms": 262250,
-      "genre": "Música tropical",
-      "release_year": "2014",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "314891177",
-      "title": "Dile Al Amor",
-      "artist": "Aventura",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/c8/67/31/c8673136-3119-c8c3-ddf9-38a4ea00f1cb/mzaf_5425061340439128162.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/82/a7/0d/82a70d84-9617-2525-c39b-c72c1942745a/dj.hxcnslvw.jpg/600x600bb.jpg",
-      "duration_ms": 229360,
-      "genre": "Música tropical",
-      "release_year": "2009",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "945507891",
-      "title": "Bailando (Salsa Version)",
-      "artist": "Issac Delgado, Gente de Zona & Descemer Bueno",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/6e/c5/40/6ec5408f-22f8-123d-1801-56ac3c1e9024/mzaf_14655862056227141500.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/30/70/b4/3070b49b-b7fd-b31e-3e33-1203af0b4973/latinhits2015_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 273853,
-      "genre": "Música tropical",
-      "release_year": "2014",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1222116521",
-      "title": "Tengo Que Colgar",
-      "artist": "Chiquito Team Band",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/0a/84/44/0a8444f1-3824-71fe-2f8a-2aee541b670d/mzaf_2631624299771924483.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/60/cb/4d/60cb4d8c-599b-8cc1-a815-14fccf724232/HotSalsa2017_iTunes.jpg/600x600bb.jpg",
-      "duration_ms": 220297,
-      "genre": "Música tropical",
-      "release_year": "2017",
       "has_duplicate_artist": false
     },
     {
@@ -7659,39 +6493,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1440652103",
-      "title": "Alguien Robo (feat. Wisin & Nacho)",
-      "artist": "Sebastián Yatra",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/6c/94/16/6c941662-4725-6528-575d-caedaee918b5/mzaf_923793409063744916.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/db/d6/1d/dbd61df5-8431-a665-d881-cb72cfab14e5/17UM1IM03492.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 223613,
-      "genre": "Pop Latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1437920364",
-      "title": "Calma (Remix)",
-      "artist": "Pedro Capó & Farruko",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b5/fd/8b/b5fd8be3-b1b6-f832-3838-f199b9ff1fd1/mzaf_7582241457317817406.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/9f/47/11/9f4711a3-4e1d-22cd-b289-df12fb7d2f3e/886447355534.jpg/600x600bb.jpg",
-      "duration_ms": 238200,
-      "genre": "Pop Latino",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1269287617",
-      "title": "El Farsante",
-      "artist": "Ozuna",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/fe/43/8b/fe438b7c-f00c-303c-2a08-2a120ccce139/mzaf_2108481866883056090.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/df/7c/1b/df7c1b32-0fca-94f0-866b-ba89e420ca04/697691884103.jpg/600x600bb.jpg",
-      "duration_ms": 233827,
-      "genre": "Urbano latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "862710010",
       "title": "Yo Voy (feat. Daddy Yankee)",
       "artist": "Zion & Lennox",
@@ -7700,149 +6501,6 @@
       "duration_ms": 232020,
       "genre": "Urbano latino",
       "release_year": "2004",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1652080289",
-      "title": "No Me Conoce (Remix)",
-      "artist": "JHAYCO, J Balvin & Bad Bunny",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/89/40/1c/89401ce1-1a07-3bdf-08af-1723621ecf67/mzaf_14833041632663356895.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/4f/64/d2/4f64d264-ce5b-64a7-3d11-5d7550613db1/22UM1IM25832.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 307135,
-      "genre": "Urbano latino",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1470146813",
-      "title": "LA CANCIÓN",
-      "artist": "J Balvin & Bad Bunny",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/cf/5f/ef/cf5fef49-8ab0-0d0b-f17a-d820cdca1d88/mzaf_3693019759359818051.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/77/32/74/7732746d-25e5-baae-b921-bad4a07d87b1/19UMGIM55524.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 242573,
-      "genre": "Urbano latino",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1786000220",
-      "title": "Lo Que Pasó, Pasó",
-      "artist": "Daddy Yankee",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3c/54/cd/3c54cd4c-eb88-2d17-5a0a-2d7ebec746c8/mzaf_6217224293470003520.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/2f/66/f0/2f66f0f1-c3c2-9dc0-8391-04804cabc8cf/24CRGIM46808.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 210933,
-      "genre": "Urbano latino",
-      "release_year": "2004",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1442167894",
-      "title": "Reggaeton",
-      "artist": "J Balvin",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/37/a9/90/37a9901a-364e-89bb-0e9a-b04862186d44/mzaf_15944347033114139060.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/b6/37/e8/b637e8d8-e1bf-9b73-3e18-5c381f9af67d/00602577300943.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 158796,
-      "genre": "Urbano latino",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1269287605",
-      "title": "Bebé (feat. Anuel AA)",
-      "artist": "Ozuna",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/5c/04/7a/5c047aab-046b-a240-a074-b70999b4c9b7/mzaf_1898776444250666847.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/df/7c/1b/df7c1b32-0fca-94f0-866b-ba89e420ca04/697691884103.jpg/600x600bb.jpg",
-      "duration_ms": 230320,
-      "genre": "Urbano latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1269286684",
-      "title": "Tu Foto",
-      "artist": "Ozuna",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/0b/3b/af/0b3baf75-e0b6-ca24-c549-d3b6fbf0a848/mzaf_4049295876178552765.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/df/7c/1b/df7c1b32-0fca-94f0-866b-ba89e420ca04/697691884103.jpg/600x600bb.jpg",
-      "duration_ms": 193227,
-      "genre": "Urbano latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1473307010",
-      "title": "China (feat. J Balvin & Ozuna)",
-      "artist": "Anuel AA, Daddy Yankee & KAROL G",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/1e/f7/a9/1ef7a9a5-5a4c-79c3-7261-385757ad26dc/mzaf_5089172852372346456.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/75/a2/e6/75a2e657-0373-2667-cfbb-ee2247f4dff8/194491110918.jpg/600x600bb.jpg",
-      "duration_ms": 301714,
-      "genre": "Urbano latino",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1269286798",
-      "title": "Se Preparó",
-      "artist": "Ozuna",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/db/ff/94/dbff94c3-6060-a9fc-b5bd-d9d77b7a431a/mzaf_13745936307260682678.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/df/7c/1b/df7c1b32-0fca-94f0-866b-ba89e420ca04/697691884103.jpg/600x600bb.jpg",
-      "duration_ms": 188080,
-      "genre": "Urbano latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1460707404",
-      "title": "Baila Baila Baila (feat. Daddy Yankee, J Balvin, Farruko & Anuel AA) [Remix]",
-      "artist": "Ozuna, Daddy Yankee & J Balvin",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/70/c5/46/70c5460c-44bf-8efb-63e6-d097c9bd89f1/mzaf_3058529851650420965.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/16/71/df/1671df3a-2260-253f-7207-9c3dbddf53c1/193483775180.jpg/600x600bb.jpg",
-      "duration_ms": 235284,
-      "genre": "Urbano latino",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1676343411",
-      "title": "BESO",
-      "artist": "ROSALÍA & Rauw Alejandro",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/48/6f/95/486f9539-bca5-3b41-888b-8c12dae6c8e6/mzaf_4242894844414471612.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/b0/e4/ac/b0e4ac99-eb38-7370-ea50-0bcf0bcbb054/196589949080.jpg/600x600bb.jpg",
-      "duration_ms": 194543,
-      "genre": "Pop Latino",
-      "release_year": "2023",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1433977214",
-      "title": "Única",
-      "artist": "Ozuna",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/3e/ae/49/3eae4940-45be-ea3d-3ed0-e4690b568df5/mzaf_3685123291200019484.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/47/02/de/4702de7f-d47e-b507-1227-b8534cbb9cd8/697691884080.jpg/600x600bb.jpg",
-      "duration_ms": 218387,
-      "genre": "Urbano latino",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1048181445",
-      "title": "El Perdedor",
-      "artist": "Maluma",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/a8/ee/6c/a8ee6c2d-8ed0-6f39-e408-561a0d72045d/mzaf_12492353562523664957.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/05/17/51/051751c2-d6cd-c466-9e0d-c185d8e22897/886445195026.jpg/600x600bb.jpg",
-      "duration_ms": 207168,
-      "genre": "Urbano latino",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "160405914",
-      "title": "Ella y Yo (Featuring Don Omar)",
-      "artist": "Aventura & Don Omar",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0f/59/11/0f59114b-7752-fd67-3fbc-eb427e5f5404/mzaf_10303396973771177017.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/2e/e0/db/2ee0db3a-4607-4688-5ed5-a51eda69d49d/dj.phdgvndl.jpg/600x600bb.jpg",
-      "duration_ms": 267787,
-      "genre": "Música tropical",
-      "release_year": "2005",
       "has_duplicate_artist": false
     },
     {
@@ -7857,28 +6515,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1500776929",
-      "title": "A Tu Merced",
-      "artist": "Bad Bunny",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/17/ec/ef/17eceff9-59e2-3dbc-2395-eb83903b7d03/mzaf_3226979305489942701.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/8c/0f/81/8c0f81f2-9f10-5e3d-b9de-5961a73e8e52/195081078724.jpg/600x600bb.jpg",
-      "duration_ms": 175918,
-      "genre": "Urbano latino",
-      "release_year": "2020",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1104654708",
-      "title": "Reggaeton",
-      "artist": "Jhoni \"The Voice\"",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/67/9a/cb/679acb54-38d8-24fd-3b19-4ac4cbbc56e0/mzaf_17969117813732373538.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music18/v4/2d/c9/da/2dc9da45-a0f3-fca7-594b-533fce8e4a6c/859717094501_cover.jpg/600x600bb.jpg",
-      "duration_ms": 193103,
-      "genre": "Urbano latino",
-      "release_year": "2016",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1277937653",
       "title": "Criminal",
       "artist": "NATTI NATASHA & Ozuna",
@@ -7890,17 +6526,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1433976958",
-      "title": "Vaina Loca (feat. Manuel Turizo)",
-      "artist": "Ozuna",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/30/69/c2/3069c259-3dc7-e30c-f48f-f99c443d8d26/mzaf_4707825372196384181.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/47/02/de/4702de7f-d47e-b507-1227-b8534cbb9cd8/697691884080.jpg/600x600bb.jpg",
-      "duration_ms": 176133,
-      "genre": "Urbano latino",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1047923256",
       "title": "Chillax (feat. Ky-Mani Marley)",
       "artist": "Farruko",
@@ -7909,72 +6534,6 @@
       "duration_ms": 197853,
       "genre": "Urbano latino",
       "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1048181443",
-      "title": "Borró Cassette",
-      "artist": "Maluma",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/36/b9/d4/36b9d42b-0986-15c3-5a73-99fc0bd36987/mzaf_8911939646980545539.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/05/17/51/051751c2-d6cd-c466-9e0d-c185d8e22897/886445195026.jpg/600x600bb.jpg",
-      "duration_ms": 207296,
-      "genre": "Urbano latino",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1189391799",
-      "title": "El Amante",
-      "artist": "Nicky Jam",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/73/f2/b7/73f2b75d-6888-5124-98e9-b471108682a1/mzaf_10763811078307598973.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/15/fb/cd/15fbcd9b-f5f1-c96b-3231-a4d12bffb4ee/886446312910.jpg/600x600bb.jpg",
-      "duration_ms": 219507,
-      "genre": "Urbano latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1528029632",
-      "title": "Hawái",
-      "artist": "Maluma",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/c9/a2/46/c9a24635-a1bd-9315-c25a-063b2f47a999/mzaf_12464941382394502492.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/e2/7d/5f/e27d5f13-775a-6bb7-2481-d979cc4d3b0e/886448646754.jpg/600x600bb.jpg",
-      "duration_ms": 199112,
-      "genre": "Urbano latino",
-      "release_year": "2020",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1189391897",
-      "title": "El Perdón (with Enrique Iglesias)",
-      "artist": "Nicky Jam & Enrique Iglesias",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/af/91/62/af9162a8-af6a-0620-f7a9-c6c1c30c0485/mzaf_3498768243675553201.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/15/fb/cd/15fbcd9b-f5f1-c96b-3231-a4d12bffb4ee/886446312910.jpg/600x600bb.jpg",
-      "duration_ms": 205907,
-      "genre": "Urbano latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1234665572",
-      "title": "Perro Fiel (feat. Nicky Jam)",
-      "artist": "Shakira",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c1/19/a7/c119a723-3f56-e41c-14bf-c9b031969948/mzaf_7946782781169216016.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/60/9f/7f/609f7f34-c239-73e8-32da-96fd5f2cba77/886446480060.jpg/600x600bb.jpg",
-      "duration_ms": 196000,
-      "genre": "Pop Latino",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1139444952",
-      "title": "Reggaetón Lento (Bailemos)",
-      "artist": "CNCO",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/ae/40/79/ae407966-54a7-d8fb-955b-b9b6c743990a/mzaf_6029216968134922458.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/90/74/46/9074463e-3dea-ad75-3e66-a9ba7939c420/886445722550.jpg/600x600bb.jpg",
-      "duration_ms": 222307,
-      "genre": "Pop Latino",
-      "release_year": "2016",
       "has_duplicate_artist": false
     },
     {
@@ -8000,61 +6559,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1346157786",
-      "title": "La Player (Bandolera)",
-      "artist": "Zion & Lennox",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/43/1e/c9/431ec9bc-291c-8e2a-73a1-05e54182ca83/mzaf_2812919009113909343.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/69/61/a7/6961a7d1-1491-f1cc-553b-a04e902bfa79/190296925351.jpg/600x600bb.jpg",
-      "duration_ms": 249609,
-      "genre": "Urbano latino",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1496349577",
-      "title": "Como Llora",
-      "artist": "Juanfran",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/e0/05/cf/e005cf69-a350-91c4-f49e-d32a4f39a84d/mzaf_11885856370492316748.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/38/18/12/381812f6-54ae-22f9-66bd-84cc9262efd9/194491923273.jpg/600x600bb.jpg",
-      "duration_ms": 187500,
-      "genre": "Latin",
-      "release_year": "2020",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1628474489",
-      "title": "Reggaeton",
-      "artist": "Eloy",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/9d/d5/94/9dd59499-d583-2c51-9412-d71c4d9d9120/mzaf_11373183643742809170.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/6b/48/8b/6b488ba8-8cd9-ea1b-0044-51b4d258395c/196925147996.jpg/600x600bb.jpg",
-      "duration_ms": 181019,
-      "genre": "Urbano latino",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1506070255",
-      "title": "Sigues Con Él (Remix)",
-      "artist": "Arcángel, Sech & Romeo Santos",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/7c/4d/ef/7c4def70-25b4-3fe0-696f-eb469ad70a1a/mzaf_14916524975162606779.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/ec/07/cc/ec07cc03-9b61-3b54-3f7c-1e7b99c04840/195081334301.jpg/600x600bb.jpg",
-      "duration_ms": 189567,
-      "genre": "Latin",
-      "release_year": "2020",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1484738142",
-      "title": "Hola (feat. Juhn & Dímelo Flow) [Remix]",
-      "artist": "Dalex, Lenny Tavárez & Chencho Corleone",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/3c/0e/bc/3c0ebc35-6c75-24e7-781d-cd510607ea53/mzaf_11369157769779927050.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/1c/81/66/1c816653-4185-1997-b724-5c73ca054543/192641390142_Cover.jpg/600x600bb.jpg",
-      "duration_ms": 249520,
-      "genre": "Urbano latino",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1172991900",
       "title": "Down",
       "artist": "RKM & Ken-Y",
@@ -8063,127 +6567,6 @@
       "duration_ms": 225693,
       "genre": "Hip-Hop/Rap",
       "release_year": "2006",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1020430925",
-      "title": "Falsas Mentiras (feat. Ozuna)",
-      "artist": "Los de la Nazza",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/25/d5/11/25d511fb-bca0-9475-ca52-1c6691c4b355/mzaf_6322253108739773741.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music7/v4/16/34/c3/1634c381-8415-917e-8484-719e071c9ed5/dj.gdsxeayi.jpg/600x600bb.jpg",
-      "duration_ms": 269663,
-      "genre": "Urbano latino",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1483618284",
-      "title": "MALA SANTA",
-      "artist": "Becky G",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/e8/6d/6e/e86d6ef8-3dce-6213-28d0-62b04506e11a/mzaf_9365103462819880276.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/2b/65/69/2b6569c2-e825-cce3-f94a-c2cbe6e68c1f/886448075417.jpg/600x600bb.jpg",
-      "duration_ms": 173834,
-      "genre": "Pop Latino",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1470146805",
-      "title": "QUÉ PRETENDES",
-      "artist": "J Balvin & Bad Bunny",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/9a/27/25/9a2725fe-b8a3-1e27-f0e5-1372969d4677/mzaf_3228593275219281054.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/77/32/74/7732746d-25e5-baae-b921-bad4a07d87b1/19UMGIM55524.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 222330,
-      "genre": "Urbano latino",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1492331513",
-      "title": "Infeliz",
-      "artist": "Arcángel & Bad Bunny",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/bd/73/fd/bd73fdd0-e1d8-f404-f2bd-5a1a49c000fe/mzaf_5742388871201766407.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/c6/33/96/c6339667-a419-9561-5bfb-9ce1bb6c572e/194491779160.jpg/600x600bb.jpg",
-      "duration_ms": 221103,
-      "genre": "Hip-Hop/Rap",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1046026037",
-      "title": "Nunca Me Olvides",
-      "artist": "Yandel",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/b9/d1/53/b9d1539c-f278-6fe4-487a-7cb2caaa874b/mzaf_2393572227524382526.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/c7/70/53/c77053a9-01ba-55e6-338d-8e617daccabb/886445457346.jpg/600x600bb.jpg",
-      "duration_ms": 241552,
-      "genre": "Urbano latino",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1048181449",
-      "title": "Sin Contrato",
-      "artist": "Maluma",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/b0/ef/2e/b0ef2ee4-d2be-c7b0-1ca3-b763569a4755/mzaf_18425769437557282619.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/05/17/51/051751c2-d6cd-c466-9e0d-c185d8e22897/886445195026.jpg/600x600bb.jpg",
-      "duration_ms": 221617,
-      "genre": "Urbano latino",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1603931587",
-      "title": "La Curiosidad",
-      "artist": "Jay Wheeler, DJ Nelson & Myke Towers",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/4d/64/99/4d64991a-e8dd-3f2e-416e-7365758d8072/mzaf_11803724683391078231.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/68/10/99/6810993a-737b-e9af-37ba-78fb1a6012b8/194690734533_cover.jpg/600x600bb.jpg",
-      "duration_ms": 219048,
-      "genre": "Latin",
-      "release_year": "2020",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1398378648",
-      "title": "Tu Peor Error",
-      "artist": "Darell",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/66/1b/e1/661be192-c665-1b62-873e-b99496b2dff5/mzaf_6587226739704320457.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/38/2d/75/382d75fd-891a-46ae-8a35-b0f926c3c7d8/Tu_Peor_Error.jpg/600x600bb.jpg",
-      "duration_ms": 260645,
-      "genre": "Urbano latino",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1444805914",
-      "title": "Reggaetón en lo Oscuro",
-      "artist": "Wisin & Yandel",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/d4/48/4b/d4484b51-9813-11b7-77ed-7aa675cb8033/mzaf_11996599219945791575.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/ea/b9/a1/eab9a18f-7546-b554-dbc7-143367e7e8e3/886447451380.jpg/600x600bb.jpg",
-      "duration_ms": 208947,
-      "genre": "Urbano latino",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1568003667",
-      "title": "TODO O NADA",
-      "artist": "Lunay & Anitta",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/59/f7/5e/59f75e33-565e-768d-ab36-1724f499261f/mzaf_4172255659876041310.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/36/df/cb/36dfcbb8-d66d-890b-4d3c-44cee6b64e18/192641742286_Cover.jpg/600x600bb.jpg",
-      "duration_ms": 208000,
-      "genre": "Latin",
-      "release_year": "2021",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1252802713",
-      "title": "El Amante (feat. Ozuna & Bad Bunny)",
-      "artist": "Nicky Jam",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/5e/63/a6/5e63a6c7-fdfe-1129-7233-9545c9fb787d/mzaf_18088504906095747576.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music117/v4/2e/bd/86/2ebd86fd-0283-a7b8-3ee5-5fc67574ed8d/886446605975.jpg/600x600bb.jpg",
-      "duration_ms": 225547,
-      "genre": "Urbano latino",
-      "release_year": "2017",
       "has_duplicate_artist": false
     },
     {
@@ -8198,17 +6581,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1530282208",
-      "title": "Despeinada",
-      "artist": "Ozuna & Camilo",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/ed/5d/d2/ed5dd242-2dea-c440-3974-905a925ee00a/mzaf_7025015336788628740.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/dd/76/35/dd76359b-da45-3912-3800-e91d89229975/195497192175.jpg/600x600bb.jpg",
-      "duration_ms": 224187,
-      "genre": "Urbano latino",
-      "release_year": "2020",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1734324976",
       "title": "offline",
       "artist": "Young Miko & Feid",
@@ -8217,17 +6589,6 @@
       "duration_ms": 201935,
       "genre": "Latin",
       "release_year": "2024",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1189391796",
-      "title": "Por el Momento (feat. Plan B)",
-      "artist": "Nicky Jam",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/38/66/12/38661204-1ca9-088c-e6ce-3173c076b881/mzaf_9835914433805297366.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/15/fb/cd/15fbcd9b-f5f1-c96b-3231-a4d12bffb4ee/886446312910.jpg/600x600bb.jpg",
-      "duration_ms": 218307,
-      "genre": "Urbano latino",
-      "release_year": "2017",
       "has_duplicate_artist": false
     },
     {
@@ -8275,17 +6636,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "14142513",
-      "title": "Let's Do It",
-      "artist": "Convertion",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/45/3a/93/453a93c9-8c47-ba73-31bb-3e8ea4e5a3ca/mzaf_13708788873606653279.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/y2004/m05/d26/h17/s05.srlossxa.jpg/600x600bb.jpg",
-      "duration_ms": 499093,
-      "genre": "Rock",
-      "release_year": "1980",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "14142561",
       "title": "Love Magic",
       "artist": "John Davis & The Monster Orchestra",
@@ -8319,28 +6669,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "259634965",
-      "title": "Heaven Must Be Missing an Angel",
-      "artist": "Tiny Tavares",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b0/c3/5c/b0c35ce7-4f3d-50b2-f5b0-69929c1421f0/mzaf_8808642733026928932.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/d8/2b/56/mzi.ayqdwtnq.jpg/600x600bb.jpg",
-      "duration_ms": 390053,
-      "genre": "Dance",
-      "release_year": "1993",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "14142553",
-      "title": "Bourgié Bourgié",
-      "artist": "John Davis & The Monster Orchestra",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/48/7e/ae/487eae5b-f0cb-8b60-cd1b-64654405687b/mzaf_15793748899068527580.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/y2004/m05/d26/h17/s05.opnvkfpy.jpg/600x600bb.jpg",
-      "duration_ms": 370680,
-      "genre": "Rock",
-      "release_year": "2001",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "14142511",
       "title": "I Can't Stop",
       "artist": "John Davis & The Monster Orchestra",
@@ -8349,17 +6677,6 @@
       "duration_ms": 305160,
       "genre": "Rock",
       "release_year": "2000",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "14142557",
-      "title": "Feel Alright",
-      "artist": "Komiko",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/b7/26/c8/b726c82e-5d64-77a0-d917-6c6b92f745fa/mzaf_14781865460603566306.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/y2004/m05/d26/h17/s05.opnvkfpy.jpg/600x600bb.jpg",
-      "duration_ms": 364387,
-      "genre": "Rock",
-      "release_year": "2001",
       "has_duplicate_artist": false
     },
     {
@@ -8481,17 +6798,6 @@
       "duration_ms": 251933,
       "genre": "Dance",
       "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1579732710",
-      "title": "At Midnight (12\" Version)",
-      "artist": "T-Connection",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/0d/b6/38/0db638c2-c345-7fae-c540-e9dfe900c166/mzaf_13783774029215418464.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/3a/bd/20/3abd2073-6c2e-1570-7423-fce8ffd3742f/5059460091849.jpg/600x600bb.jpg",
-      "duration_ms": 584840,
-      "genre": "Pop",
-      "release_year": "1978",
       "has_duplicate_artist": false
     },
     {
@@ -8770,17 +7076,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "259635129",
-      "title": "Heaven Must Be Missing an Angel (Da Mooch's So Good Remix)",
-      "artist": "Tiny Tavares",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/13/3f/b3/133fb3e3-e5ec-f24f-d988-c431e2d0737f/mzaf_7505647958079884429.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/d8/2b/56/mzi.ayqdwtnq.jpg/600x600bb.jpg",
-      "duration_ms": 481000,
-      "genre": "Dance",
-      "release_year": "2007",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "332673616",
       "title": "Computer Love",
       "artist": "Zapp & Roger",
@@ -8789,17 +7084,6 @@
       "duration_ms": 284373,
       "genre": "R&B/Soul",
       "release_year": "1985",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "186166292",
-      "title": "Don't Stop 'Til You Get Enough",
-      "artist": "Michael Jackson",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/cf/2e/11/cf2e11e0-9afd-4db1-94cf-1c8578f7be50/mzaf_14813880435154115299.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/cc/b0/7f/ccb07f0d-1530-00b0-244a-6332daffc2b9/dj.xnuhftrz.jpg/600x600bb.jpg",
-      "duration_ms": 364442,
-      "genre": "Pop",
-      "release_year": "1979",
       "has_duplicate_artist": false
     },
     {
@@ -8836,17 +7120,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1325912203",
-      "title": "Vai Malandra (feat. Tropkillaz & DJ Yuri Martins)",
-      "artist": "Anitta, Zaac & Maejor",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f4/d6/89/f4d6897b-e4a5-c29a-2805-e88f58afaa24/mzaf_6882109198031027987.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/3d/11/25/3d1125ea-a6c7-9baa-02aa-bf772033493a/190296939372.jpg/600x600bb.jpg",
-      "duration_ms": 201532,
-      "genre": "Pop",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1030452446",
       "title": "That Lady, Pts. 1 & 2",
       "artist": "The Isley Brothers",
@@ -8855,17 +7128,6 @@
       "duration_ms": 334388,
       "genre": "R&B/Soul",
       "release_year": "1973",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "269573447",
-      "title": "P.Y.T. (Pretty Young Thing)",
-      "artist": "Michael Jackson",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b4/b4/24/b4b42455-0fcc-7e16-52ad-f896de9bc88d/mzaf_14227056241100382943.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/32/4f/fd/324ffda2-9e51-8f6a-0c2d-c6fd2b41ac55/074643811224.jpg/600x600bb.jpg",
-      "duration_ms": 238334,
-      "genre": "Pop",
-      "release_year": "1982",
       "has_duplicate_artist": false
     },
     {
@@ -8899,17 +7161,6 @@
       "duration_ms": 308533,
       "genre": "R&B/Soul",
       "release_year": "1989",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "186166433",
-      "title": "Off the Wall",
-      "artist": "Michael Jackson",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/38/e9/6d/38e96d15-c9ae-b500-ccf6-ec8fb0faece4/mzaf_9211848530914134875.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/cc/b0/7f/ccb07f0d-1530-00b0-244a-6332daffc2b9/dj.xnuhftrz.jpg/600x600bb.jpg",
-      "duration_ms": 245779,
-      "genre": "Pop",
-      "release_year": "1979",
       "has_duplicate_artist": false
     },
     {
@@ -8990,17 +7241,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1699095880",
-      "title": "Tá OK (Remix)",
-      "artist": "DENNIS, MC Kevin O Chris, Maluma & KAROL G",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f6/95/12/f6951221-7cf0-9f1f-a26e-ae29e3461b7c/mzaf_7043390055329845694.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/e8/7d/2d/e87d2daa-d9f9-b5fc-5704-72ded2ffcf35/196871281270.jpg/600x600bb.jpg",
-      "duration_ms": 171761,
-      "genre": "Baile Funk",
-      "release_year": "2023",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1604634220",
       "title": "The Humpty Dance",
       "artist": "Digital Underground",
@@ -9009,17 +7249,6 @@
       "duration_ms": 391693,
       "genre": "Funk",
       "release_year": "1990",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1417817502",
-      "title": "Parado no Bailão (feat. MC Gury)",
-      "artist": "MC L da Vinte & MC Gury",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/29/1e/74/291e74fc-c4cd-3047-1a41-1f8490ae6157/mzaf_5000268452660480769.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/0a/8c/9d/0a8c9d20-996c-8017-0de5-fb5295fc49c0/0.jpg/600x600bb.jpg",
-      "duration_ms": 171692,
-      "genre": "Baile Funk",
-      "release_year": "2018",
       "has_duplicate_artist": false
     },
     {
@@ -9188,28 +7417,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "310505569",
-      "title": "They Don't Care About Us",
-      "artist": "Michael Jackson",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/20/82/0c/20820c7d-a423-0bcb-434b-052050bdaf46/mzaf_8932717488434853613.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/c5/8d/b1/c58db1f1-0249-7a52-b58c-6f4eb145b06a/884977149166.jpg/600x600bb.jpg",
-      "duration_ms": 284310,
-      "genre": "Pop",
-      "release_year": "1995",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1469584235",
-      "title": "Get Up I Feel Like Being Like A Sex Machine, Pts. 1 & 2",
-      "artist": "James Brown",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e0/28/30/e02830b2-03d7-91e4-8d72-2b903af5deb1/mzaf_16716035642705520067.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/8a/76/04/8a760498-ce95-c1f3-4bff-958362821728/14UMGIM28794.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 318969,
-      "genre": "Funk",
-      "release_year": "1991",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "303184974",
       "title": "Five Minutes of Funk",
       "artist": "Whodini",
@@ -9265,17 +7472,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "186166358",
-      "title": "Rock With You",
-      "artist": "Michael Jackson",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/7b/7e/6c/7b7e6cfa-3a9a-f16b-5a29-5a0f7cac3a60/mzaf_2116995152723213080.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/cc/b0/7f/ccb07f0d-1530-00b0-244a-6332daffc2b9/dj.xnuhftrz.jpg/600x600bb.jpg",
-      "duration_ms": 219926,
-      "genre": "Pop",
-      "release_year": "1979",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "715534851",
       "title": "We're an American Band",
       "artist": "Grand Funk Railroad",
@@ -9284,17 +7480,6 @@
       "duration_ms": 206880,
       "genre": "Rock",
       "release_year": "1973",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1443852617",
-      "title": "Yearning for Your Love (Single Version)",
-      "artist": "The Gap Band",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2b/20/62/2b206218-5c99-86d4-0aae-984a6861d140/mzaf_16207817278955029010.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/89/96/4d/89964d22-dd1a-9be9-ca46-afab53f8fa14/06UMGIM20223.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 244867,
-      "genre": "R&B/Soul",
-      "release_year": "1997",
       "has_duplicate_artist": false
     },
     {
@@ -9430,17 +7615,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "668743167",
-      "title": "Vivir Mi Vida",
-      "artist": "Marc Anthony",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/b7/0f/d3/b70fd3f8-96da-5029-b7a3-34401267e04b/mzaf_7044972739849414419.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/f7/24/ce/f724ce48-4d0d-0cbc-3493-3d935142e5e6/886443947238.jpg/600x600bb.jpg",
-      "duration_ms": 252359,
-      "genre": "Música tropical",
-      "release_year": "2013",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1560735561",
       "title": "jealousy, jealousy",
       "artist": "Olivia Rodrigo",
@@ -9449,17 +7623,6 @@
       "duration_ms": 173171,
       "genre": "Pop",
       "release_year": "2021",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1820264145",
-      "title": "How It’s Done",
-      "artist": "HUNTR/X, EJAE, AUDREY NUNA, REI AMI & KPop Demon Hunters Cast",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a4/df/01/a4df0195-b1ec-adb7-f6aa-78c5803364c5/mzaf_9236149041647137460.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/e1/15/42/e1154273-8ecd-5702-e6e6-597f28001681/25UMGIM82363.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 176059,
-      "genre": "K-Pop",
-      "release_year": "2025",
       "has_duplicate_artist": false
     },
     {
@@ -9559,17 +7722,6 @@
       "duration_ms": 192112,
       "genre": "Pop",
       "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "169004756",
-      "title": "Separate Ways (Worlds Apart) [2024 Remaster]",
-      "artist": "Journey",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/a1/d0/47/a1d04749-621b-c117-3791-f8cc61f1f677/mzaf_10925686221374562657.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/71/2d/61/712d617d-f4a4-5904-1b11-d4b4b45c47c5/828768588925.jpg/600x600bb.jpg",
-      "duration_ms": 326230,
-      "genre": "Rock",
-      "release_year": "1983",
       "has_duplicate_artist": false
     },
     {
@@ -9735,17 +7887,6 @@
       "duration_ms": 229813,
       "genre": "Soundtrack",
       "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1375094822",
-      "title": "Dazed & Confused",
-      "artist": "Ruel",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/74/05/7d/74057d7c-81c2-3e76-fbbe-7b655d477683/mzaf_2875777143871027606.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/b2/a3/6c/b2a36c9a-fd52-460a-e8cb-af4deb7b652a/886447076552.jpg/600x600bb.jpg",
-      "duration_ms": 189608,
-      "genre": "Pop",
-      "release_year": "2018",
       "has_duplicate_artist": false
     },
     {
@@ -10420,17 +8561,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1369109665",
-      "title": "Youngblood",
-      "artist": "5 Seconds of Summer",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/61/87/d5/6187d53f-df0f-69d5-3afc-834708c111c8/mzaf_10559632245319534333.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/80/8f/68/808f6830-67fd-6f0f-b143-201c28714c89/18UMGIM09114.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 203418,
-      "genre": "Pop",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "585128671",
       "title": "Car Radio",
       "artist": "twenty one pilots",
@@ -10684,17 +8814,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "635829532",
-      "title": "Tequila Sunrise",
-      "artist": "Eagles",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/6b/69/2d/6b692d9b-bded-ee40-b83c-9209be41fc5d/mzaf_903828061519902646.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/f0/c7/c8/f0c7c8f4-4319-d357-ddaf-566ef8e2194e/081227979379.jpg/600x600bb.jpg",
-      "duration_ms": 173057,
-      "genre": "Rock",
-      "release_year": "1973",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1440838661",
       "title": "Free Bird",
       "artist": "Lynyrd Skynyrd",
@@ -10879,17 +8998,6 @@
       "duration_ms": 265976,
       "genre": "Rock",
       "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "580708943",
-      "title": "Dazed and Confused",
-      "artist": "Led Zeppelin",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/83/8e/57/838e57ed-e388-4ba9-ecad-a5cf1a720dd1/mzaf_17555129865772335404.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/4c/7b/80/4c7b80b4-ed35-4e06-ec80-2f7aaaabb5c5/dj.pjjmtwdc.jpg/600x600bb.jpg",
-      "duration_ms": 388667,
-      "genre": "Rock",
-      "release_year": "1969",
       "has_duplicate_artist": false
     },
     {
@@ -11333,17 +9441,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1563957173",
-      "title": "Hush",
-      "artist": "The Marías",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/e0/d8/5e/e0d85e83-7e77-2bf7-ee22-e7607827bb30/mzaf_5190404124368175519.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/0b/67/3f/0b673fd4-5e49-fccd-6193-3076bef03f53/075679792389.jpg/600x600bb.jpg",
-      "duration_ms": 181893,
-      "genre": "Alternative",
-      "release_year": "2021",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "193524780",
       "title": "Walk On the Ocean",
       "artist": "Toad the Wet Sprocket",
@@ -11385,17 +9482,6 @@
       "duration_ms": 279737,
       "genre": "Alternative",
       "release_year": "2023",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "302987577",
-      "title": "Under Control",
-      "artist": "The Strokes",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/fd/19/60/fd19601c-c0cc-cf72-fefd-3caf60531827/mzaf_17729434393055950209.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/f7/e9/2a/f7e92a48-0e20-8286-bbbf-80bd85fbb1af/mzi.gcledsjj.jpg/600x600bb.jpg",
-      "duration_ms": 187307,
-      "genre": "Alternative",
-      "release_year": "2003",
       "has_duplicate_artist": false
     },
     {
@@ -11597,17 +9683,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1440758864",
-      "title": "Chasing Cars",
-      "artist": "Snow Patrol",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/bf/dc/fe/bfdcfeb4-7fde-c148-bf2d-f82d0f1e8096/mzaf_15850382492018725787.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/c4/25/bf/c425bf7c-f3d8-6baf-7397-40868971f77f/06UMGIM43473.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 265507,
-      "genre": "Alternative",
-      "release_year": "2005",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1650631375",
       "title": "Indie Rock (Vogue UA)",
       "artist": "LOBODA",
@@ -11806,17 +9881,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1087128510",
-      "title": "I Bet on Losing Dogs",
-      "artist": "Mitski",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/56/e6/4e/56e64e2f-fb65-308e-4abb-345f8c85faf1/mzaf_12748664057735065709.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/7a/ee/82/7aee8209-a778-109f-0a98-bb415bc8e95d/656605142364.jpg/600x600bb.jpg",
-      "duration_ms": 170240,
-      "genre": "Indie Rock",
-      "release_year": "2016",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "585128670",
       "title": "House of Gold",
       "artist": "twenty one pilots",
@@ -11861,17 +9925,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1440817896",
-      "title": "Gooey",
-      "artist": "Glass Animals",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/74/bf/78/74bf78f5-3dbe-2cc5-787d-61f9c9de5e47/mzaf_15020374966280999363.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/fd/46/47/fd464715-c290-3060-8346-346746c411ee/00602537776962.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 289307,
-      "genre": "Alternative",
-      "release_year": "2014",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1711665785",
       "title": "House Music",
       "artist": "Benny Benassi",
@@ -11891,17 +9944,6 @@
       "duration_ms": 179520,
       "genre": "Dance",
       "release_year": "2021",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1699238118",
-      "title": "House Music",
-      "artist": "Slauson Malone 1",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e0/55/ff/e055ff31-fb9c-0efa-5a7a-15524b5e5962/mzaf_15317341409517794063.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/05/d9/ab/05d9ab50-20cb-5e58-ac45-a48fe8eece72/5056614707762.png/600x600bb.jpg",
-      "duration_ms": 191328,
-      "genre": "Alternative",
-      "release_year": "2023",
       "has_duplicate_artist": false
     },
     {
@@ -12034,28 +10076,6 @@
       "duration_ms": 242053,
       "genre": "Dance",
       "release_year": "2011",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1017047146",
-      "title": "House Music (Rave Party)",
-      "artist": "Bella K.Twobaby",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/f1/8f/10/f18f10d4-94c1-da01-3ef0-9854704dcd86/mzaf_9502402648206120217.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/34/b2/13/34b21364-5437-b078-ca6a-49e8f09c66fd/DEEP_HOUSE_2.jpg/600x600bb.jpg",
-      "duration_ms": 347656,
-      "genre": "House",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1447516048",
-      "title": "House Music (Club Mix)",
-      "artist": "Las Bibas From Vizcaya, Altar & C'Damore",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/de/87/c4/de87c4e0-5411-89dd-9d73-7fae7a5b3bf7/mzaf_17755564918624010928.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/af/25/4a/af254a82-79f2-91a6-0be0-7c4c567655a0/193872037226_cover.jpg/600x600bb.jpg",
-      "duration_ms": 401250,
-      "genre": "House",
-      "release_year": "2019",
       "has_duplicate_artist": false
     },
     {
@@ -12389,17 +10409,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1024916099",
-      "title": "House Music (Tropics)",
-      "artist": "Café Chill Out Music After Dark",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/78/da/aa/78daaad7-362b-1577-fad4-6805ec8a6848/mzaf_4198410103032380111.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music1/v4/9e/84/ff/9e84ff60-dc51-47bd-6a01-6c5e84a6782a/after_dark.jpg/600x600bb.jpg",
-      "duration_ms": 233208,
-      "genre": "Instrumental",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1349335880",
       "title": "House Music",
       "artist": "Saeri",
@@ -12485,28 +10494,6 @@
       "duration_ms": 208133,
       "genre": "Dance",
       "release_year": "2011",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1462755255",
-      "title": "Post Malone (feat. RANI)",
-      "artist": "Sam Feldt",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/72/4e/be/724ebec2-c0e4-a344-73b0-5e41cfdd7b14/mzaf_2338206331794106004.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/23/f5/92/23f592cc-2090-06fc-9ca2-0cc6c95900e4/190295418267.jpg/600x600bb.jpg",
-      "duration_ms": 174444,
-      "genre": "Dance",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "922876183",
-      "title": "Under Control (feat. Hurts)",
-      "artist": "Calvin Harris & Alesso",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4f/fe/7f/4ffe7fe5-ff05-7b61-9d7a-f4c4fd058317/mzaf_4292349399797098336.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/da/50/cc/da50cc80-3515-a38d-369b-0d700ffd249d/886444820448.jpg/600x600bb.jpg",
-      "duration_ms": 184280,
-      "genre": "Dance",
-      "release_year": "2013",
       "has_duplicate_artist": false
     },
     {
@@ -12606,17 +10593,6 @@
       "duration_ms": 227499,
       "genre": "Dance",
       "release_year": "2014",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1248528301",
-      "title": "Me Rehúso",
-      "artist": "Danny Ocean",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/12/0f/4e/120f4eaf-919e-2e6b-94cc-470698a8c68b/mzaf_17810599070886904293.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/38/8c/26/388c26af-a2d3-bb9c-391d-bf02e3b2319c/190296949630.jpg/600x600bb.jpg",
-      "duration_ms": 205715,
-      "genre": "Latin",
-      "release_year": "2016",
       "has_duplicate_artist": false
     },
     {
@@ -12730,17 +10706,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1752031539",
-      "title": "Si Antes Te Hubiera Conocido",
-      "artist": "KAROL G",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0f/07/33/0f0733c9-76b3-39f9-9115-9031acd75839/mzaf_249954100848422596.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a0/60/94/a060947c-54d8-0fad-c558-eed12600224c/24UMGIM62705.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 195824,
-      "genre": "Latin",
-      "release_year": "2024",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1730034700",
       "title": "Love Is a Drug (feat. Anne Gudrun) [Agents of Time Remix]",
       "artist": "Armin van Buuren",
@@ -12774,17 +10739,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1713469225",
-      "title": "Feel So Close (Radio Edit)",
-      "artist": "Calvin Harris",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/f3/7e/03/f37e03b3-be3f-f97b-7020-52ef91817dda/mzaf_16178999154864523420.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/ab/af/22/abaf2296-ed4d-6da2-c24d-503cfdfa4c1f/0617465356858.jpg/600x600bb.jpg",
-      "duration_ms": 206413,
-      "genre": "Dance",
-      "release_year": "2011",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1440881859",
       "title": "More Than You Know",
       "artist": "Axwell Λ Ingrosso",
@@ -12804,17 +10758,6 @@
       "duration_ms": 158678,
       "genre": "Fitness & Workout",
       "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1729814727",
-      "title": "The Business",
-      "artist": "Tiësto",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/68/8c/27/688c271e-8dde-b997-ef31-610e0e285ecc/mzaf_17443652269971214009.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/e0/b7/7d/e0b77d03-6a3d-0cfe-3f26-43c8930c4102/5059460268852.jpg/600x600bb.jpg",
-      "duration_ms": 164000,
-      "genre": "Dance",
-      "release_year": "2020",
       "has_duplicate_artist": false
     },
     {
@@ -12983,17 +10926,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1700463504",
-      "title": "Todo Menso",
-      "artist": "MC Davo & Tornillo",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/ff/d3/8f/ffd38f4c-9add-cf1e-03fa-12cb0ea2412e/mzaf_7179495556513079777.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/6c/3b/be/6c3bbec9-f59e-4729-1738-77db1b0f3b8f/5059460222878.jpg/600x600bb.jpg",
-      "duration_ms": 191918,
-      "genre": "Latin",
-      "release_year": "2023",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1818950578",
       "title": "Hip-Hop (feat. Jay Jones)",
       "artist": "Lil Wayne & BigXthaPlug",
@@ -13013,17 +10945,6 @@
       "duration_ms": 236756,
       "genre": "Rap",
       "release_year": "1998",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1443239752",
-      "title": "Hip Hop",
-      "artist": "August Alsina",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/41/80/4c/41804c44-ed74-0c3e-2ef8-855b28462884/mzaf_6023622148799985013.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/91/a0/ff/91a0ff4e-11f4-024b-5959-d36a78ce6bfc/15UMGIM68027.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 209306,
-      "genre": "R&B/Soul",
-      "release_year": "2015",
       "has_duplicate_artist": false
     },
     {
@@ -13134,17 +11055,6 @@
       "duration_ms": 230013,
       "genre": "Hip-Hop/Rap",
       "release_year": "1997",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1446094098",
-      "title": "Dubstep 2019 Best of Top 100 Bass Trap D&B Jungle Hip Hop Hits (3 Hr EDM Rave Continuous DJ Mix)",
-      "artist": "DoctorSpook, Dubstep Doc & Dubstep Sf",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/e7/23/9a/e7239a49-8bdc-4498-038f-4be1fe898d7d/mzaf_273955805437370049.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/d5/a7/e4/d5a7e4a6-3b3c-1753-3c81-afef82e9de9b/193872017969_cover.jpg/600x600bb.jpg",
-      "duration_ms": 5002564,
-      "genre": "Dance",
-      "release_year": "2018",
       "has_duplicate_artist": false
     },
     {
@@ -13357,17 +11267,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "80969486",
-      "title": "I'll Be Missing You (feat. Faith Evans, 112)",
-      "artist": "Puff Daddy & Faith Evans",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/41/a0/1d/41a01dad-1b51-8151-866a-50e239b01d49/mzaf_16034913608556950043.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/db/2c/2d/db2c2dc7-18cd-f64e-3580-52eae12bccc0/dj.izjbcsws.jpg/600x600bb.jpg",
-      "duration_ms": 301520,
-      "genre": "Hip-Hop/Rap",
-      "release_year": "1997",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "80429794",
       "title": "Temperature",
       "artist": "Sean Paul",
@@ -13434,17 +11333,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "327261795",
-      "title": "Hotel Room Service",
-      "artist": "Pitbull",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/07/68/64/0768640e-75a2-e628-c3d4-27c078317c2b/mzaf_1805906177228371889.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/78/c7/6d/78c76d7c-4ab1-a3f1-9e5c-1341855f99fe/mzi.lnodydiw.jpg/600x600bb.jpg",
-      "duration_ms": 237640,
-      "genre": "Hip-Hop/Rap",
-      "release_year": "2009",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1452877474",
       "title": "Mr. Rager",
       "artist": "Kid Cudi",
@@ -13475,17 +11363,6 @@
       "duration_ms": 217925,
       "genre": "Hip-Hop/Rap",
       "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "383458635",
-      "title": "Cooler Than Me (Single Mix)",
-      "artist": "Mike Posner",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/fc/ea/18/fcea1867-68d2-11e7-1d20-85e4b461ef92/mzaf_1756291134708363658.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/7d/7c/c6/7d7cc669-9297-d28a-21b5-7a47828b51a1/mzi.zwtbpedc.jpg/600x600bb.jpg",
-      "duration_ms": 213242,
-      "genre": "Pop",
-      "release_year": "2010",
       "has_duplicate_artist": false
     },
     {
@@ -13577,17 +11454,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1828244896",
-      "title": "Hell At Night",
-      "artist": "BigXthaPlug & Ella Langley",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e3/a8/7b/e3a87b2f-9102-8555-06d1-f2479c3e3ba2/mzaf_16885921752791695694.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/5d/f0/76/5df07610-c24f-e25d-34ae-5398fcdbd6db/199479627785_JJdFbic-copy-117c85a3.png/600x600bb.jpg",
-      "duration_ms": 179240,
-      "genre": "Hip-Hop/Rap",
-      "release_year": "2025",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1440841730",
       "title": "Hotline Bling",
       "artist": "Drake",
@@ -13643,28 +11509,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "192784400",
-      "title": "Amores Como el Nuestro",
-      "artist": "Jerry Rivera",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/f6/e6/69/f6e66912-5c10-7765-e223-76f4b08ce6ff/mzaf_1434083694055107960.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/a6/96/82/a69682cb-1726-3438-94d4-19f2c253f905/037628077626.jpg/600x600bb.jpg",
-      "duration_ms": 302093,
-      "genre": "Música tropical",
-      "release_year": "1992",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1443820801",
-      "title": "Tú con Él",
-      "artist": "Frankie Ruiz",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/c6/29/65/c629658d-40e0-0f02-1bdf-88e6b09cd872/mzaf_212524794293316553.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/a2/49/d1/a249d145-a37b-a779-7ece-4708e2b83ae3/00602567162421.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 303880,
-      "genre": "Latin",
-      "release_year": "1985",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1445663838",
       "title": "Lluvia",
       "artist": "Eddie Santiago",
@@ -13673,17 +11517,6 @@
       "duration_ms": 296040,
       "genre": "Música tropical",
       "release_year": "1987",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1443749262",
-      "title": "Que Locura Enamorarme de Ti",
-      "artist": "Eddie Santiago",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/9e/0b/66/9e0b6602-c395-7a8d-efbf-ac89f1db0918/mzaf_4072509033728536337.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/47/d0/48/47d048e8-9ddd-55ce-e840-2c12fcd8a8b1/00601215700428.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 308040,
-      "genre": "Música tropical",
-      "release_year": "1986",
       "has_duplicate_artist": false
     },
     {
@@ -13698,61 +11531,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1775462856",
-      "title": "Tú Con Él",
-      "artist": "Rauw Alejandro",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ab/8a/a5/ab8aa549-a0ee-9083-6953-093a56cc573c/mzaf_10969913427257276545.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/ab/e8/09/abe8092d-ef44-61b9-6b50-ab7efb78ca51/196872401516.jpg/600x600bb.jpg",
-      "duration_ms": 289132,
-      "genre": "Latin",
-      "release_year": "2024",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "280795362",
-      "title": "Brujeria",
-      "artist": "El Gran Combo de Puerto Rico",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/49/ca/ba/49caba33-25fd-6c0c-3087-7512b417cde2/mzaf_1766460992516908375.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Features115/v4/25/87/e5/2587e5b0-b22b-f971-cb23-13381790d852/dj.nwovtbjq.jpg/600x600bb.jpg",
-      "duration_ms": 205813,
-      "genre": "Música tropical",
-      "release_year": "1979",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "211280101",
-      "title": "Obsesión",
-      "artist": "Aventura",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/7c/7f/29/7c7f293a-bab2-7741-50a9-6639895bea26/mzaf_18419148381556148823.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/fd/1c/c4/fd1cc42a-c642-bb66-5b11-291a568c73d6/617101300023.jpg/600x600bb.jpg",
-      "duration_ms": 254720,
-      "genre": "Música tropical",
-      "release_year": "2002",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "6562270",
-      "title": "Rebelión",
-      "artist": "Joe Arroyo",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/33/12/32/331232ed-92bd-264c-5f8f-872e15260fbd/mzaf_4867571676027533553.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/85/48/90/854890e4-17b9-a0f8-1814-84d88146ec94/s05.smhaglyk.jpg/600x600bb.jpg",
-      "duration_ms": 287867,
-      "genre": "Latin",
-      "release_year": "1986",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "841018305",
-      "title": "Corazón Sin Cara",
-      "artist": "Prince Royce",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/89/5b/98/895b98fa-1342-8edf-c430-f33840d64fbf/mzaf_13871728691321906145.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/86/71/56/867156c7-401f-b174-51e3-2423609c72fa/886444460651.jpg/600x600bb.jpg",
-      "duration_ms": 211453,
-      "genre": "Música tropical",
-      "release_year": "2010",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1258805543",
       "title": "Imitadora",
       "artist": "Romeo Santos",
@@ -13764,105 +11542,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1711820818",
-      "title": "Salsa (feat. Julio Voltio)",
-      "artist": "Angelo Torres",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/6d/fb/b8/6dfbb865-41d2-b961-a704-0a1227cd1b96/mzaf_7446525449434957574.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/61/b7/09/61b70927-a49c-a3ac-4b0d-cab3f1ac9b38/889845810575.png/600x600bb.jpg",
-      "duration_ms": 257091,
-      "genre": "Latin",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1258805158",
-      "title": "Sobredosis (feat. Ozuna)",
-      "artist": "Romeo Santos",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/ed/3f/bc/ed3fbc46-f1db-11cb-3bef-5a66cf83126b/mzaf_2561325861003643790.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/ad/a7/dc/ada7dc95-4333-f6df-ce0f-f0eeccbac7f4/886446557991.jpg/600x600bb.jpg",
-      "duration_ms": 198332,
-      "genre": "Música tropical",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "314891176",
-      "title": "El malo",
-      "artist": "Aventura",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/43/bc/5e/43bc5e14-cc58-539d-b33a-bb7706daeb89/mzaf_18055978911938455283.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/82/a7/0d/82a70d84-9617-2525-c39b-c72c1942745a/dj.hxcnslvw.jpg/600x600bb.jpg",
-      "duration_ms": 238720,
-      "genre": "Música tropical",
-      "release_year": "2009",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "841018313",
-      "title": "Recházame",
-      "artist": "Prince Royce",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/f1/89/a3/f189a3c1-f461-c701-0b29-0e0ea953457c/mzaf_17404880111112338958.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/86/71/56/867156c7-401f-b174-51e3-2423609c72fa/886444460651.jpg/600x600bb.jpg",
-      "duration_ms": 223200,
-      "genre": "Música tropical",
-      "release_year": "2010",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "6562210",
-      "title": "El Preso",
-      "artist": "Fruko y Sus Tesos",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/29/bd/a5/29bda566-9fbe-55ee-e107-767447d7f4da/mzaf_7228836746963590420.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/85/48/90/854890e4-17b9-a0f8-1814-84d88146ec94/s05.smhaglyk.jpg/600x600bb.jpg",
-      "duration_ms": 294093,
-      "genre": "Latin",
-      "release_year": "1975",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1258805162",
-      "title": "Bella y Sensual",
-      "artist": "Romeo Santos, Daddy Yankee & Nicky Jam",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/94/2a/7e/942a7ea6-a2a8-af39-2f69-29b408049170/mzaf_7503827095140577380.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/ad/a7/dc/ada7dc95-4333-f6df-ce0f-f0eeccbac7f4/886446557991.jpg/600x600bb.jpg",
-      "duration_ms": 204701,
-      "genre": "Música tropical",
-      "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "804145428",
-      "title": "Propuesta Indecente",
-      "artist": "Romeo Santos",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/44/d1/a6/44d1a673-ed94-1e56-aef3-9c32cac41e0f/mzaf_8543988773838174607.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/8f/fc/6e/8ffc6efb-353f-46ac-eeb6-8247c01cfc87/886444383691.jpg/600x600bb.jpg",
-      "duration_ms": 235133,
-      "genre": "Música tropical",
-      "release_year": "2013",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "160405950",
-      "title": "Un beso",
-      "artist": "Aventura",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/31/15/08/31150827-6c05-4734-11c7-97a00f4bb373/mzaf_17543175318829447367.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/2e/e0/db/2ee0db3a-4607-4688-5ed5-a51eda69d49d/dj.phdgvndl.jpg/600x600bb.jpg",
-      "duration_ms": 263347,
-      "genre": "Música tropical",
-      "release_year": "2005",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "804145419",
-      "title": "Eres Mía",
-      "artist": "Romeo Santos",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d6/8d/a3/d68da36f-dd4c-1977-7d79-bca12c4428a0/mzaf_9029700712586690336.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/8f/fc/6e/8ffc6efb-353f-46ac-eeb6-8247c01cfc87/886444383691.jpg/600x600bb.jpg",
-      "duration_ms": 250640,
-      "genre": "Música tropical",
-      "release_year": "2014",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "804145420",
       "title": "Odio (feat. Drake)",
       "artist": "Romeo Santos",
@@ -13871,39 +11550,6 @@
       "duration_ms": 225000,
       "genre": "Música tropical",
       "release_year": "2014",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "438919598",
-      "title": "Salsa",
-      "artist": "El Rubio Loco",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/60/c9/94/60c994ca-dfee-5722-0646-05db73b1ac7c/mzaf_17304859714979544173.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/3a/5e/a2/mzi.kskojfaz.jpg/600x600bb.jpg",
-      "duration_ms": 172748,
-      "genre": "Música tropical",
-      "release_year": "2010",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "304149129",
-      "title": "Señora de Madrugada",
-      "artist": "Tito Rojas",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/e7/09/ae/e709aeb3-8fce-4baf-e501-5f0771247e07/mzaf_16086879177413924792.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/c5/ac/ea/mzi.ilxqbazb.tif/600x600bb.jpg",
-      "duration_ms": 349600,
-      "genre": "Latin",
-      "release_year": "1993",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "211280601",
-      "title": "Enséñame a Olvidar",
-      "artist": "Aventura",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/9e/66/e2/9e66e27f-c308-2dcc-6e25-1dd9efb1e5a8/mzaf_6102388760072708617.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/fd/1c/c4/fd1cc42a-c642-bb66-5b11-291a568c73d6/617101300023.jpg/600x600bb.jpg",
-      "duration_ms": 348827,
-      "genre": "Música tropical",
-      "release_year": "2002",
       "has_duplicate_artist": false
     },
     {
@@ -13929,39 +11575,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1566022652",
-      "title": "Salsa",
-      "artist": "TheHxliday",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/96/39/fa/9639fa09-6450-fb76-9be4-329d01a2aff5/mzaf_16706966463020801264.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/c8/0e/05/c80e054a-3408-badf-072b-c588b9ba7abe/21UMGIM37229.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 170182,
-      "genre": "Hip-Hop/Rap",
-      "release_year": "2021",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "304149140",
-      "title": "He Chocado Con la Vida",
-      "artist": "Tito Rojas",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/2e/0e/b7/2e0eb7da-2dba-ca4f-d8cb-71e76818a680/mzaf_5604301743638058173.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/c5/ac/ea/mzi.ilxqbazb.tif/600x600bb.jpg",
-      "duration_ms": 311467,
-      "genre": "Latin",
-      "release_year": "1993",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "211280240",
-      "title": "Todavía Me Amas",
-      "artist": "Aventura",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/51/19/76/51197608-d67d-b60e-de43-0c4668f6df34/mzaf_18090813414716167207.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/fd/1c/c4/fd1cc42a-c642-bb66-5b11-291a568c73d6/617101300023.jpg/600x600bb.jpg",
-      "duration_ms": 285227,
-      "genre": "Música tropical",
-      "release_year": "2002",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1458398831",
       "title": "Inmortal",
       "artist": "Aventura",
@@ -13970,39 +11583,6 @@
       "duration_ms": 256429,
       "genre": "Música tropical",
       "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1097132802",
-      "title": "La Gozadera (feat. Marc Anthony)",
-      "artist": "Gente de Zona",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/2a/50/47/2a5047f1-b003-d985-15ae-6b8dac67940f/mzaf_5981547148577752320.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c6/15/89/c615892a-9b25-e601-9d9d-a12e1e8bf76d/886445490947.jpg/600x600bb.jpg",
-      "duration_ms": 203050,
-      "genre": "Música tropical",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1772891465",
-      "title": "Salsa",
-      "artist": "Yuri Buenaventura",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d5/e5/c2/d5e5c2a3-f2e3-afce-1ad3-0984bd7d9b80/mzaf_14147140709511047740.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/0b/85/74/0b85742f-b502-dd40-5de9-0322bcf4b031/3760412080058_cover.jpg/600x600bb.jpg",
-      "duration_ms": 280813,
-      "genre": "Latin",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "804145416",
-      "title": "Necio (feat. Carlos Santana)",
-      "artist": "Romeo Santos",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/03/52/c0/0352c0cf-bb41-75af-3951-045adf396cc9/mzaf_17163022584491085889.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/8f/fc/6e/8ffc6efb-353f-46ac-eeb6-8247c01cfc87/886444383691.jpg/600x600bb.jpg",
-      "duration_ms": 264267,
-      "genre": "Música tropical",
-      "release_year": "2014",
       "has_duplicate_artist": false
     },
     {
@@ -14028,28 +11608,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1481916707",
-      "title": "La Mejor Versión de Mí (Remix)",
-      "artist": "NATTI NATASHA & Romeo Santos",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/60/a2/0b/60a20b81-2070-add2-726d-3c209b0c6e88/mzaf_5434594127067918744.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/2c/82/94/2c82944f-5fda-a9d6-0a50-33424309ca28/194491398255.jpg/600x600bb.jpg",
-      "duration_ms": 229333,
-      "genre": "Música tropical",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "701008894",
-      "title": "Darte un Beso",
-      "artist": "Prince Royce",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/f7/f9/1a/f7f91a01-6d1e-c729-723a-c403b0f2a5b8/mzaf_6483776350260742119.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/8e/fe/87/8efe87bd-74aa-3c10-8471-4f1b50194a2b/886444191760.jpg/600x600bb.jpg",
-      "duration_ms": 206933,
-      "genre": "Música tropical",
-      "release_year": "2013",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "841018293",
       "title": "Stand by Me",
       "artist": "Prince Royce",
@@ -14058,17 +11616,6 @@
       "duration_ms": 205267,
       "genre": "Música tropical",
       "release_year": "2010",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1458398730",
-      "title": "Canalla",
-      "artist": "Romeo Santos & El Chaval de la Bachata",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/b6/cb/28/b6cb2879-a5c3-34cd-e1c9-b7bf21de8fb3/mzaf_9473040587490996174.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/63/62/b8/6362b891-47a6-33dd-bd80-4e6ac4772073/886447616253.jpg/600x600bb.jpg",
-      "duration_ms": 226681,
-      "genre": "Música tropical",
-      "release_year": "2019",
       "has_duplicate_artist": false
     },
     {
@@ -14083,39 +11630,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "841018314",
-      "title": "El Amor Que Perdimos",
-      "artist": "Prince Royce",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/3c/b5/44/3cb5445c-a07a-7831-16ca-332e155ab17f/mzaf_14033180541924802846.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/86/71/56/867156c7-401f-b174-51e3-2423609c72fa/886444460651.jpg/600x600bb.jpg",
-      "duration_ms": 245640,
-      "genre": "Música tropical",
-      "release_year": "2010",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "160405610",
-      "title": "La boda",
-      "artist": "Aventura",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e9/7c/15/e97c15a1-b707-015e-4e96-6b65310b246a/mzaf_8525321074900093891.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/2e/e0/db/2ee0db3a-4607-4688-5ed5-a51eda69d49d/dj.phdgvndl.jpg/600x600bb.jpg",
-      "duration_ms": 289840,
-      "genre": "Música tropical",
-      "release_year": "2005",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1074054725",
-      "title": "Mi Corazoncito",
-      "artist": "Aventura",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/d0/b7/8e/d0b78ec4-db69-f8a2-26b7-9901d968e572/mzaf_18017457404572639674.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/90/4a/b7/904ab7d4-a81c-262f-8b2c-3f0506640691/190374237703.jpg/600x600bb.jpg",
-      "duration_ms": 234240,
-      "genre": "Música tropical",
-      "release_year": "2006",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "314891174",
       "title": "Yo Quisiera Amarla",
       "artist": "Aventura",
@@ -14124,17 +11638,6 @@
       "duration_ms": 306333,
       "genre": "Música tropical",
       "release_year": "2009",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "804145418",
-      "title": "Cancioncitas de Amor",
-      "artist": "Romeo Santos",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/31/b7/95/31b79588-d661-1fb5-dd1c-e7c9b32dc969/mzaf_2315946952398491126.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/8f/fc/6e/8ffc6efb-353f-46ac-eeb6-8247c01cfc87/886444383691.jpg/600x600bb.jpg",
-      "duration_ms": 237093,
-      "genre": "Música tropical",
-      "release_year": "2014",
       "has_duplicate_artist": false
     },
     {
@@ -14149,61 +11652,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1074054701",
-      "title": "El Perdedor",
-      "artist": "Aventura",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/8c/30/24/8c3024c2-5d1d-19b0-8f64-0a8ae638bbfb/mzaf_8648682391541433644.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/90/4a/b7/904ab7d4-a81c-262f-8b2c-3f0506640691/190374237703.jpg/600x600bb.jpg",
-      "duration_ms": 215213,
-      "genre": "Música tropical",
-      "release_year": "2006",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "22141980",
-      "title": "Dos Locos",
-      "artist": "Monchy & Alexandra",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/0f/91/73/0f91735b-9e21-f822-9531-82ec79ead0aa/mzaf_8627209571806726949.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/66/2f/ea/662fea42-7ef9-a61f-9df5-3383b3bf3c48/s05.pkdpjlfj.jpg/600x600bb.jpg",
-      "duration_ms": 246591,
-      "genre": "Música tropical",
-      "release_year": "2002",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1624563284",
-      "title": "La Bachata",
-      "artist": "Manuel Turizo",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0a/e5/79/0ae5794a-1367-5366-4bf0-4e6a7b3ba96d/mzaf_13846858903087590245.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/df/70/11/df701101-9f0f-3c43-ff6d-2186235d7e9c/196589129123.jpg/600x600bb.jpg",
-      "duration_ms": 162638,
-      "genre": "Urbano latino",
-      "release_year": "2022",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1517903118",
-      "title": "Corazón Culpable",
-      "artist": "Anthony Santos",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/b2/97/a0/b297a061-53b6-19df-9653-f631143a2351/mzaf_16084721954657424763.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music113/v4/10/af/b5/10afb596-5d14-7336-003d-f29493f0b1dc/879352503626_Cover.jpg/600x600bb.jpg",
-      "duration_ms": 359773,
-      "genre": "Música tropical",
-      "release_year": "1994",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "21540447",
-      "title": "Tú Eres Ajena",
-      "artist": "Frank Reyes",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/43/09/a0/4309a021-e5cd-6c2d-0b6c-069ad731cdc2/mzaf_8297169940112274126.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/79/e1/89/79e1891c-092a-d31a-18ec-a952231a4eb3/s05.bqgnoigo.jpg/600x600bb.jpg",
-      "duration_ms": 241058,
-      "genre": "Música tropical",
-      "release_year": "2000",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "21328975",
       "title": "Intentalo Tu",
       "artist": "Joe Veras",
@@ -14212,72 +11660,6 @@
       "duration_ms": 245253,
       "genre": "Música tropical",
       "release_year": "2003",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1871201569",
-      "title": "Bachata (EN)",
-      "artist": "Alibi & Lou Bega",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/68/a8/2e/68a82efe-106f-bf7c-781e-e4542bb67581/mzaf_3400106422413351302.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/1c/b4/f1/1cb4f1ba-cc19-662d-ec6c-f0898604045f/5055624324204.jpg/600x600bb.jpg",
-      "duration_ms": 192200,
-      "genre": "Pop",
-      "release_year": "2006",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1871201560",
-      "title": "Bachata (RU)",
-      "artist": "Alibi & Lou Bega",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/cb/f6/f7/cbf6f7f7-942f-7fad-a2a8-1c500a253144/mzaf_13358221493649318280.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/1c/b4/f1/1cb4f1ba-cc19-662d-ec6c-f0898604045f/5055624324204.jpg/600x600bb.jpg",
-      "duration_ms": 196280,
-      "genre": "Pop",
-      "release_year": "2006",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1525342222",
-      "title": "Bachata",
-      "artist": "Kay One & Cristobal",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/60/68/10/6068104a-48b8-6cdb-4511-4abb1cf5d010/mzaf_14105216123556013181.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/7b/3b/a7/7b3ba764-df95-32d0-1af9-46ea03b1160a/4251625996247_3000.jpg/600x600bb.jpg",
-      "duration_ms": 178728,
-      "genre": "Pop",
-      "release_year": "2020",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "48699886",
-      "title": "Que Vuelva",
-      "artist": "Alex Bueno",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/a8/ea/45/a8ea45a7-c0c3-10e0-f0c8-b468f4e93259/mzaf_14971957818819128890.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/f3/d0/ed/f3d0edd2-d7fc-8329-2944-0e90e1f3c54f/s05.qigesbul.jpg/600x600bb.jpg",
-      "duration_ms": 289160,
-      "genre": "Música tropical",
-      "release_year": "2000",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "324375446",
-      "title": "La Novelita",
-      "artist": "Aventura",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/00/1d/8f/001d8f75-99d0-b633-f426-accf080f8a79/mzaf_14540653419953357380.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/a6/6e/34/a66e341f-a6cb-863a-552c-f8df1ea4c82e/mzi.mrqxniwj.jpg/600x600bb.jpg",
-      "duration_ms": 244880,
-      "genre": "Pop Latino",
-      "release_year": "1999",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "290427819",
-      "title": "Moriré Bebiendo",
-      "artist": "Teodoro Reyes",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/38/1b/f4/381bf450-4493-471c-c1bd-9e555657a872/mzaf_14806472671724235116.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/33/3b/0f/mzi.lthpgils.tif/600x600bb.jpg",
-      "duration_ms": 194400,
-      "genre": "Música tropical",
-      "release_year": "1989",
       "has_duplicate_artist": false
     },
     {
@@ -14292,61 +11674,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "19468968",
-      "title": "Burbujas de Amor",
-      "artist": "Juan Luis Guerra 4.40",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/17/c3/fa/17c3fa7a-c395-d4b4-2e05-cbd268ae089b/mzaf_14023142544995081604.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/a5/9e/0a/a59e0a7d-417a-1689-5d60-0e1523c08f9a/s05.xxiwuqne.jpg/600x600bb.jpg",
-      "duration_ms": 249867,
-      "genre": "Música tropical",
-      "release_year": "1990",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "471342606",
-      "title": "Debate de 4",
-      "artist": "Luis Vargas, Anthony \"El Mayimbe\" Santos, Raulin Rodriguez & Romeo Santos",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/bf/32/58/bf32589d-3021-9f13-b80f-a039d750dd5c/mzaf_3782782027649423086.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/27/19/89/271989d3-9d33-d962-2a0a-d1abdf126f9d/mzi.ogvyuvet.jpg/600x600bb.jpg",
-      "duration_ms": 279347,
-      "genre": "Música tropical",
-      "release_year": "2011",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "796949493",
-      "title": "Bachata",
-      "artist": "Sonora Cubana",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/52/8a/fa/528afa4c-74ba-f455-e960-515515393d5a/mzaf_544541469209550371.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/6c/e3/c5/6ce3c532-2e9c-231e-67e7-2ec765aeece2/8054187540554.jpg/600x600bb.jpg",
-      "duration_ms": 254617,
-      "genre": "Dance",
-      "release_year": "2013",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "21227777",
-      "title": "Volvio el Dolor",
-      "artist": "Luis Vargas",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/6f/50/58/6f50583e-5460-991f-f390-d68526c5d0cb/mzaf_9749480192290908326.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/3b/e8/59/3be859fd-96e8-a50c-43cd-f209adba4a1f/s05.koyoqium.jpg/600x600bb.jpg",
-      "duration_ms": 213670,
-      "genre": "Música tropical",
-      "release_year": "1994",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "22141975",
-      "title": "Te Quiero Igual Que Ayer",
-      "artist": "Monchy & Alexandra",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/9c/6c/e9/9c6ce9a4-6a63-4944-af24-ec2d3ef24bd8/mzaf_8098843599381553976.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/66/2f/ea/662fea42-7ef9-a61f-9df5-3383b3bf3c48/s05.pkdpjlfj.jpg/600x600bb.jpg",
-      "duration_ms": 259949,
-      "genre": "Música tropical",
-      "release_year": "2002",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1258804716",
       "title": "Tuyo",
       "artist": "Romeo Santos",
@@ -14355,83 +11682,6 @@
       "duration_ms": 218566,
       "genre": "Música tropical",
       "release_year": "2017",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1467520768",
-      "title": "Bachata",
-      "artist": "El Kimiko & Yordy",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/d7/9f/15/d79f153a-215e-9a37-ec18-b693f3a27b9b/mzaf_5920783831153029460.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music113/v4/17/bb/be/17bbbe86-3252-64c4-3bef-776860feeb4a/0.jpg/600x600bb.jpg",
-      "duration_ms": 183275,
-      "genre": "Latin",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "471342414",
-      "title": "Llévame Contigo",
-      "artist": "Romeo Santos",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/50/8f/e0/508fe00d-ea60-2ee5-b6cc-5cc3d4bde59d/mzaf_4201676881949855136.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/27/19/89/271989d3-9d33-d962-2a0a-d1abdf126f9d/mzi.ogvyuvet.jpg/600x600bb.jpg",
-      "duration_ms": 226400,
-      "genre": "Música tropical",
-      "release_year": "2011",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1443663815",
-      "title": "Te Extraño (Bachata Version)",
-      "artist": "Xtreme",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e2/ad/06/e2ad063a-a8ae-6d13-f723-ce83ff769494/mzaf_7715483030728983071.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/72/e6/87/72e68710-dbba-2074-7a68-6f34e2f1d908/06UMGIM17767.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 212973,
-      "genre": "Urbano latino",
-      "release_year": "2003",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1655422668",
-      "title": "Bachata",
-      "artist": "Santiago of the Seas",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/2b/2a/14/2b2a1416-7370-cfb0-c0ad-a1a935f37196/mzaf_17718669855796291701.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/c5/4f/a0/c54fa01a-5b66-ce00-8578-e050a675643f/22UMGIM93134.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 80427,
-      "genre": "Children's Music",
-      "release_year": "2020",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1541980850",
-      "title": "Vagabundo, Borracho y Loco",
-      "artist": "Kiko Rodriguez",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/30/78/3f/30783f4a-6d6f-77e6-354b-bc90e568a04a/mzaf_3692009609588146381.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/a0/7b/db/a07bdb30-f46f-02cb-bff0-08f7f0c70f6e/195497655625.jpg/600x600bb.jpg",
-      "duration_ms": 269493,
-      "genre": "Música tropical",
-      "release_year": "1996",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1674688995",
-      "title": "La Bachata",
-      "artist": "Manuel Turizo",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/c7/5c/f8/c75cf833-749e-e2d2-7afa-c0ef050726dd/mzaf_2846078226371510244.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/07/1a/d6/071ad6bd-8cac-adfb-94e4-e7c2c525a216/196589867988.jpg/600x600bb.jpg",
-      "duration_ms": 162638,
-      "genre": "Urbano latino",
-      "release_year": "2022",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "160698348",
-      "title": "Bailando Con El",
-      "artist": "Elvis Martínez",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/a8/c1/d2/a8c1d277-bd31-5ffa-cf3f-684861fcd8a8/mzaf_9925393418133529121.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/44/1f/d1/mzi.nwmnftby.jpg/600x600bb.jpg",
-      "duration_ms": 221080,
-      "genre": "Latin",
-      "release_year": "2000",
       "has_duplicate_artist": false
     },
     {
@@ -14468,28 +11718,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "475864390",
-      "title": "El Verdadero Amor Perdóna (Dueto Con Prince Royce)",
-      "artist": "Maná",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/91/37/1b/91371bae-1dbe-c355-b361-88584417c1ae/mzaf_5260929298911987768.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/ac/7f/18/ac7f1887-2bbd-b603-ffa1-89bf70bcf8f7/mzi.adkhohwe.jpg/600x600bb.jpg",
-      "duration_ms": 238144,
-      "genre": "Pop Latino",
-      "release_year": "2011",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1481616697",
-      "title": "Bachata (DJ Unic Remix)",
-      "artist": "El Taiger, DJ Unic & El Kimiko",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/90/16/51/901651ee-d1b9-6d75-3b35-6b025142288f/mzaf_6974608859583610514.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music123/v4/da/1c/2c/da1c2cbc-c125-4a86-f615-d43fdba2cdad/cover.jpg/600x600bb.jpg",
-      "duration_ms": 176949,
-      "genre": "Urbano latino",
-      "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "160410425",
       "title": "I'm Sorry",
       "artist": "Aventura",
@@ -14498,17 +11726,6 @@
       "duration_ms": 254560,
       "genre": "Música tropical",
       "release_year": "2003",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "841018324",
-      "title": "Mi Última Carta",
-      "artist": "Prince Royce",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/f9/9d/9a/f99d9a6e-9736-8b68-e39f-5f90df274a6e/mzaf_6889870547687567329.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/86/71/56/867156c7-401f-b174-51e3-2423609c72fa/886444460651.jpg/600x600bb.jpg",
-      "duration_ms": 244720,
-      "genre": "Música tropical",
-      "release_year": "2010",
       "has_duplicate_artist": false
     },
     {
@@ -14534,28 +11751,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "845471705",
-      "title": "Las Cosas Pequeñas",
-      "artist": "Prince Royce",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/db/90/96/db909691-47d3-5376-723f-62bdbd21d2f2/mzaf_15386658065697874139.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/00/94/4b/00944b00-1c78-7f9f-9323-6b70a6597fe6/886444460019.jpg/600x600bb.jpg",
-      "duration_ms": 215680,
-      "genre": "Música tropical",
-      "release_year": "2012",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "19468970",
-      "title": "Bachata Rosa",
-      "artist": "Juan Luis Guerra 4.40",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/dc/3c/52/dc3c522d-86c2-449f-b7a0-27878f00bf9c/mzaf_4247131372942711862.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/a5/9e/0a/a59e0a7d-417a-1689-5d60-0e1523c08f9a/s05.xxiwuqne.jpg/600x600bb.jpg",
-      "duration_ms": 260427,
-      "genre": "Música tropical",
-      "release_year": "1990",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1445668952",
       "title": "Baby Love",
       "artist": "The Supremes",
@@ -14564,17 +11759,6 @@
       "duration_ms": 155897,
       "genre": "R&B/Soul",
       "release_year": "1964",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1445669039",
-      "title": "Ain't No Mountain High Enough",
-      "artist": "Marvin Gaye & Tammi Terrell",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/6c/37/b7/6c37b756-fe48-495b-9183-4c8b5c0420ef/mzaf_7991277698224995090.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/53/76/ad/5376ad5a-3731-8177-5bac-34626908f02a/17UM1IM39049.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 147577,
-      "genre": "R&B/Soul",
-      "release_year": "1967",
       "has_duplicate_artist": false
     },
     {
@@ -14619,17 +11803,6 @@
       "duration_ms": 158327,
       "genre": "R&B/Soul",
       "release_year": "1964",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1445669359",
-      "title": "Do You Love Me (Mono)",
-      "artist": "The Contours",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c2/d8/94/c2d894c6-7c1a-4867-243c-5f4d768ea08e/mzaf_14432826900516899964.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/53/76/ad/5376ad5a-3731-8177-5bac-34626908f02a/17UM1IM39049.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 172771,
-      "genre": "R&B/Soul",
-      "release_year": "1962",
       "has_duplicate_artist": false
     },
     {
@@ -14839,17 +12012,6 @@
       "duration_ms": 217935,
       "genre": "Rock",
       "release_year": "2001",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "714465082",
-      "title": "I Second That Emotion",
-      "artist": "Smooth Jazz All Stars",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/68/a7/42/68a7421c-ed48-a34c-01d4-b636a9138f8a/mzaf_1425566075119380231.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music6/v4/9d/de/f5/9ddef5be-f400-3ce4-d564-1a4f577b906b/707541989497.jpg/600x600bb.jpg",
-      "duration_ms": 186920,
-      "genre": "Jazz",
-      "release_year": "2006",
       "has_duplicate_artist": false
     },
     {
@@ -15150,17 +12312,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1453880006",
-      "title": "Thank God I'm a Country Boy (Live at the Universal Amphitheatre, Los Angeles, CA - August/September 1974)",
-      "artist": "John Denver",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/c6/b4/f7/c6b4f70b-0274-5e83-d86c-a0ef519a20ab/mzaf_8006480651534159994.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/21/47/82/21478215-c762-331f-7717-401732ff0c79/886447553251.jpg/600x600bb.jpg",
-      "duration_ms": 204039,
-      "genre": "Pop",
-      "release_year": "1974",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "80604828",
       "title": "Don't Take the Girl",
       "artist": "Tim McGraw",
@@ -15249,17 +12400,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "265407747",
-      "title": "Amazed",
-      "artist": "Lonestar",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/5e/10/43/5e1043f8-3507-55ff-e8aa-149325fa9cb1/mzaf_5536909969507870940.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Features114/v4/36/d0/3b/36d03b1b-6284-faed-2379-4f1d7baefde2/dj.hzkfsdta.jpg/600x600bb.jpg",
-      "duration_ms": 239947,
-      "genre": "Country",
-      "release_year": "1999",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "258642521",
       "title": "Boot Scootin' Boogie",
       "artist": "Brooks & Dunn",
@@ -15312,17 +12452,6 @@
       "duration_ms": 252253,
       "genre": "Pop",
       "release_year": "1967",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "265407757",
-      "title": "Livin' Our Love Song",
-      "artist": "Jason Michael Carroll",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3a/f1/cf/3af1cf9b-62e4-cb32-6b78-08a8e69f3b1a/mzaf_15872992747159780658.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Features114/v4/36/d0/3b/36d03b1b-6284-faed-2379-4f1d7baefde2/dj.hzkfsdta.jpg/600x600bb.jpg",
-      "duration_ms": 230413,
-      "genre": "Country",
-      "release_year": "2007",
       "has_duplicate_artist": false
     },
     {
@@ -15381,17 +12510,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1724272788",
-      "title": "Scared To Start",
-      "artist": "Michael Marcagi",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b8/70/16/b8701632-3eaa-c5eb-46a4-338cc4316fcd/mzaf_4183366284239135637.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/0e/a3/c8/0ea3c827-2cfa-d097-7aff-6c86026986cb/054391328250.jpg/600x600bb.jpg",
-      "duration_ms": 159636,
-      "genre": "Alternative",
-      "release_year": "2024",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "265407627",
       "title": "Third Rock from the Sun",
       "artist": "Joe Diffie",
@@ -15422,17 +12540,6 @@
       "duration_ms": 241267,
       "genre": "Country",
       "release_year": "2007",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1579584739",
-      "title": "I Am A Man Of Constant Sorrow (feat. Dan Tyminski) [Radio Edit]",
-      "artist": "The Soggy Bottom Boys",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/33/a0/1a/33a01ae7-1f93-8724-65be-5def7f683ef8/mzaf_2364254284974684777.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/f1/42/7c/f1427c4a-351b-19e4-b446-90183760c7cb/21UMGIM77280.rgb.jpg/600x600bb.jpg",
-      "duration_ms": 189561,
-      "genre": "Country",
-      "release_year": "2000",
       "has_duplicate_artist": false
     },
     {
@@ -15733,17 +12840,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1018524560",
-      "title": "Paradise",
-      "artist": "John Prine",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/45/5f/c0/455fc033-3bed-37bd-b7be-5e800efcaa65/mzaf_11109189884450415828.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music1/v4/70/1f/ec/701fec1e-e9c0-6f34-9d0e-43eca7ae1e6a/603497887583.jpg/600x600bb.jpg",
-      "duration_ms": 194067,
-      "genre": "Rock",
-      "release_year": "1971",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1485581309",
       "title": "Texas Sun",
       "artist": "Khruangbin & Leon Bridges",
@@ -15876,17 +12972,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "828118037",
-      "title": "Heartbeats",
-      "artist": "José González",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/32/87/b6/3287b631-6497-8dfe-9766-77c1427848e7/mzaf_6755861276223187353.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/74/4e/93/744e930f-65d9-dffb-5d86-1360bb5a6bc5/724596932452.jpg/600x600bb.jpg",
-      "duration_ms": 161680,
-      "genre": "Singer/Songwriter",
-      "release_year": "2003",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1521363149",
       "title": "Michigan",
       "artist": "The Milk Carton Kids",
@@ -16008,17 +13093,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "79029890",
-      "title": "If I Had a Hammer (Single Version)",
-      "artist": "Peter, Paul & Mary",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/76/68/b0/7668b05b-13dc-94ae-7fe1-85115c3310c0/mzaf_5063915745285802674.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/ae/92/2b/ae922b24-7d22-eb75-0f2c-a48b49e43ee7/dj.uhhbdbuq.jpg/600x600bb.jpg",
-      "duration_ms": 121053,
-      "genre": "Singer/Songwriter",
-      "release_year": "1962",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "300997414",
       "title": "Please Don't Bury Me",
       "artist": "John Prine",
@@ -16118,17 +13192,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1364892390",
-      "title": "Jazz Standards",
-      "artist": "Michael Jazz & Jazz Club",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/8a/0f/fe/8a0ffe32-ef37-37d6-9f3a-af9b5fa1117b/mzaf_1552719214435311293.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/d6/ea/38/d6ea3854-7743-6a44-e2d0-2724780559a1/8033772946872.jpg/600x600bb.jpg",
-      "duration_ms": 253402,
-      "genre": "Instrumental",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1473074295",
       "title": "Jazz Standards",
       "artist": "Cafe Chill Jazz Background",
@@ -16137,39 +13200,6 @@
       "duration_ms": 219661,
       "genre": "Instrumental",
       "release_year": "2019",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1380052702",
-      "title": "Jazz Standards",
-      "artist": "Louis \"Smooth\" Sinclair",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/82/83/9c/82839ce5-e16d-a684-a92e-0f73a231fa42/mzaf_1179239639626311714.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/59/ec/92/59ec9273-0fe2-cb57-df78-683a0632e3e1/8033772951012.jpg/600x600bb.jpg",
-      "duration_ms": 233389,
-      "genre": "New Age",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1404332157",
-      "title": "Jazz Standards",
-      "artist": "Jazz Café Masters",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/72/a1/c1/72a1c11c-0d77-90ab-996a-e273632801e7/mzaf_2954669676794052430.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/3c/48/f9/3c48f96a-9b97-4f87-6b80-86b48302752a/8033772972925.jpg/600x600bb.jpg",
-      "duration_ms": 205038,
-      "genre": "New Age",
-      "release_year": "2018",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1404323680",
-      "title": "Jazz Standards",
-      "artist": "Michael Jazz & Jazz Music Star",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/43/6a/8e/436a8efa-e63a-5095-4108-e5d9d203a01c/mzaf_15891631948504405728.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/d5/f3/99/d5f399bd-1994-dec1-a34a-3f31ba7495cc/8033772972918.jpg/600x600bb.jpg",
-      "duration_ms": 215846,
-      "genre": "New Age",
-      "release_year": "2018",
       "has_duplicate_artist": false
     },
     {
@@ -16437,17 +13467,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1223835835",
-      "title": "Stardust",
-      "artist": "The Los Angeles Jazz Ensemble",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/ee/e0/d1/eee0d170-1395-cc5d-dafe-9aed1a437fa7/mzaf_12219248319541497689.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/3b/73/fb/3b73fb08-1414-3934-ae3f-b24fa0a45e5d/191079394821_cover.jpg/600x600bb.jpg",
-      "duration_ms": 240490,
-      "genre": "Smooth Jazz",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "316475543",
       "title": "Take Five",
       "artist": "The Dave Brubeck Quartet",
@@ -16489,17 +13508,6 @@
       "duration_ms": 811227,
       "genre": "Jazz",
       "release_year": "1968",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1223835848",
-      "title": "(I Don't Stand) A Ghost of a Chance with You",
-      "artist": "The Los Angeles Jazz Ensemble",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/db/48/d0/db48d046-c0fe-4dc2-57f1-28e61c074203/mzaf_17891114938386895320.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/3b/73/fb/3b73fb08-1414-3934-ae3f-b24fa0a45e5d/191079394821_cover.jpg/600x600bb.jpg",
-      "duration_ms": 126088,
-      "genre": "Smooth Jazz",
-      "release_year": "2015",
       "has_duplicate_artist": false
     },
     {
@@ -16547,39 +13555,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1223835834",
-      "title": "Body and Soul",
-      "artist": "The Los Angeles Jazz Ensemble",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/cb/02/93/cb0293ae-e2dd-486e-45cf-e582c9d37631/mzaf_16648946200654900298.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/3b/73/fb/3b73fb08-1414-3934-ae3f-b24fa0a45e5d/191079394821_cover.jpg/600x600bb.jpg",
-      "duration_ms": 140713,
-      "genre": "Smooth Jazz",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "158572678",
-      "title": "I'm a Fool to Want You",
-      "artist": "Frank Sinatra",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/31/78/1c/31781cb5-730a-4e0c-24cd-f0e16592ed6b/mzaf_13944793095572723054.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/7e/09/bf/mzi.ixzwawar.jpg/600x600bb.jpg",
-      "duration_ms": 175493,
-      "genre": "Vocal",
-      "release_year": "1951",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "668403228",
-      "title": "A Foggy Day (In London Town)",
-      "artist": "Michael Bublé",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/6f/68/50/6f685081-b08f-128b-3708-46dd3ffcae63/mzaf_12771130599077258494.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/a4/67/6d/a4676d95-233f-5e56-a6bf-9ff73c8189bf/093624942757.jpg/600x600bb.jpg",
-      "duration_ms": 152002,
-      "genre": "Pop",
-      "release_year": "2005",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "1796324073",
       "title": "My Way - Jazz Guitar",
       "artist": "Oliver Tate",
@@ -16591,17 +13566,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1223835836",
-      "title": "Willow Weep for Me",
-      "artist": "The Los Angeles Jazz Ensemble",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/4f/75/52/4f755292-9fd7-92ef-4c66-256de96efa30/mzaf_10944340552309172219.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/3b/73/fb/3b73fb08-1414-3934-ae3f-b24fa0a45e5d/191079394821_cover.jpg/600x600bb.jpg",
-      "duration_ms": 164951,
-      "genre": "Smooth Jazz",
-      "release_year": "2015",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "724951706",
       "title": "Stardust",
       "artist": "Nat \"King\" Cole",
@@ -16610,17 +13574,6 @@
       "duration_ms": 195573,
       "genre": "Vocal Pop",
       "release_year": "1957",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1223835839",
-      "title": "On Green Dolphin Street",
-      "artist": "The Los Angeles Jazz Ensemble",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/40/78/a0/4078a056-0612-2252-751e-9a7d39181f53/mzaf_17022799964482704710.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/3b/73/fb/3b73fb08-1414-3934-ae3f-b24fa0a45e5d/191079394821_cover.jpg/600x600bb.jpg",
-      "duration_ms": 138534,
-      "genre": "Smooth Jazz",
-      "release_year": "2015",
       "has_duplicate_artist": false
     },
     {
@@ -16676,28 +13629,6 @@
       "duration_ms": 269600,
       "genre": "Blues",
       "release_year": "1993",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "371635840",
-      "title": "Cry Me A River (made famous by Ella Fitzgerald)",
-      "artist": "Omnibus Media Karaoke Tracks",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/f4/a9/24/f4a92405-adf9-929e-59e8-ab314f8233f2/mzaf_11949269335870828487.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music/de/01/48/mzi.lqhkycnj.jpg/600x600bb.jpg",
-      "duration_ms": 186618,
-      "genre": "Blues",
-      "release_year": "2010",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1567910428",
-      "title": "La Grange",
-      "artist": "ZZ Top",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/6f/63/72/6f637231-111a-8b2e-976a-e58d243078e5/mzaf_937548225264520016.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/03/6d/6d/036d6d73-9e45-ad62-9e39-de8e4e27e9fe/5059460078697.jpg/600x600bb.jpg",
-      "duration_ms": 230480,
-      "genre": "Blues",
-      "release_year": "1973",
       "has_duplicate_artist": false
     },
     {
@@ -16899,17 +13830,6 @@
       "has_duplicate_artist": false
     },
     {
-      "id": "1567910432",
-      "title": "Messin' with the Kid",
-      "artist": "Buddy Guy & Junior Wells",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/e3/e2/8a/e3e28ac2-7d89-1b57-f638-0fe652a81e91/mzaf_17586400430674566712.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/03/6d/6d/036d6d73-9e45-ad62-9e39-de8e4e27e9fe/5059460078697.jpg/600x600bb.jpg",
-      "duration_ms": 135547,
-      "genre": "Blues",
-      "release_year": "1972",
-      "has_duplicate_artist": false
-    },
-    {
       "id": "164304816",
       "title": "All Your Love",
       "artist": "Magic Sam",
@@ -17017,17 +13937,6 @@
       "duration_ms": 216627,
       "genre": "Blues",
       "release_year": "1969",
-      "has_duplicate_artist": false
-    },
-    {
-      "id": "1567910675",
-      "title": "Why I Sing the Blues",
-      "artist": "Aretha Franklin",
-      "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/3e/17/62/3e176231-c8d4-78f3-9a4e-3df705a4e33a/mzaf_6696971986654847587.plus.aac.p.m4a",
-      "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/03/6d/6d/036d6d73-9e45-ad62-9e39-de8e4e27e9fe/5059460078697.jpg/600x600bb.jpg",
-      "duration_ms": 185307,
-      "genre": "Blues",
-      "release_year": "1970",
       "has_duplicate_artist": false
     },
     {
