@@ -662,7 +662,8 @@ def generate_batch_pdf(batch_data):
 def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
                   pub_logo: str = None, social_media: str = None, include_qr: bool = False,
                   game_number: int = 1, game_date: str = None,
-                  prize_4corners: str = '', prize_first_line: str = '', prize_full_house: str = ''):
+                  prize_4corners: str = '', prize_first_line: str = '', prize_full_house: str = '',
+                  voice_id: str = 'JBFqnCBsd6RMkjVDRZzb', decades: List[str] = None):
     """Generate all bingo cards"""
     import time
     start_time = time.time()
@@ -676,6 +677,8 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"{'='*60}")
     print(f"Venue: {venue_name}")
     print(f"Players: {num_players}")
+    print(f"Voice ID: {voice_id}")
+    print(f"Decades: {decades if decades else 'All'}")
     print(f"Pub Logo: {pub_logo if pub_logo else 'None'}")
     print(f"Social Media: {social_media if social_media else 'None'}")
     print(f"Include QR: {include_qr}")
@@ -687,6 +690,24 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     all_songs = load_pool()
     mem_after_load = process.memory_info()
     print(f"✓ Loaded {len(all_songs)} songs from pool ({time.time()-step_start:.2f}s) - Memory: {mem_after_load.rss / 1024 / 1024:.1f} MB")
+    
+    # Filter by decades if specified
+    if decades:
+        filtered_songs = []
+        for song in all_songs:
+            song_year = song.get('year')
+            if song_year:
+                # Determine decade from year
+                song_decade = f"{(song_year // 10) * 10}s"
+                if song_decade in decades:
+                    filtered_songs.append(song)
+        
+        print(f"✓ Filtered to {len(filtered_songs)} songs from decades {decades}")
+        all_songs = filtered_songs
+        
+        if len(all_songs) == 0:
+            print("⚠️  WARNING: No songs found for selected decades, using all songs")
+            all_songs = load_pool()
     
     # Calculate optimal songs
     step_start = time.time()
@@ -913,6 +934,8 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         "prize_4corners": prize_4corners,
         "prize_first_line": prize_first_line,
         "prize_full_house": prize_full_house,
+        "voice_id": voice_id,  # For TTS announcements
+        "decades": decades if decades else [],  # For filtering songs
         "pdf_file": str(OUTPUT_FILE),  # Local PDF path
         "songs": selected_songs  # The EXACT songs used in the cards
     }
@@ -974,8 +997,16 @@ if __name__ == '__main__':
     parser.add_argument('--prize_4corners', default='', help='Prize for All 4 Corners')
     parser.add_argument('--prize_first_line', default='', help='Prize for First Line')
     parser.add_argument('--prize_full_house', default='', help='Prize for Full House')
+    parser.add_argument('--voice_id', default='JBFqnCBsd6RMkjVDRZzb', help='Voice ID for TTS')
+    parser.add_argument('--decades', default=None, help='Comma-separated list of decades to filter (e.g., 1980s,1990s,2000s)')
     
     args = parser.parse_args()
+    
+    # Parse decades if provided
+    decades_list = None
+    if args.decades:
+        decades_list = [d.strip() for d in args.decades.split(',')]
+        print(f"\ud83d\udcc5 Filtering songs by decades: {decades_list}")
     
     generate_cards(
         venue_name=args.venue_name,
@@ -987,5 +1018,7 @@ if __name__ == '__main__':
         game_date=args.game_date,
         prize_4corners=args.prize_4corners,
         prize_first_line=args.prize_first_line,
-        prize_full_house=args.prize_full_house
+        prize_full_house=args.prize_full_house,
+        voice_id=args.voice_id,
+        decades=decades_list
     )

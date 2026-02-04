@@ -152,7 +152,13 @@ def generate_cards_async(request):
         prize_first_line = data.get('prize_first_line', '')
         prize_full_house = data.get('prize_full_house', '')
         
+        # Get voice_id and decades
+        voice_id = data.get('voice_id', 'JBFqnCBsd6RMkjVDRZzb')
+        decades = data.get('decades', [])
+        
         logger.info(f"Starting async card generation: {num_players} cards for '{venue_name}'")
+        logger.info(f"  Voice ID: {voice_id}")
+        logger.info(f"  Decades: {decades}")
         
         # *** CHECK CACHE: Load existing session to see if we can reuse it ***
         session_path = DATA_DIR / 'cards' / 'current_session.json'
@@ -171,7 +177,9 @@ def generate_cards_async(request):
                     existing_session.get('game_number') == game_number and
                     existing_session.get('prize_4corners') == prize_4corners and
                     existing_session.get('prize_first_line') == prize_first_line and
-                    existing_session.get('prize_full_house') == prize_full_house
+                    existing_session.get('prize_full_house') == prize_full_house and
+                    existing_session.get('voice_id') == voice_id and
+                    existing_session.get('decades') == decades
                 )
                 
                 # If params match AND we have a cached PDF URL, reuse it
@@ -235,7 +243,9 @@ def generate_cards_async(request):
             metadata={
                 'venue_name': venue_name,
                 'num_players': num_players,
-                'game_number': game_number
+                'game_number': game_number,
+                'voice_id': voice_id,
+                'decades': decades
             }
         )
         
@@ -290,6 +300,17 @@ def generate_cards_async(request):
                     cmd.extend(['--prize_first_line', prize_first_line])
                 if prize_full_house:
                     cmd.extend(['--prize_full_house', prize_full_house])
+                
+                # Add voice_id
+                if voice_id:
+                    cmd.extend(['--voice_id', voice_id])
+                    logger.info(f"Task {task_id}: Voice ID: {voice_id}")
+                
+                # Add decades filter (pass as comma-separated string)
+                if decades:
+                    decades_str = ','.join(decades)
+                    cmd.extend(['--decades', decades_str])
+                    logger.info(f"Task {task_id}: Decades filter: {decades_str}")
                 
                 logger.info(f"Task {task_id}: Running command: {' '.join(cmd)}")
                 
