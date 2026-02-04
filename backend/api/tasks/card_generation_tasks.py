@@ -33,13 +33,15 @@ def run_card_generation_task(task_id: str, task_model, cmd: list, base_dir: Path
             logger.info(f"Task {task_id}: Running command: {' '.join(cmd)}")
             
             # Run with real-time output capture for progress tracking
+            # Use bufsize=1 for line buffering and universal_newlines for text mode
             process = subprocess.Popen(
                 cmd,
                 cwd=str(base_dir),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                bufsize=1
+                bufsize=1,
+                universal_newlines=True
             )
             
             stdout_lines = []

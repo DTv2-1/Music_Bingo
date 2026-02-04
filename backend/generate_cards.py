@@ -783,6 +783,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         print(f"\n📚 [POOL DEBUG] First 5 songs in pool.json:")
         for i, song in enumerate(all_songs[:5], 1):
             print(f"   #{i}: {song['title']} - {song['artist']} ({song.get('year', 'N/A')})")
+        sys.stdout.flush()
         
         # Filter by decades if specified
         if decades:
@@ -802,6 +803,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
             print(f"\n🎚️ [FILTER DEBUG] First 5 songs after decade filter:")
             for i, song in enumerate(all_songs[:5], 1):
                 print(f"   #{i}: {song['title']} - {song['artist']} ({song.get('year', 'N/A')})")
+            sys.stdout.flush()
             
             if len(all_songs) == 0:
                 print("⚠️  WARNING: No songs found for selected decades, using all songs")
@@ -863,6 +865,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         for i, song in enumerate(selected_songs[-5:], len(selected_songs)-4):
             print(f"      {i:2d}. {song['title']:40s} - {song['artist']:30s} [Year: {song.get('year', 'N/A')}]")
         print(f"{'='*80}\n")
+        sys.stdout.flush()
     
     # Create output directory
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -930,6 +933,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     for i, song in enumerate(all_card_songs[0][:SONGS_PER_CARD], 1):
         print(f"   {i:2d}. {song['title']:40s} - {song['artist']:30s} [ID: {song.get('id', 'N/A')}]")
     print(f"{'='*80}\n")
+    sys.stdout.flush()
     
     # *** CRITICAL VALIDATION: Check for duplicate songs within each card ***
     print(f"\n🔍 Validating cards for duplicates...")
