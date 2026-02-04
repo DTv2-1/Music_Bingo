@@ -3,7 +3,10 @@ Session Input Validators
 Validates bingo session inputs
 """
 
+import logging
 from typing import Dict, Any, List
+
+logger = logging.getLogger(__name__)
 
 
 def validate_session_data(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -53,6 +56,8 @@ def validate_session_data(data: Dict[str, Any]) -> Dict[str, Any]:
     for genre in genres:
         if genre not in valid_genres:
             raise ValueError(f'Invalid genre: {genre}. Must be one of: {", ".join(valid_genres)}')
+    
+    logger.info(f"🔍 Validated session data - Decades: {decades}, Genres: {genres if genres else 'All'}")
     
     # Return normalized data
     return {

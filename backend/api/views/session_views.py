@@ -46,6 +46,12 @@ def bingo_sessions(request):
     
     if request.method == 'POST':
         try:
+            logger.info(f"📥 Received session creation request")
+            logger.info(f"   Venue: {request.data.get('venue_name', 'N/A')}")
+            logger.info(f"   Players: {request.data.get('num_players', 'N/A')}")
+            logger.info(f"   Decades: {request.data.get('decades', [])}")
+            logger.info(f"   Genres: {request.data.get('genres', [])}")
+            
             # Use BingoSessionService to create session
             session_service = BingoSessionService()
             result = session_service.create_session(request.data)

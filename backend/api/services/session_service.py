@@ -78,7 +78,11 @@ class BingoSessionService:
         
         # Get logo URL
         logo_url = session_data.get('logo_url', '')
+        decades = session_data.get('decades', ['1960s', '1970s', '1980s', '1990s'])
+        genres = session_data.get('genres', [])
+        
         logger.info(f"Creating session for '{venue_name}' with logo length: {len(logo_url) if logo_url else 0}")
+        logger.info(f"   Session filters - Decades: {decades}, Genres: {genres if genres else 'All'}")
         
         # Create session
         session = BingoSession.objects.create(
@@ -87,7 +91,8 @@ class BingoSessionService:
             host_name=session_data.get('host_name', ''),
             num_players=num_players,
             voice_id=session_data.get('voice_id', AppConfig.ELEVENLABS_VOICE_ID),
-            decades=session_data.get('decades', ['1960s', '1970s', '1980s', '1990s']),
+            decades=decades,
+            genres=genres,
             logo_url=logo_url,
             social_media=session_data.get('social_media', ''),
             include_qr=session_data.get('include_qr', False),
@@ -96,6 +101,8 @@ class BingoSessionService:
         )
         
         logger.info(f"✅ Created session {session_id} for {venue_name}")
+        logger.info(f"   Stored decades: {session.decades}")
+        logger.info(f"   Stored genres: {session.genres}")
         return self._session_to_dict(session)
     
     def get_session(self, session_id: str) -> BingoSession:
