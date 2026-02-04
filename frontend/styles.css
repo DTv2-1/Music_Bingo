@@ -1816,3 +1816,258 @@ button:disabled {
         margin-top: 10px;
     }
 }
+
+/* ============================================================================
+   SONG LIST STYLES
+   ============================================================================ */
+
+/* Song list container */
+.song-list-container {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Individual song item */
+.song-list-item {
+    display: grid;
+    grid-template-columns: 50px 1fr auto auto;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    border-bottom: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.song-list-item:hover {
+    background: #f9fafb;
+    transform: translateX(5px);
+}
+
+.song-list-item:last-child {
+    border-bottom: none;
+}
+
+.song-list-item.called {
+    opacity: 0.5;
+    background: #f0fdf4;
+}
+
+.song-list-item.called:hover {
+    background: #dcfce7;
+}
+
+/* Song number */
+.song-number {
+    font-size: 14px;
+    font-weight: 600;
+    color: #9ca3af;
+    text-align: center;
+}
+
+/* Song info */
+.song-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.song-title {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 15px;
+}
+
+.song-artist {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+/* Song metadata */
+.song-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.meta-badge {
+    background: #e5e7eb;
+    color: #4b5563;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Called badge */
+.called-badge {
+    background: #10b981;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Song detail modal */
+.song-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+    animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.song-detail-content {
+    background: white;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 100%;
+    padding: 30px;
+    position: relative;
+    animation: slideUp 0.3s;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #f3f4f6;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: #6b7280;
+}
+
+.modal-close:hover {
+    background: #e5e7eb;
+    transform: rotate(90deg);
+}
+
+.song-detail-header {
+    display: flex;
+    gap: 25px;
+    align-items: start;
+}
+
+.song-detail-artwork {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    flex-shrink: 0;
+}
+
+.song-detail-info {
+    flex: 1;
+}
+
+.song-detail-info h2 {
+    color: #1f2937;
+    font-size: 24px;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.song-detail-info h3 {
+    color: #6b7280;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.song-detail-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.detail-item {
+    display: flex;
+    gap: 10px;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+.detail-item strong {
+    color: #1f2937;
+    min-width: 80px;
+}
+
+/* Responsive for song list */
+@media (max-width: 768px) {
+    .song-list-item {
+        grid-template-columns: 40px 1fr;
+        gap: 10px;
+    }
+    
+    .song-meta {
+        grid-column: 2;
+        margin-top: 8px;
+    }
+    
+    .called-badge {
+        grid-column: 2;
+        justify-self: start;
+        margin-top: 8px;
+    }
+    
+    .song-detail-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .song-detail-artwork {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .song-detail-info h2 {
+        font-size: 20px;
+    }
+    
+    .song-detail-info h3 {
+        font-size: 16px;
+    }
+}

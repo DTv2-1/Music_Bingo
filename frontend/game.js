@@ -2102,7 +2102,7 @@ function displayFullSongList() {
     const totalSongsCount = document.getElementById('totalSongsCount');
     
     if (!gameState.pool || gameState.pool.length === 0) {
-        fullSongList.innerHTML = '<p style="opacity: 0.6; text-align: center; grid-column: 1/-1;">No songs loaded yet. Start a session first.</p>';
+        fullSongList.innerHTML = '<p style="opacity: 0.6; text-align: center;">No songs loaded yet. Start a session first.</p>';
         return;
     }
     
@@ -2114,28 +2114,82 @@ function displayFullSongList() {
         a.title.localeCompare(b.title)
     );
     
-    // Generate HTML for all songs
+    // Generate HTML for all songs in list format
     fullSongList.innerHTML = sortedSongs.map((track, index) => {
         // Check if this song has been called already
         const isCalled = gameState.called.some(calledTrack => calledTrack.id === track.id);
-        const calledClass = isCalled ? 'style="opacity: 0.5; background: #f0fdf4;"' : '';
-        const calledBadge = isCalled ? '<span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px;">✓ Called</span>' : '';
+        const calledClass = isCalled ? 'called' : '';
         
         return `
-            <div class="track-card" ${calledClass}>
-                <img src="${track.artwork_url || 'https://via.placeholder.com/60?text=🎵'}" 
-                     alt="${track.title}" 
-                     onerror="this.src='https://via.placeholder.com/60?text=🎵'">
-                <div class="track-details">
-                    <strong>${track.title}</strong>${calledBadge}
-                    <span>${track.artist}</span>
+            <div class="song-list-item ${calledClass}" onclick="showSongDetails('${track.id}')">
+                <div class="song-number">${index + 1}</div>
+                <div class="song-info">
+                    <div class="song-title">${track.title}</div>
+                    <div class="song-artist">${track.artist}</div>
                 </div>
+                <div class="song-meta">
+                    ${track.release_year ? `<span class="meta-badge">${track.release_year}</span>` : ''}
+                    ${track.genre ? `<span class="meta-badge">${track.genre}</span>` : ''}
+                </div>
+                ${isCalled ? '<div class="called-badge">✓ Called</div>' : ''}
             </div>
         `;
     }).join('');
     
     console.log(`📜 Displayed ${sortedSongs.length} songs in full list`);
 }
+
+/**
+ * Show detailed information about a song in a modal
+ */
+function showSongDetails(songId) {
+    const song = gameState.pool.find(s => s.id === songId);
+    if (!song) return;
+    
+    const isCalled = gameState.called.some(calledTrack => calledTrack.id === song.id);
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'song-detail-modal';
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    };
+    
+    modal.innerHTML = `
+        <div class="song-detail-content">
+            <button class="modal-close" onclick="this.closest('.song-detail-modal').remove()">✕</button>
+            
+            <div class="song-detail-header">
+                <img src="${song.artwork_url || 'https://via.placeholder.com/200?text=🎵'}" 
+                     alt="${song.title}"
+                     class="song-detail-artwork"
+                     onerror="this.src='https://via.placeholder.com/200?text=🎵'">
+                
+                <div class="song-detail-info">
+                    <h2>${song.title}</h2>
+                    <h3>${song.artist}</h3>
+                    
+                    <div class="song-detail-meta">
+                        ${song.release_year ? `<div class="detail-item"><strong>Year:</strong> ${song.release_year}</div>` : ''}
+                        ${song.genre ? `<div class="detail-item"><strong>Genre:</strong> ${song.genre}</div>` : ''}
+                        ${song.duration_ms ? `<div class="detail-item"><strong>Duration:</strong> ${Math.floor(song.duration_ms / 60000)}:${String(Math.floor((song.duration_ms % 60000) / 1000)).padStart(2, '0')}</div>` : ''}
+                        <div class="detail-item"><strong>Status:</strong> <span style="color: ${isCalled ? '#10b981' : '#6b7280'}">${isCalled ? '✓ Called' : 'Not called yet'}</span></div>
+                    </div>
+                    
+                    ${song.preview_url ? `
+                        <audio controls style="width: 100%; margin-top: 15px;">
+                            <source src="${song.preview_url}" type="audio/mpeg">
+                            Your browser does not support audio playback.
+                        </audio>
+                    ` : '<p style="color: #9ca3af; font-size: 14px; margin-top: 10px;">No preview available</p>'}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
 
 // ============================================================================
 // UI UPDATE FUNCTIONS
