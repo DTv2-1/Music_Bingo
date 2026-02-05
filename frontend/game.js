@@ -34,6 +34,7 @@ let gameState = {
     remaining: [],          // Songs not yet called
     called: [],             // Songs already called (in order)
     currentTrack: null,     // Currently playing track
+    currentSound: null,     // Currently playing Howl instance
     isPlaying: false,       // Is audio currently playing
     announcementsData: null, // Loaded announcements
     announcementsAI: null,   // AI-generated announcements (optional)
@@ -1516,8 +1517,10 @@ async function playNextTrack() {
     updateCalledList();
     updateStats();
 
-    // Disable button while playing
-    setButtonState('nextTrack', false);
+    // Change button to PAUSE while playing
+    const nextButton = document.getElementById('nextTrack');
+    nextButton.textContent = '⏸️ PAUSE';
+    nextButton.onclick = pauseCurrentTrack;
     gameState.isPlaying = true;
 
     try {
@@ -1533,9 +1536,17 @@ async function playNextTrack() {
         // Step 2: Check for jingle playback
         await checkAndPlayJingle();
 
-        // Step 3: Check for halfway announcement
-        const totalSongs = gameState.pool.length;
+        // Step 3: Check for 10-song summary announcement
         const songsPlayed = gameState.called.length;
+        if (songsPlayed > 0 && songsPlayed % 10 === 0) {
+            updateStatus('📋 10-song summary...', true);
+            await announceTenSongSummary();
+            // Short pause after summary
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        // Step 4: Check for halfway announcement
+        const totalSongs = gameState.pool.length;
         const halfwayPoint = Math.floor(totalSongs / 2);
 
         if (!gameState.halfwayAnnounced && songsPlayed === halfwayPoint) {
@@ -1571,10 +1582,41 @@ async function playNextTrack() {
         console.error('Error playing track:', error);
         updateStatus(`❌ Error: ${error.message}`, false);
     } finally {
-        // Re-enable button
+        // Change button back to NEXT SONG
+        const nextButton = document.getElementById('nextTrack');
+        nextButton.textContent = '▶️ NEXT SONG';
+        nextButton.onclick = playNextTrack;
         setButtonState('nextTrack', true);
         gameState.isPlaying = false;
     }
+}
+
+/**
+ * Pause current playback
+ */
+function pauseCurrentTrack() {
+    console.log('⏸️ Pausing playback...');
+    
+    // Stop current audio
+    if (gameState.currentSound) {
+        gameState.currentSound.pause();
+        gameState.currentSound = null;
+    }
+    
+    // Cancel auto-next timer
+    if (gameState.autoNextTimer) {
+        clearTimeout(gameState.autoNextTimer);
+        gameState.autoNextTimer = null;
+    }
+    
+    // Change button back to NEXT SONG
+    const nextButton = document.getElementById('nextTrack');
+    nextButton.textContent = '▶️ NEXT SONG';
+    nextButton.onclick = playNextTrack;
+    setButtonState('nextTrack', true);
+    
+    gameState.isPlaying = false;
+    updateStatus('⏸️ Paused - Press NEXT SONG to continue', false);
 }
 
 /**
@@ -1590,6 +1632,45 @@ function generateWelcomeText() {
     ];
 
     return welcomeScripts[Math.floor(Math.random() * welcomeScripts.length)];
+}
+
+/**
+ * Announce last 10 songs summary
+ */
+async function announceTenSongSummary() {
+    const last10 = gameState.called.slice(-10);
+    const summaryText = generate10SongSummaryText(last10);
+    
+    console.log('📋 Announcing 10-song summary...');
+    
+    try {
+        const audioData = await generateTTS(summaryText);
+        await playTTSAudio(audioData);
+        console.log('✅ 10-song summary complete');
+    } catch (error) {
+        console.error('Error playing 10-song summary:', error);
+        throw error;
+    }
+}
+
+/**
+ * Generate 10-song summary text
+ */
+function generate10SongSummaryText(last10Songs) {
+    const summaryScripts = [
+        `Alright everyone, let's run through the last 10 songs for anyone who might have missed them. Listen carefully and mark them off if you haven't already!`,
+        
+        `Time for a quick recap! Here are the last 10 tracks we've played. Make sure you've got them all marked on your cards!`,
+        
+        `Let's do a summary of the last 10 songs. If you missed any, here's your chance to catch up!`
+    ];
+    
+    const intro = summaryScripts[Math.floor(Math.random() * summaryScripts.length)];
+    const songList = last10Songs.map((song, i) => 
+        `Number ${i + 1}: ${song.title} by ${song.artist}`
+    ).join('. ');
+    
+    return `${intro} ${songList}. Alright, let's continue with the next track!`;
 }
 
 /**
@@ -1916,6 +1997,9 @@ async function playSongPreview(track) {
             },
             onplay: () => {
                 console.log('▶ Preview playing with fade in/out');
+
+                // Store reference in gameState for pause functionality
+                gameState.currentSound = musicPlayer;
 
                 // PHILIP'S FEEDBACK #9: Fade in at start
                 musicPlayer.fade(0, 0.6, 1500);  // Fade from 0 to 60% over 1.5 seconds (balanced with TTS)
