@@ -1642,15 +1642,48 @@ async function announceTenSongSummary() {
     const summaryText = generate10SongSummaryText(last10);
     
     console.log('📋 Announcing 10-song summary...');
+    console.log(`Summary text: "${summaryText.substring(0, 100)}..."`);
     
-    try {
-        const audioData = await generateTTS(summaryText);
-        await playTTSAudio(audioData);
-        console.log('✅ 10-song summary complete');
-    } catch (error) {
-        console.error('Error playing 10-song summary:', error);
-        throw error;
-    }
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Duck background music during announcement
+            if (backgroundMusic) {
+                backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME, CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, 500);
+            }
+
+            // Generate TTS audio using ElevenLabs
+            const audioUrl = await generateElevenLabsTTS(summaryText);
+
+            // Play using Howler
+            ttsPlayer = new Howl({
+                src: [audioUrl],
+                format: ['mp3'],
+                html5: true,
+                volume: CONFIG.TTS_VOLUME,
+                onend: () => {
+                    console.log('✅ 10-song summary complete');
+                    // Restore background music volume
+                    if (backgroundMusic) {
+                        backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, CONFIG.BACKGROUND_MUSIC_VOLUME, 500);
+                    }
+                    resolve();
+                },
+                onloaderror: (id, error) => {
+                    console.error('TTS load error:', error);
+                    reject(new Error('Failed to load TTS audio'));
+                },
+                onplayerror: (id, error) => {
+                    console.error('TTS play error:', error);
+                    reject(new Error('Failed to play TTS audio'));
+                }
+            });
+
+            ttsPlayer.play();
+        } catch (error) {
+            console.error('Error playing 10-song summary:', error);
+            reject(error);
+        }
+    });
 }
 
 /**
