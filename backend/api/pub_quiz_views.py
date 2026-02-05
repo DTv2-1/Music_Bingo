@@ -1332,6 +1332,7 @@ def host_stream(request, session_id):
         last_question = session.current_question
         last_progress = None
         last_keepalive = timezone.now()  # Track last keepalive message
+        last_answer_count = -1  # Track number of answers received
         
         # Send initial connection message
         yield f"data: {json.dumps({'type': 'connected', 'session_id': session_id})}\n\n"
@@ -1376,28 +1377,54 @@ def host_stream(request, session_id):
                 question_changed = (session.current_round != last_round or 
                                   session.current_question != last_question)
                 
+                # Reset answer count if question changed
+                if question_changed:
+                    last_answer_count = -1
+
+                # Check for answer updates
+                current_answer_count = -1
+                answers_changed = False
+                current_q = None
+                
+                # Determine current question object to rely on for both answers and question data
+                # We check this even if not in_progress (e.g. revealing_answer) so host sees correct question
+                if session.current_round and session.current_question:
+                    current_q = QuizQuestion.objects.filter(
+                        session=session,
+                        round_number=session.current_round,
+                        question_number=session.current_question
+                    ).first()
+                
+                if current_q:
+                    # Count answers for this question
+                    current_answer_count = TeamAnswer.objects.filter(question=current_q).count()
+                    answers_changed = current_answer_count != last_answer_count
+
                 # Only send updates when something actually changed OR every 10 seconds for heartbeat
                 current_time = timezone.now()
                 time_diff = (current_time - last_update_time).total_seconds()
                 
-                # Send update if: status changed, question changed, or 10 seconds passed (heartbeat)
-                should_send_update = status_changed or question_changed or time_diff >= 10
+                # Send update if: status changed, question changed, answers changed, or 10 seconds passed (heartbeat)
+                should_send_update = status_changed or question_changed or answers_changed or time_diff >= 10
                 
                 if should_send_update:
                     # Get stats
                     teams = session.teams.all()
                     total_teams = teams.count()
-                    teams_answered = 0
+                    teams_answered = current_answer_count if current_answer_count != -1 else 0
                     questions_generated = QuizQuestion.objects.filter(session=session).exists()
                     
-                    if session.status == 'in_progress':
-                        current_q = QuizQuestion.objects.filter(
-                            session=session,
-                            round_number=session.current_round,
-                            question_number=session.current_question
-                        ).first()
-                        if current_q:
-                            teams_answered = TeamAnswer.objects.filter(question=current_q).count()
+                    # Fetch detailed answers if needed (only when we're sending an update)
+                    recent_answers = []
+                    if current_q:
+                        answers_qs = TeamAnswer.objects.filter(question=current_q).select_related('team').order_by('-submitted_at')
+                        for ans in answers_qs:
+                            recent_answers.append({
+                                'team_name': ans.team.team_name,
+                                'answer_text': ans.answer_text,
+                                'is_correct': ans.is_correct,
+                                'submitted_at': ans.submitted_at.isoformat() if ans.submitted_at else None
+                            })
                     
                     # Get leaderboard
                     leaderboard = []
@@ -1410,27 +1437,20 @@ def host_stream(request, session_id):
                     
                     # Get current question details if quiz is active
                     question_data = None
-                    if session.status in ['in_progress', 'halftime', 'revealing_answer']:
-                        question = QuizQuestion.objects.filter(
-                            session=session,
-                            round_number=session.current_round,
-                            question_number=session.current_question
-                        ).first()
-                        
-                        if question:
-                            question_data = {
-                                'id': question.id,
-                                'text': question.question_text,
-                                'answer': question.correct_answer if session.status == 'revealing_answer' else None,
-                                'fun_fact': question.fun_fact if session.status == 'revealing_answer' else None,
-                                'round': question.round_number,
-                                'number': question.question_number,
-                                'type': question.question_type,
-                                'points': question.get_points_value(),
-                                'difficulty': question.difficulty,
-                                'genre': question.genre.name if question.genre else 'General',
-                                'options': question.options if question.question_type == 'multiple_choice' else None
-                            }
+                    if session.status in ['in_progress', 'halftime', 'revealing_answer'] and current_q:
+                        question_data = {
+                            'id': current_q.id,
+                            'text': current_q.question_text,
+                            'answer': current_q.correct_answer if session.status == 'revealing_answer' else None,
+                            'fun_fact': current_q.fun_fact if session.status == 'revealing_answer' else None,
+                            'round': current_q.round_number,
+                            'number': current_q.question_number,
+                            'type': current_q.question_type,
+                            'points': current_q.get_points_value(),
+                            'difficulty': current_q.difficulty,
+                            'genre': current_q.genre.name if current_q.genre else 'General',
+                            'options': current_q.options if current_q.question_type == 'multiple_choice' else None
+                        }
                     
                     # Send combined update
                     data = {
@@ -1451,6 +1471,7 @@ def host_stream(request, session_id):
                         },
                         'leaderboard': leaderboard,
                         'question': question_data,
+                        'recent_answers': recent_answers,
                         'timestamp': current_time.isoformat()
                     }
                     
@@ -1460,6 +1481,7 @@ def host_stream(request, session_id):
                     last_status = session.status
                     last_round = session.current_round
                     last_question = session.current_question
+                    last_answer_count = current_answer_count
                 
                 # SSE keepalive strategy (best practices):
                 # 1. Comment lines (:) every 15s - prevents timeouts, no client traffic
