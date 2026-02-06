@@ -1545,7 +1545,15 @@ async function playNextTrack() {
         // Step 2: Check for jingle playback
         await checkAndPlayJingle();
 
-        // Step 3: Check for 10-song summary announcement
+        // Step 3: Play TTS announcement
+        updateStatus('🎙️ Announcing...', true);
+        await announceTrack(track);
+
+        // Step 4: Play song preview
+        updateStatus('🎵 Playing song preview...', true);
+        await playSongPreview(track);
+
+        // Step 5: Check for 10-song summary announcement (AFTER playing the track)
         const songsPlayed = gameState.called.length;
         if (songsPlayed > 0 && songsPlayed % 10 === 0) {
             updateStatus('📋 10-song summary...', true);
@@ -1554,7 +1562,7 @@ async function playNextTrack() {
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
-        // Step 4: Check for halfway announcement
+        // Step 6: Check for halfway announcement (AFTER playing the track)
         const totalSongs = gameState.pool.length;
         const halfwayPoint = Math.floor(totalSongs / 2);
 
@@ -1565,14 +1573,6 @@ async function playNextTrack() {
             // Short pause after halfway
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
-
-        // Step 3: Play TTS announcement
-        updateStatus('🎙️ Announcing...', true);
-        await announceTrack(track);
-
-        // Step 4: Play song preview
-        updateStatus('🎵 Playing song preview...', true);
-        await playSongPreview(track);
 
         // Done - wait for auto-next delay
         const delaySeconds = CONFIG.AUTO_NEXT_DELAY_MS / 1000;
