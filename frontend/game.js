@@ -1905,75 +1905,117 @@ function generateAnnouncementText(track) {
     // Fallback to template system if AI not available
     const randomType = Math.random();
 
-    // Type A: Era/Decade Context (33%)
-    if (randomType < 0.33) {
+    // Type A: Era/Decade Context with more variation (40%)
+    if (randomType < 0.40) {
         const year = parseInt(track.release_year);
-        let decade = '';
-        let description = '';
-
+        const genre = track.genre || 'music';
+        
         if (year >= 2020) {
-            decade = '2020s';
-            description = 'Get ready for this fresh hit from the 2020s';
-        } else if (year >= 2010) {
-            decade = '2010s';
-            description = 'Get ready for this modern classic from the 2010s';
-        } else if (year >= 2000) {
-            decade = '2000s';
-            description = 'Here\'s a chart-topper from the early 2000s';
-        } else if (year >= 1990) {
-            decade = '1990s';
-            description = 'Listen up for this gem from the grunge and pop explosion of the 1990s';
-        } else if (year >= 1980) {
-            decade = '1980s';
             const options = [
-                'Let\'s go straight to the 1980s for this one',
-                'Here\'s an iconic banger from the hair metal 1980s',
-                'Coming up: A massive hit from the 1980s'
+                'Here\'s a fresh hit from the 2020s',
+                'Get ready for this modern sensation from the 2020s',
+                'Coming up: A brand new track from the current decade',
+                'This one\'s straight from the 2020s charts'
             ];
-            description = options[Math.floor(Math.random() * options.length)];
+            return options[Math.floor(Math.random() * options.length)];
+        } else if (year >= 2010) {
+            const options = [
+                'Here\'s a modern classic from the 2010s',
+                'Get ready for this chart-topper from the 2010s',
+                'Time for a recent hit from the 2010s era',
+                'This 2010s anthem still gets the crowd moving'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
+        } else if (year >= 2000) {
+            const options = [
+                'Let\'s dive into the early 2000s with this gem',
+                'Here\'s a massive hit from the millennium era',
+                'Get ready for this 2000s pop sensation',
+                'Time for a turn-of-the-century classic'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
+        } else if (year >= 1990) {
+            const options = [
+                'Here comes a 90s anthem that defined a generation',
+                'Get ready for this grunge and pop explosion from the 1990s',
+                'Time for a nostalgic 90s throwback',
+                'This 90s classic still hits different',
+                'Let\'s rewind to the legendary 1990s'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
+        } else if (year >= 1980) {
+            const options = [
+                'Time for an electrifying 80s classic',
+                'Get ready for some synth-heavy 1980s magic',
+                'Here\'s an iconic track from the neon 80s',
+                'This 80s banger dominated the airwaves',
+                'Let\'s jump back to the radical 1980s',
+                'Coming up: A power-packed hit from the 1980s'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
         } else if (year >= 1970) {
-            decade = '1970s';
-            description = 'Next track: Straight out of the disco-fueled 1970s';
+            const options = [
+                'Time for a groovy track from the funky 1970s',
+                'Get ready for this disco-era sensation',
+                'Here\'s a classic from the golden age of 70s music',
+                'This 1970s jam filled dance floors worldwide',
+                'Let\'s take it back to the soulful 1970s',
+                'Coming up: A legendary hit from the 70s'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
         } else if (year >= 1960) {
-            decade = '1960s';
-            description = 'Coming up: A massive hit from the swinging 1960s';
+            const options = [
+                'Here\'s a timeless classic from the swinging 60s',
+                'Get ready for this revolutionary 1960s anthem',
+                'Time for a groovy hit from the psychedelic 60s',
+                'This 60s track changed music forever'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
         } else {
-            description = 'Here\'s a classic for you';
+            const options = [
+                'Here\'s a true vintage classic',
+                'Get ready for this timeless golden oldie',
+                'Time for a legendary track from music history'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
         }
-
-        return description;
     }
 
-    // Type B: Fun Facts/Trivia (33%)
-    else if (randomType < 0.66) {
+    // Type B: Fun Facts/Trivia with genre context (40%)
+    else if (randomType < 0.80) {
         const funFacts = [
-            'This one topped the charts for weeks',
-            'This artist has won multiple awards',
-            'This track became an instant classic',
-            'This song was a massive hit worldwide',
-            'You\'ll definitely recognize this one',
-            'This artist is a true legend',
-            'This track dominated the airwaves',
-            'This one\'s a crowd favorite',
-            'This song defined a generation',
-            'This artist needs no introduction'
+            'This one topped the charts for weeks on end',
+            'This track became an instant worldwide sensation',
+            'This song was a massive commercial success',
+            'You\'ll definitely recognize this crowd favorite',
+            'This artist is considered a true music legend',
+            'This track dominated radio stations everywhere',
+            'This anthem defined a whole musical movement',
+            'This song has been covered by countless artists',
+            'This track won multiple prestigious awards',
+            'This one broke records when it was released',
+            'This song is still played at every party',
+            'This artist revolutionized their genre with this hit',
+            'This track has billions of streams worldwide',
+            'This anthem brings back so many memories',
+            'This one never gets old, no matter how many times you hear it'
         ];
         return funFacts[Math.floor(Math.random() * funFacts.length)];
     }
 
-    // Type C: Generic Simple (33%)
+    // Type C: Generic Simple (20%)
     else {
         const simpleAnnouncements = [
-            'Next song',
-            'Here we go',
-            'Coming up',
-            'Let\'s keep it going',
-            'Another one coming your way',
-            'Ready for this one',
-            'Listen closely',
-            'Mark your cards',
-            'Here\'s another',
-            'Let\'s continue'
+            'Next song coming up',
+            'Here we go with another one',
+            'Let\'s keep the music rolling',
+            'Time for the next track',
+            'Another great one on the way',
+            'Ready for this one?',
+            'Listen up for this track',
+            'Mark your cards for this one',
+            'Here comes another classic',
+            'Let\'s continue the musical journey'
         ];
         return simpleAnnouncements[Math.floor(Math.random() * simpleAnnouncements.length)];
     }
