@@ -1902,7 +1902,14 @@ function generateAnnouncementText(track) {
         console.log(`Available AI keys sample:`, keys.slice(0, 5));
     }
 
-    // Fallback to template system if AI not available
+    // Return null to trigger OpenAI generation in announceTrack()
+    return null;
+}
+
+/**
+ * Generate fallback announcement text using templates
+ */
+function generateFallbackAnnouncementText(track) {
     const randomType = Math.random();
 
     // Type A: Era/Decade Context with more variation (40%)
@@ -2026,7 +2033,39 @@ function generateAnnouncementText(track) {
  */
 async function announceTrack(track) {
     // Generate varied announcement - NO track name or artist (per Philip's feedback)
-    const text = generateAnnouncementText(track);
+    let text = generateAnnouncementText(track);
+    
+    // If no cached announcement, try OpenAI generation
+    if (!text) {
+        console.log('🤖 No cached announcement, generating with OpenAI...');
+        try {
+            const response = await fetch(`${CONFIG.API_URL}/api/generate-track-announcement`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: track.title,
+                    artist: track.artist,
+                    release_year: track.release_year,
+                    genre: track.genre
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                text = data.announcement;
+                console.log(`✅ OpenAI generated: "${text}"`);
+            } else {
+                console.warn('OpenAI generation failed, using fallback');
+                text = generateFallbackAnnouncementText(track);
+            }
+        } catch (error) {
+            console.warn('OpenAI generation error, using fallback:', error);
+            text = generateFallbackAnnouncementText(track);
+        }
+    }
+    
     console.log(`🎙️ Announcing: "${text}" (Track: ${track.title} by ${track.artist} [${track.release_year}])`);
 
     return new Promise(async (resolve, reject) => {

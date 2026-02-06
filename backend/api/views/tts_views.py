@@ -19,7 +19,7 @@ from rest_framework.response import Response
 
 from ..services.tts_service import TTSService
 from ..validators import validate_tts_input
-from ..utils.config import ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, DATA_DIR, VENUE_NAME
+from ..utils.config import ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, DATA_DIR, VENUE_NAME, OPENAI_API_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -192,4 +192,89 @@ def get_session_announcements(request):
     
     except Exception as e:
         logger.error(f"Error loading session announcements: {e}", exc_info=True)
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['POST'])
+def generate_track_announcement(request):
+    """
+    Generate a unique AI-powered announcement for a track using OpenAI.
+    
+    POST body:
+    {
+        "title": "Song Title",
+        "artist": "Artist Name",
+        "release_year": 1985,
+        "genre": "Rock"
+    }
+    
+    Returns: { "announcement": "Generated interesting intro text" }
+    """
+    try:
+        import openai
+        
+        # Validate required fields
+        title = request.data.get('title')
+        artist = request.data.get('artist')
+        release_year = request.data.get('release_year')
+        genre = request.data.get('genre', 'music')
+        
+        if not all([title, artist, release_year]):
+            return Response({'error': 'title, artist, and release_year are required'}, status=400)
+        
+        if not OPENAI_API_KEY:
+            logger.warning("OpenAI API key not configured, using fallback")
+            return Response({'error': 'OpenAI API not configured'}, status=503)
+        
+        # Configure OpenAI
+        openai.api_key = OPENAI_API_KEY
+        
+        # Determine decade
+        decade = f"{(release_year // 10) * 10}s"
+        
+        # Create prompt for OpenAI
+        prompt = f"""Generate a SHORT, energetic, and interesting 1-sentence introduction for a music bingo game announcement. 
+
+Song: "{title}" by {artist}
+Year: {release_year} ({decade})
+Genre: {genre}
+
+Requirements:
+- DO NOT mention the song title or artist name
+- Keep it under 20 words
+- Make it fun and engaging for a pub quiz atmosphere
+- Include interesting context about the era, genre, or music style
+- Vary the structure (don't always start with "Get ready for...")
+- Examples of good styles:
+  * "This {decade} {genre} anthem still gets crowds singing along"
+  * "Straight from the {decade} dance floors to your cards"
+  * "A chart-topping sensation that defined {decade} radio"
+  * "Time for a legendary track that broke records in {release_year}"
+
+Generate ONE announcement (just the text, no quotes or extra formatting):"""
+        
+        logger.info(f"🤖 Generating AI announcement for: {title} by {artist} ({release_year})")
+        
+        # Call OpenAI API
+        response = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an energetic music bingo host creating short, engaging track introductions. Never mention song titles or artist names."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.9,  # High creativity for variation
+            max_tokens=50
+        )
+        
+        announcement = response.choices[0].message.content.strip()
+        
+        # Remove any quotes if present
+        announcement = announcement.strip('"').strip("'")
+        
+        logger.info(f"✅ Generated announcement: {announcement}")
+        
+        return Response({'announcement': announcement})
+        
+    except Exception as e:
+        logger.error(f"Error generating track announcement: {e}", exc_info=True)
         return Response({'error': str(e)}, status=500)
