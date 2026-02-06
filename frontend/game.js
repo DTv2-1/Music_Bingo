@@ -34,7 +34,8 @@ let gameState = {
     remaining: [],          // Songs not yet called
     called: [],             // Songs already called (in order)
     currentTrack: null,     // Currently playing track
-    currentSound: null,     // Currently playing Howl instance
+    currentSound: null,     // Currently playing Howl instance (music preview)
+    currentTTS: null,       // Currently playing TTS Howl instance
     isPlaying: false,       // Is audio currently playing
     announcementsData: null, // Loaded announcements
     announcementsAI: null,   // AI-generated announcements (optional)
@@ -60,6 +61,8 @@ function resetGameState() {
     gameState.remaining = [];
     gameState.called = [];
     gameState.currentTrack = null;
+    gameState.currentSound = null;
+    gameState.currentTTS = null;
     gameState.isPlaying = false;
     gameState.announcementsData = null;
     gameState.announcementsAI = null;
@@ -1499,6 +1502,12 @@ async function playNextTrack() {
         return;
     }
 
+    // Resume background music if it was paused
+    if (backgroundMusic && !backgroundMusic.playing()) {
+        console.log('🔊 Resuming background music');
+        backgroundMusic.play();
+    }
+
     // Get next track
     const track = gameState.remaining.shift();
     gameState.called.push(track);
@@ -1572,6 +1581,11 @@ async function playNextTrack() {
         // Schedule auto-play next track after delay
         const autoNextTimer = setTimeout(() => {
             console.log('⏰ Auto-playing next track...');
+            // Reset button to NEXT SONG before calling playNextTrack
+            const nextButton = document.getElementById('nextTrack');
+            nextButton.textContent = '▶️ NEXT SONG';
+            nextButton.onclick = playNextTrack;
+            gameState.isPlaying = false;
             playNextTrack();
         }, CONFIG.AUTO_NEXT_DELAY_MS);
 
@@ -1581,8 +1595,7 @@ async function playNextTrack() {
     } catch (error) {
         console.error('Error playing track:', error);
         updateStatus(`❌ Error: ${error.message}`, false);
-    } finally {
-        // Change button back to NEXT SONG
+        // On error, reset button to NEXT SONG
         const nextButton = document.getElementById('nextTrack');
         nextButton.textContent = '▶️ NEXT SONG';
         nextButton.onclick = playNextTrack;
@@ -1592,19 +1605,48 @@ async function playNextTrack() {
 }
 
 /**
- * Pause current playback
+ * Pause current playback - stops all audio and timers
  */
 function pauseCurrentTrack() {
     console.log('⏸️ Pausing playback...');
     
-    // Stop current audio
+    // Stop TTS audio if playing
+    if (gameState.currentTTS) {
+        console.log('  Stopping TTS audio');
+        gameState.currentTTS.stop();
+        gameState.currentTTS = null;
+    }
+    
+    // Stop music preview if playing
     if (gameState.currentSound) {
-        gameState.currentSound.pause();
+        console.log('  Stopping music preview');
+        gameState.currentSound.stop();
         gameState.currentSound = null;
+    }
+    
+    // Stop global ttsPlayer if active
+    if (ttsPlayer) {
+        console.log('  Stopping global TTS player');
+        ttsPlayer.stop();
+        ttsPlayer = null;
+    }
+    
+    // Stop global musicPlayer if active
+    if (musicPlayer) {
+        console.log('  Stopping global music player');
+        musicPlayer.stop();
+        musicPlayer = null;
+    }
+    
+    // Pause background music (don't stop it, just pause)
+    if (backgroundMusic && backgroundMusic.playing()) {
+        console.log('  Pausing background music');
+        backgroundMusic.pause();
     }
     
     // Cancel auto-next timer
     if (gameState.autoNextTimer) {
+        console.log('  Cancelling auto-next timer');
         clearTimeout(gameState.autoNextTimer);
         gameState.autoNextTimer = null;
     }
@@ -1662,6 +1704,7 @@ async function announceTenSongSummary() {
                 volume: CONFIG.TTS_VOLUME,
                 onend: () => {
                     console.log('✅ 10-song summary complete');
+                    gameState.currentTTS = null;
                     // Restore background music volume
                     if (backgroundMusic) {
                         backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, CONFIG.BACKGROUND_MUSIC_VOLUME, 500);
@@ -1670,17 +1713,21 @@ async function announceTenSongSummary() {
                 },
                 onloaderror: (id, error) => {
                     console.error('TTS load error:', error);
+                    gameState.currentTTS = null;
                     reject(new Error('Failed to load TTS audio'));
                 },
                 onplayerror: (id, error) => {
                     console.error('TTS play error:', error);
+                    gameState.currentTTS = null;
                     reject(new Error('Failed to play TTS audio'));
                 }
             });
 
+            gameState.currentTTS = ttsPlayer;
             ttsPlayer.play();
         } catch (error) {
             console.error('Error playing 10-song summary:', error);
+            gameState.currentTTS = null;
             reject(error);
         }
     });
@@ -1754,18 +1801,22 @@ async function announceWelcome() {
                 },
                 onloaderror: (id, error) => {
                     console.error('TTS load error:', error);
+                    gameState.currentTTS = null;
                     reject(new Error('Failed to load TTS audio'));
                 },
                 onplayerror: (id, error) => {
                     console.error('TTS play error:', error);
+                    gameState.currentTTS = null;
                     reject(new Error('Failed to play TTS audio'));
                 }
             });
 
+            gameState.currentTTS = ttsPlayer;
             ttsPlayer.play();
 
         } catch (error) {
             console.error('Welcome TTS generation error:', error);
+            gameState.currentTTS = null;
             // Don't fail the whole game if welcome fails
             resolve();
         }
@@ -1797,6 +1848,7 @@ async function announceHalfway() {
                 volume: CONFIG.TTS_VOLUME,
                 onend: () => {
                     console.log("✓ Halfway announcement complete");
+                    gameState.currentTTS = null;
                     // Restore background music volume
                     if (backgroundMusic) {
                         backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, CONFIG.BACKGROUND_MUSIC_VOLUME, 500);
@@ -1805,18 +1857,22 @@ async function announceHalfway() {
                 },
                 onloaderror: (id, error) => {
                     console.error("TTS load error:", error);
+                    gameState.currentTTS = null;
                     reject(new Error("Failed to load TTS audio"));
                 },
                 onplayerror: (id, error) => {
                     console.error("TTS play error:", error);
+                    gameState.currentTTS = null;
                     reject(new Error("Failed to play TTS audio"));
                 }
             });
 
+            gameState.currentTTS = ttsPlayer;
             ttsPlayer.play();
 
         } catch (error) {
             console.error("Halfway TTS generation error:", error);
+            gameState.currentTTS = null;
             // Don"t fail the whole game if halfway announcement fails
             resolve();
         }
@@ -1949,6 +2005,7 @@ async function announceTrack(track) {
                 volume: CONFIG.TTS_VOLUME,
                 onend: () => {
                     console.log('✓ Announcement complete');
+                    gameState.currentTTS = null;
                     // Restore background music volume
                     if (backgroundMusic) {
                         backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, CONFIG.BACKGROUND_MUSIC_VOLUME, 500);
@@ -1957,18 +2014,22 @@ async function announceTrack(track) {
                 },
                 onloaderror: (id, error) => {
                     console.error('TTS load error:', error);
+                    gameState.currentTTS = null;
                     reject(new Error('Failed to load TTS audio'));
                 },
                 onplayerror: (id, error) => {
                     console.error('TTS play error:', error);
+                    gameState.currentTTS = null;
                     reject(new Error('Failed to play TTS audio'));
                 }
             });
 
+            gameState.currentTTS = ttsPlayer;
             ttsPlayer.play();
 
         } catch (error) {
             console.error('TTS generation error:', error);
+            gameState.currentTTS = null;
             reject(error);
         }
     });
@@ -2052,6 +2113,7 @@ async function playSongPreview(track) {
                 setTimeout(() => {
                     if (musicPlayer) {
                         musicPlayer.stop();
+                        gameState.currentSound = null;
                         console.log(`⏹ Preview stopped (${CONFIG.PREVIEW_DURATION_MS / 1000} seconds)`);
 
                         // Restore background music
@@ -2066,6 +2128,7 @@ async function playSongPreview(track) {
             },
             onend: () => {
                 console.log('✓ Preview ended naturally');
+                gameState.currentSound = null;
 
                 // Restore background music
                 if (backgroundMusic) {
@@ -2077,6 +2140,7 @@ async function playSongPreview(track) {
             },
             onloaderror: (id, error) => {
                 console.error('Preview load error:', error);
+                gameState.currentSound = null;
 
                 // Restore background music on error
                 if (backgroundMusic) {
@@ -2087,6 +2151,7 @@ async function playSongPreview(track) {
             },
             onplayerror: (id, error) => {
                 console.error('Preview play error:', error);
+                gameState.currentSound = null;
 
                 // Restore background music on error
                 if (backgroundMusic) {
