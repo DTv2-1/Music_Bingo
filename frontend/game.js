@@ -1681,7 +1681,7 @@ async function resumeCurrentTrack() {
     // Resume background music first
     if (backgroundMusic && !backgroundMusic.playing()) {
         console.log('  Resuming background music');
-        resumeBackgroundMusic();
+        backgroundMusic.play();
     }
     
     gameState.isPaused = false;
