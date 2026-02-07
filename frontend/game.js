@@ -37,6 +37,10 @@ let gameState = {
     currentSound: null,     // Currently playing Howl instance (music preview)
     currentTTS: null,       // Currently playing TTS Howl instance
     isPlaying: false,       // Is audio currently playing
+    isPaused: false,        // NEW: Track if game is paused
+    pausedDuringTTS: false, // NEW: True if paused during TTS announcement
+    pausedDuringPreview: false, // NEW: True if paused during preview  
+    pausedTrackIndex: null, // NEW: Track index when paused
     announcementsData: null, // Loaded announcements
     announcementsAI: null,   // AI-generated announcements (optional)
     venueName: localStorage.getItem('venueName') || 'this venue', // Venue name from localStorage
@@ -1610,29 +1614,36 @@ async function playNextTrack() {
 function pauseCurrentTrack() {
     console.log('⏸️ Pausing playback...');
     
-    // Stop TTS audio if playing
-    if (gameState.currentTTS) {
-        console.log('  Stopping TTS audio');
-        gameState.currentTTS.stop();
-        gameState.currentTTS = null;
+    // Mark what was playing when paused
+    gameState.isPaused = true;
+    gameState.pausedTrackIndex = gameState.called.length - 1;
+    
+    // Check what's currently playing
+    if (gameState.currentTTS && gameState.currentTTS.playing()) {
+        console.log('  Paused during TTS announcement');
+        gameState.pausedDuringTTS = true;
+        gameState.currentTTS.pause();
+    } else {
+        gameState.pausedDuringTTS = false;
     }
     
-    // Stop music preview if playing
-    if (gameState.currentSound) {
-        console.log('  Stopping music preview');
-        gameState.currentSound.stop();
-        gameState.currentSound = null;
+    if (gameState.currentSound && gameState.currentSound.playing()) {
+        console.log('  Paused during music preview');
+        gameState.pausedDuringPreview = true;
+        gameState.currentSound.pause();
+    } else {
+        gameState.pausedDuringPreview = false;
     }
     
     // Stop global ttsPlayer if active
-    if (ttsPlayer) {
+    if (ttsPlayer && ttsPlayer.playing()) {
         console.log('  Stopping global TTS player');
         ttsPlayer.stop();
         ttsPlayer = null;
     }
     
     // Stop global musicPlayer if active
-    if (musicPlayer) {
+    if (musicPlayer && musicPlayer.playing()) {
         console.log('  Stopping global music player');
         musicPlayer.stop();
         musicPlayer = null;
@@ -1651,13 +1662,57 @@ function pauseCurrentTrack() {
         gameState.autoNextTimer = null;
     }
     
-    // Change button back to NEXT SONG
+    // Change button to RESUME
     const nextButton = document.getElementById('nextTrack');
-    nextButton.textContent = '▶️ NEXT SONG';
-    nextButton.onclick = playNextTrack;
+    nextButton.textContent = '▶️ RESUME';
+    nextButton.onclick = resumeCurrentTrack;
     setButtonState('nextTrack', true);
     
     gameState.isPlaying = false;
+    console.log('✓ Paused successfully');
+}
+
+/**
+ * Resume paused playback - continues from where it was paused
+ */
+async function resumeCurrentTrack() {
+    console.log('▶️ Resuming playback...');
+    
+    // Resume background music first
+    if (backgroundMusic && !backgroundMusic.playing()) {
+        console.log('  Resuming background music');
+        resumeBackgroundMusic();
+    }
+    
+    gameState.isPaused = false;
+    gameState.isPlaying = true;
+    
+    // Change button to PAUSE
+    const nextButton = document.getElementById('nextTrack');
+    nextButton.textContent = '⏸️ PAUSE';
+    nextButton.onclick = pauseCurrentTrack;
+    
+    // Resume TTS if it was playing
+    if (gameState.pausedDuringTTS && gameState.currentTTS) {
+        console.log('  Resuming TTS announcement');
+        gameState.currentTTS.play();
+        gameState.pausedDuringTTS = false;
+        return; // Let TTS finish, then preview will play automatically
+    }
+    
+    // Resume preview if it was playing
+    if (gameState.pausedDuringPreview && gameState.currentSound) {
+        console.log('  Resuming music preview');
+        gameState.currentSound.play();
+        gameState.pausedDuringPreview = false;
+        return; // Let preview finish
+    }
+    
+    // If nothing was paused (shouldn't happen), just continue to next track
+    console.log('  Nothing to resume, playing next track');
+    await playNextTrack();
+}
+
     updateStatus('⏸️ Paused - Press NEXT SONG to continue', false);
 }
 

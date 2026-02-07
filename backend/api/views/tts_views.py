@@ -211,26 +211,32 @@ def generate_track_announcement(request):
     Returns: { "announcement": "Generated interesting intro text" }
     """
     try:
-        import openai
-        
         # Validate required fields
         title = request.data.get('title')
         artist = request.data.get('artist')
         release_year = request.data.get('release_year')
         genre = request.data.get('genre', 'music')
         
+        logger.info(f"📥 Received request: title={title}, artist={artist}, year={release_year}, genre={genre}")
+        
         if not all([title, artist, release_year]):
+            logger.error("Missing required fields")
             return Response({'error': 'title, artist, and release_year are required'}, status=400)
         
         if not OPENAI_API_KEY:
             logger.warning("OpenAI API key not configured, using fallback")
             return Response({'error': 'OpenAI API not configured'}, status=503)
         
-        # Configure OpenAI
-        openai.api_key = OPENAI_API_KEY
+        # Import OpenAI (must be after config check)
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=OPENAI_API_KEY)
+        except ImportError as ie:
+            logger.error(f"OpenAI package not installed: {ie}")
+            return Response({'error': 'OpenAI package not available'}, status=503)
         
         # Determine decade
-        decade = f"{(release_year // 10) * 10}s"
+        decade = f"{(int(release_year) // 10) * 10}s"
         
         # Create prompt for OpenAI
         prompt = f"""Generate a SHORT, energetic, and interesting 1-sentence introduction for a music bingo game announcement. 
@@ -256,7 +262,7 @@ Generate ONE announcement (just the text, no quotes or extra formatting):"""
         logger.info(f"🤖 Generating AI announcement for: {title} by {artist} ({release_year})")
         
         # Call OpenAI API
-        response = openai.chat.completions.create(
+        response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are an energetic music bingo host creating short, engaging track introductions. Never mention song titles or artist names."},
