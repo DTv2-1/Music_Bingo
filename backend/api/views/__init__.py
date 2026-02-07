@@ -32,7 +32,8 @@ from .tts_views import (
     generate_tts_preview,
     get_announcements,
     get_ai_announcements,
-    get_session_announcements
+    get_session_announcements,
+    generate_track_announcement
 )
 
 # Jingle management

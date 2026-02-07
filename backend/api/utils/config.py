@@ -16,6 +16,7 @@ class AppConfig:
     
     ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY', '')
     ELEVENLABS_VOICE_ID = os.getenv('ELEVENLABS_VOICE_ID', '21m00Tcm4TlvDq8ikWAM')
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
     
     # ============================================================================
     # GOOGLE CLOUD STORAGE
@@ -141,5 +142,6 @@ DATA_DIR = AppConfig.DATA_DIR
 FRONTEND_DIR = AppConfig.FRONTEND_DIR
 ELEVENLABS_API_KEY = AppConfig.ELEVENLABS_API_KEY
 ELEVENLABS_VOICE_ID = AppConfig.ELEVENLABS_VOICE_ID
+OPENAI_API_KEY = AppConfig.OPENAI_API_KEY
 GCS_BUCKET_NAME = AppConfig.GCS_BUCKET_NAME
 VENUE_NAME = AppConfig.VENUE_NAME
