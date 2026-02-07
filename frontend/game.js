@@ -40,7 +40,10 @@ let gameState = {
     isPaused: false,        // NEW: Track if game is paused
     pausedDuringTTS: false, // NEW: True if paused during TTS announcement
     pausedDuringPreview: false, // NEW: True if paused during preview  
+    pausedDuringWaiting: false, // NEW: True if paused during auto-next wait
     pausedTrackIndex: null, // NEW: Track index when paused
+    pauseTimestamp: null,   // NEW: When pause was pressed
+    autoNextDelay: 5000,    // NEW: Auto-next delay in ms (CONFIG.AUTO_NEXT_DELAY)
     announcementsData: null, // Loaded announcements
     announcementsAI: null,   // AI-generated announcements (optional)
     venueName: localStorage.getItem('venueName') || 'this venue', // Venue name from localStorage
@@ -1617,6 +1620,7 @@ function pauseCurrentTrack() {
     // Mark what was playing when paused
     gameState.isPaused = true;
     gameState.pausedTrackIndex = gameState.called.length - 1;
+    gameState.pauseTimestamp = Date.now();
     
     // Check what's currently playing
     if (gameState.currentTTS && gameState.currentTTS.playing()) {
@@ -1633,6 +1637,14 @@ function pauseCurrentTrack() {
         gameState.currentSound.pause();
     } else {
         gameState.pausedDuringPreview = false;
+    }
+    
+    // Check if paused during auto-next waiting period
+    if (gameState.autoNextTimer) {
+        console.log('  Paused during auto-next wait');
+        gameState.pausedDuringWaiting = true;
+    } else {
+        gameState.pausedDuringWaiting = false;
     }
     
     // Stop global ttsPlayer if active
@@ -1708,8 +1720,20 @@ async function resumeCurrentTrack() {
         return; // Let preview finish
     }
     
+    // Resume auto-next timer if it was waiting
+    if (gameState.pausedDuringWaiting) {
+        console.log('  Resuming auto-next timer');
+        gameState.pausedDuringWaiting = false;
+        gameState.autoNextTimer = setTimeout(async () => {
+            console.log('⏰ Auto-playing next track...');
+            await playNextTrack();
+        }, gameState.autoNextDelay);
+        return;
+    }
+    
     // If nothing was paused (shouldn't happen), just continue to next track
     console.log('  Nothing to resume, playing next track');
+    gameState.isPlaying = false; // Reset flag before calling playNextTrack
     await playNextTrack();
 }
 
