@@ -1713,9 +1713,6 @@ async function resumeCurrentTrack() {
     await playNextTrack();
 }
 
-    updateStatus('⏸️ Paused - Press NEXT SONG to continue', false);
-}
-
 /**
  * Generate welcome announcement text
  */
