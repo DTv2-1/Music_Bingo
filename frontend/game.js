@@ -1697,16 +1697,14 @@ async function resumeCurrentTrack() {
     }
     
     gameState.isPaused = false;
-    gameState.isPlaying = true;
-    
-    // Change button to PAUSE
-    const nextButton = document.getElementById('nextTrack');
-    nextButton.textContent = '⏸️ PAUSE';
-    nextButton.onclick = pauseCurrentTrack;
     
     // Resume TTS if it was playing
     if (gameState.pausedDuringTTS && gameState.currentTTS) {
         console.log('  Resuming TTS announcement');
+        gameState.isPlaying = true;
+        const nextButton = document.getElementById('nextTrack');
+        nextButton.textContent = '⏸️ PAUSE';
+        nextButton.onclick = pauseCurrentTrack;
         gameState.currentTTS.play();
         gameState.pausedDuringTTS = false;
         return; // Let TTS finish, then preview will play automatically
@@ -1715,6 +1713,10 @@ async function resumeCurrentTrack() {
     // Resume preview if it was playing
     if (gameState.pausedDuringPreview && gameState.currentSound) {
         console.log('  Resuming music preview');
+        gameState.isPlaying = true;
+        const nextButton = document.getElementById('nextTrack');
+        nextButton.textContent = '⏸️ PAUSE';
+        nextButton.onclick = pauseCurrentTrack;
         gameState.currentSound.play();
         gameState.pausedDuringPreview = false;
         return; // Let preview finish
@@ -1724,10 +1726,20 @@ async function resumeCurrentTrack() {
     if (gameState.pausedDuringWaiting) {
         console.log('  Resuming auto-next timer');
         gameState.pausedDuringWaiting = false;
+        // Don't set isPlaying = true here, let playNextTrack set it
+        const nextButton = document.getElementById('nextTrack');
+        nextButton.textContent = '▶️ NEXT SONG'; // Back to normal during wait
+        nextButton.onclick = playNextTrack;
+        
+        // Calculate remaining time
+        const elapsedTime = Date.now() - gameState.pauseTimestamp;
+        const remainingTime = Math.max(0, gameState.autoNextDelay - elapsedTime);
+        console.log(`  ⏱️ Elapsed: ${elapsedTime}ms, Remaining: ${remainingTime}ms`);
+        
         gameState.autoNextTimer = setTimeout(async () => {
             console.log('⏰ Auto-playing next track...');
             await playNextTrack();
-        }, gameState.autoNextDelay);
+        }, remainingTime);
         return;
     }
     
