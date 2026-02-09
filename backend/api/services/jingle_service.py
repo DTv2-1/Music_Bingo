@@ -56,7 +56,8 @@ class JingleService:
         voice_id: str,
         music_prompt: str,
         voice_settings: Dict[str, Any],
-        task_id: Optional[str] = None
+        task_id: Optional[str] = None,
+        task_callback: Optional[callable] = None
     ) -> Dict[str, Any]:
         """
         Create a complete jingle with TTS + Music + Mixing
@@ -85,6 +86,8 @@ class JingleService:
         
         # Step 1: Generate TTS
         logger.info("Step 1/4: Generating TTS...")
+        if task_callback:
+            task_callback(10, 'Generating TTS audio')
         tts_bytes = self.tts_service.generate_audio(
             text=text,
             voice_id=voice_id,
@@ -100,6 +103,8 @@ class JingleService:
         # Step 2: Generate matching music
         music_duration = min(max(int(tts_duration_seconds) + 2, 5), 30)
         logger.info(f"Step 2/4: Generating music ({music_duration}s)...")
+        if task_callback:
+            task_callback(30, 'Generating background music')
         
         music_bytes = self.music_service.generate_music(
             prompt=music_prompt,
@@ -109,10 +114,14 @@ class JingleService:
         
         # Step 3: Mix audio
         logger.info("Step 3/4: Mixing audio...")
+        if task_callback:
+            task_callback(60, 'Mixing audio tracks')
         mixed_audio = self.mix_tts_with_music(tts_bytes, music_bytes)
         
         # Step 4: Save file
         logger.info("Step 4/4: Saving jingle...")
+        if task_callback:
+            task_callback(80, 'Saving jingle file')
         self.jingles_dir.mkdir(parents=True, exist_ok=True)
         
         timestamp = int(time.time())
