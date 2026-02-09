@@ -130,11 +130,15 @@ def create_jingle_schedule(request):
         
         # Use ScheduleService to create schedule
         schedule_service = ScheduleService()
-        result = schedule_service.create_schedule(data)
+        schedule = schedule_service.create_schedule(data)
         
-        logger.info(f"Created jingle schedule #{result['schedule_id']}: {data.get('jingle_name')}")
+        logger.info(f"Created jingle schedule #{schedule.id}: {data.get('jingle_name')}")
         
-        return Response(result, status=201)
+        return Response({
+            'success': True,
+            'schedule_id': schedule.id,
+            'message': 'Schedule created successfully'
+        }, status=201)
         
     except ValueError as e:
         return Response({
