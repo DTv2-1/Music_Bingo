@@ -76,10 +76,39 @@ def create_jingle_schedule(request):
             
             # Use ScheduleService to get schedules
             schedule_service = ScheduleService()
-            schedules_list = schedule_service.get_schedules(
+            schedules_queryset = schedule_service.get_schedules(
                 venue_name=venue_name,
                 session_id=session_id
             )
+            
+            # Serialize model objects to dicts
+            schedules_list = []
+            for schedule in schedules_queryset:
+                schedules_list.append({
+                    'id': schedule.id,
+                    'jingle_name': schedule.jingle_name,
+                    'jingle_filename': schedule.jingle_filename,
+                    'venue_name': schedule.venue_name or '',
+                    'session_id': schedule.session_id,
+                    'start_date': schedule.start_date.isoformat() if schedule.start_date else None,
+                    'end_date': schedule.end_date.isoformat() if schedule.end_date else None,
+                    'time_start': schedule.time_start.strftime('%H:%M') if schedule.time_start else None,
+                    'time_end': schedule.time_end.strftime('%H:%M') if schedule.time_end else None,
+                    'days_of_week': {
+                        'monday': schedule.monday,
+                        'tuesday': schedule.tuesday,
+                        'wednesday': schedule.wednesday,
+                        'thursday': schedule.thursday,
+                        'friday': schedule.friday,
+                        'saturday': schedule.saturday,
+                        'sunday': schedule.sunday,
+                    },
+                    'repeat_pattern': schedule.repeat_pattern,
+                    'enabled': schedule.enabled,
+                    'priority': schedule.priority,
+                    'created_at': schedule.created_at.isoformat() if schedule.created_at else None,
+                    'updated_at': schedule.updated_at.isoformat() if schedule.updated_at else None,
+                })
             
             logger.info(f'✅ Listed {len(schedules_list)} jingle schedules')
             for schedule in schedules_list:
