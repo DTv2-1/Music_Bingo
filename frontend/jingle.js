@@ -785,22 +785,28 @@ function updateProgress(percentage, step) {
 function showCompletedJingle(result) {
     console.log('Jingle result:', result);
 
-    // Save current jingle filename for "Add to Playlist" button
+    // Determine audio URL from result (supports both audio_url and filename)
+    const apiUrl = window.BACKEND_URL || '';
+    let audioUrl;
+
     if (result.audio_url) {
-        const urlParts = result.audio_url.split('/');
-        currentJingleFilename = urlParts[urlParts.length - 1];
+        audioUrl = result.audio_url.startsWith('http')
+            ? result.audio_url
+            : `${apiUrl}${result.audio_url}`;
+    } else if (result.filename) {
+        audioUrl = `${apiUrl}/api/jingles/${result.filename}`;
+    } else {
+        console.error('No audio_url or filename in result:', result);
+        showError('No audio URL returned from server');
+        return;
     }
+
+    // Save current jingle filename for "Add to Playlist" button
+    currentJingleFilename = result.filename || audioUrl.split('/').pop();
 
     // Hide progress, show player
     document.getElementById('progressSection').classList.remove('active');
     document.getElementById('audioPlayer').classList.remove('hidden');
-
-    // Set audio source
-    const apiUrl = window.BACKEND_URL || '';
-    // result.audio_url already includes /api/jingles/filename
-    const audioUrl = result.audio_url.startsWith('http')
-        ? result.audio_url
-        : `${apiUrl}${result.audio_url}`;
 
     const audio = document.getElementById('jingleAudio');
     audio.src = audioUrl;
