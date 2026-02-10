@@ -17,7 +17,7 @@
 // CONFIG is defined in config.js which is loaded before this file
 
 // Extend CONFIG with additional game settings if needed
-if (!CONFIG.PREVIEW_DURATION_MS) CONFIG.PREVIEW_DURATION_MS = 15000;
+if (!CONFIG.PREVIEW_DURATION_MS) CONFIG.PREVIEW_DURATION_MS = 20000;
 if (!CONFIG.AUTO_NEXT_DELAY_MS) CONFIG.AUTO_NEXT_DELAY_MS = 15000;
 if (!CONFIG.BACKGROUND_MUSIC_VOLUME) CONFIG.BACKGROUND_MUSIC_VOLUME = 0.15;
 if (!CONFIG.TTS_VOLUME) CONFIG.TTS_VOLUME = 1.0;
@@ -1822,6 +1822,18 @@ async function announceTenSongSummary() {
 }
 
 /**
+ * Remove text in brackets/parentheses from a track title for TTS announcements
+ * e.g., "Long Cool Woman (In a Black Dress)" → "Long Cool Woman"
+ * e.g., "Landslide (Remastered)" → "Landslide"
+ */
+function cleanTitleForTTS(title) {
+    return title
+        .replace(/\s*\(.*?\)\s*/g, ' ')  // Remove (parentheses)
+        .replace(/\s*\[.*?\]\s*/g, ' ')   // Remove [brackets]
+        .trim();
+}
+
+/**
  * Generate 10-song summary text
  */
 function generate10SongSummaryText(last10Songs) {
@@ -1835,7 +1847,7 @@ function generate10SongSummaryText(last10Songs) {
     
     const intro = summaryScripts[Math.floor(Math.random() * summaryScripts.length)];
     const songList = last10Songs.map((song, i) => 
-        `Number ${i + 1}: ${song.title} by ${song.artist}`
+        `Number ${i + 1}: ${cleanTitleForTTS(song.title)} by ${song.artist}`
     ).join('. ');
     
     return `${intro} ${songList}. Alright, let's continue with the next track!`;
@@ -2133,7 +2145,7 @@ async function announceTrack(track) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    title: track.title,
+                    title: cleanTitleForTTS(track.title),
                     artist: track.artist,
                     release_year: track.release_year,
                     genre: track.genre
@@ -2339,6 +2351,171 @@ async function playSongPreview(track) {
         // Start playback
         musicPlayer.play();
     });
+}
+
+// ============================================================================
+// WINNER ANNOUNCEMENT SYSTEM
+// ============================================================================
+
+/**
+ * State for tracking interrupted playback
+ */
+let winnerAnnouncementInProgress = false;
+let interruptedState = {
+    wasPlaying: false,
+    hadAutoNextTimer: false,
+    autoNextDelay: 0
+};
+
+/**
+ * Stop all currently playing audio (TTS and music preview)
+ */
+function stopAllAudio() {
+    // Stop TTS
+    if (ttsPlayer) {
+        ttsPlayer.stop();
+        ttsPlayer = null;
+    }
+    if (gameState.currentTTS) {
+        gameState.currentTTS.stop();
+        gameState.currentTTS = null;
+    }
+
+    // Stop music preview
+    if (musicPlayer) {
+        musicPlayer.stop();
+        musicPlayer = null;
+    }
+    if (gameState.currentSound) {
+        gameState.currentSound.stop();
+        gameState.currentSound = null;
+    }
+
+    // Silence background music
+    if (backgroundMusic) {
+        backgroundMusic.fade(backgroundMusic.volume(), 0, 300);
+    }
+}
+
+/**
+ * Announce a winner (Line, 4 Corners, or Full House)
+ * Interrupts any current audio, plays announcement, waits 10s, then resumes
+ */
+async function announceWinner(type) {
+    if (winnerAnnouncementInProgress) {
+        console.log('⚠️ Winner announcement already in progress');
+        return;
+    }
+
+    console.log(`🏆 Winner announcement triggered: ${type}`);
+    winnerAnnouncementInProgress = true;
+
+    // Save current state before interrupting
+    interruptedState.wasPlaying = gameState.isPlaying;
+    interruptedState.hadAutoNextTimer = !!gameState.autoNextTimer;
+
+    // Cancel auto-next timer if active
+    if (gameState.autoNextTimer) {
+        clearTimeout(gameState.autoNextTimer);
+        gameState.autoNextTimer = null;
+    }
+
+    // Stop all current audio immediately
+    stopAllAudio();
+
+    // Generate announcement text based on type
+    const announcements = {
+        line: [
+            "Stop the music! We have a LINE! Can someone check that card please? Hold tight everyone!",
+            "Hold on everyone! Someone is claiming a LINE! Let's verify that card!",
+            "We've got a shout for a LINE! Let me check that card. Everyone else, hold your positions!"
+        ],
+        '4corners': [
+            "Wait a moment! We have FOUR CORNERS! Let me check that card please!",
+            "Hold everything! Someone's got all FOUR CORNERS! Time to verify!",
+            "Stop right there! We have a claim for FOUR CORNERS! Let's have a look at that card!"
+        ],
+        fullhouse: [
+            "FULL HOUSE! FULL HOUSE! We have a winner claiming FULL HOUSE! Let me verify that card!",
+            "Stop everything! Someone is shouting FULL HOUSE! This could be our big winner! Let me check!",
+            "Hold on! We've got a FULL HOUSE claim! Everyone stay calm while I check this card!"
+        ]
+    };
+
+    const texts = announcements[type] || announcements.line;
+    const text = texts[Math.floor(Math.random() * texts.length)];
+
+    updateStatus(`🏆 ${type.toUpperCase()} claimed! Verifying...`, true);
+
+    try {
+        // Generate and play TTS announcement
+        const audioUrl = await generateElevenLabsTTS(text);
+
+        await new Promise((resolve, reject) => {
+            const winnerTTS = new Howl({
+                src: [audioUrl],
+                format: ['mp3'],
+                html5: true,
+                volume: CONFIG.TTS_VOLUME,
+                onend: () => {
+                    console.log('✅ Winner announcement complete');
+                    resolve();
+                },
+                onloaderror: (id, error) => {
+                    console.error('Winner TTS load error:', error);
+                    reject(error);
+                },
+                onplayerror: (id, error) => {
+                    console.error('Winner TTS play error:', error);
+                    reject(error);
+                }
+            });
+            winnerTTS.play();
+        });
+    } catch (error) {
+        console.error('Error playing winner announcement:', error);
+    }
+
+    // Wait 10 seconds for the host to verify the card
+    updateStatus(`🏆 Checking card... Resuming in 10 seconds...`, false);
+    console.log('⏳ Waiting 10 seconds before resuming...');
+    await new Promise(resolve => setTimeout(resolve, 10000));
+
+    // Resume: restore background music and continue the game
+    winnerAnnouncementInProgress = false;
+
+    if (backgroundMusic) {
+        backgroundMusic.fade(0, CONFIG.BACKGROUND_MUSIC_VOLUME, 1500);
+    }
+
+    // If the game was in auto-next waiting state, restart auto-next
+    if (interruptedState.hadAutoNextTimer) {
+        const delaySeconds = CONFIG.AUTO_NEXT_DELAY_MS / 1000;
+        updateStatus(`⏱️ Resuming... Next song in ${delaySeconds} seconds...`, false);
+        gameState.autoNextTimer = setTimeout(() => {
+            console.log('⏰ Auto-playing next track after winner check...');
+            const nextButton = document.getElementById('nextTrack');
+            nextButton.textContent = '▶️ NEXT SONG';
+            nextButton.onclick = playNextTrack;
+            gameState.isPlaying = false;
+            playNextTrack();
+        }, CONFIG.AUTO_NEXT_DELAY_MS);
+    } else if (interruptedState.wasPlaying) {
+        // Was in the middle of playing, auto-continue with next song
+        updateStatus('▶️ Resuming game...', false);
+        const nextButton = document.getElementById('nextTrack');
+        nextButton.textContent = '▶️ NEXT SONG';
+        nextButton.onclick = playNextTrack;
+        gameState.isPlaying = false;
+        // Auto-play next track after the interruption
+        setTimeout(() => {
+            playNextTrack();
+        }, 2000);
+    } else {
+        updateStatus('Ready. Press "NEXT SONG" to continue.', false);
+    }
+
+    console.log('✅ Winner announcement flow complete, game resuming');
 }
 
 /**
