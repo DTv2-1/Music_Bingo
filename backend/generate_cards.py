@@ -29,7 +29,7 @@ import psutil
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak, Flowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.pdfgen import canvas
@@ -42,6 +42,95 @@ try:
     from pypdf import PdfWriter, PdfReader
 except ImportError:
     from PyPDF2 import PdfWriter, PdfReader
+
+
+class BingoCell(Flowable):
+    """Custom flowable that renders a large grey bingo number behind black song text.
+    
+    Creates the traditional bingo look where each cell has a large watermark-style
+    number in light grey with the song artist/title in black text on top.
+    """
+    
+    def __init__(self, bingo_number, song_text, cell_width, cell_height):
+        Flowable.__init__(self)
+        self.bingo_number = bingo_number
+        self.song_text = song_text
+        self.cell_width = cell_width
+        self.cell_height = cell_height
+        self.width = cell_width
+        self.height = cell_height
+    
+    def draw(self):
+        canvas = self.canv
+        
+        # Draw large grey bingo number centered in cell
+        canvas.saveState()
+        canvas.setFillColor(colors.Color(0.82, 0.82, 0.82))  # Light grey
+        
+        # Scale font size based on number of digits
+        num_str = str(self.bingo_number)
+        if len(num_str) == 1:
+            font_size = self.cell_height * 0.75
+        elif len(num_str) == 2:
+            font_size = self.cell_height * 0.65
+        else:
+            font_size = self.cell_height * 0.55
+        
+        canvas.setFont('Helvetica-Bold', font_size)
+        
+        # Center the number in the cell
+        text_width = canvas.stringWidth(num_str, 'Helvetica-Bold', font_size)
+        x = (self.cell_width - text_width) / 2
+        y = (self.cell_height - font_size) / 2 + font_size * 0.15  # Slight vertical adjustment
+        canvas.drawString(x, y, num_str)
+        canvas.restoreState()
+        
+        # Draw black song text on top, centered and word-wrapped
+        canvas.saveState()
+        canvas.setFillColor(colors.black)
+        
+        # Use a smaller font for the song text
+        song_font_size = 7.5
+        leading = 9
+        canvas.setFont('Helvetica', song_font_size)
+        
+        # Simple word wrapping
+        max_text_width = self.cell_width - 6  # 3pt padding each side
+        words = self.song_text.split()
+        lines = []
+        current_line = ''
+        
+        for word in words:
+            test_line = current_line + (' ' if current_line else '') + word
+            if canvas.stringWidth(test_line, 'Helvetica', song_font_size) <= max_text_width:
+                current_line = test_line
+            else:
+                if current_line:
+                    lines.append(current_line)
+                current_line = word
+        if current_line:
+            lines.append(current_line)
+        
+        # Limit to max lines that fit
+        max_lines = int(self.cell_height / leading)
+        if len(lines) > max_lines:
+            lines = lines[:max_lines]
+            # Truncate last line with ellipsis if needed
+            if lines:
+                lines[-1] = lines[-1][:len(lines[-1])-3] + '...' if len(lines[-1]) > 3 else '...'
+        
+        # Calculate vertical starting position to center text block
+        total_text_height = len(lines) * leading
+        start_y = (self.cell_height + total_text_height) / 2 - leading + 2
+        
+        for i, line in enumerate(lines):
+            line_width = canvas.stringWidth(line, 'Helvetica', song_font_size)
+            x = (self.cell_width - line_width) / 2
+            y = start_y - (i * leading)
+            canvas.drawString(x, y, line)
+        
+        canvas.restoreState()
+
 
 # Configuration
 SCRIPT_DIR = Path(__file__).parent
@@ -480,7 +569,9 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
     elements.append(Spacer(1, 1*mm))  # Reduced from 2mm to 1mm
     
     # --- BINGO GRID ---
-    # Create 5x5 grid data
+    # Create 5x5 grid data with large grey bingo numbers behind black text
+    col_width = 32*mm  # Cell width
+    row_height = 12*mm  # Cell height
     grid_data = []
     song_index = 0
     
@@ -501,24 +592,19 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
             else:
                 song = songs[song_index]
                 song_text = format_song_title(song, max_length=40)
+                bingo_number = song.get('bingo_number', song_index + 1)
                 
-                cell_style = ParagraphStyle(
-                    'SongCell',
-                    parent=styles['Normal'],
-                    fontSize=8,  # Increased from 7 to 8 (larger cells = more space)
-                    textColor=colors.black,
-                    alignment=TA_CENTER,
-                    leading=9,  # Increased from 7 to 9
+                # Use custom BingoCell flowable: large grey number behind black text
+                cell_content = BingoCell(
+                    bingo_number=bingo_number,
+                    song_text=song_text,
+                    cell_width=col_width,
+                    cell_height=row_height
                 )
-                cell_content = Paragraph(song_text, cell_style)
                 song_index += 1
             
             row_data.append(cell_content)
         grid_data.append(row_data)
-    
-    # Create table - LARGER to use more space
-    col_width = 32*mm  # Increased from 28mm to 32mm
-    row_height = 12*mm  # Increased from 10mm to 12mm
     
     table = Table(grid_data, colWidths=[col_width]*GRID_SIZE, rowHeights=[row_height]*GRID_SIZE)
     
@@ -536,10 +622,15 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
         # All cells
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 5),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 5),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+        # Keep padding for FREE cell
+        ('LEFTPADDING', (2, 2), (2, 2), 5),
+        ('RIGHTPADDING', (2, 2), (2, 2), 5),
+        ('TOPPADDING', (2, 2), (2, 2), 5),
+        ('BOTTOMPADDING', (2, 2), (2, 2), 5),
     ]))
     
     elements.append(table)
@@ -945,6 +1036,12 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
             qr_buffer_data = qr_buffer_cache.getvalue()  # Get bytes for serialization
             mem_after_qr = process.memory_info()
             print(f"✓ Generated QR code ({time.time()-step_start:.2f}s) - Memory: {mem_after_qr.rss / 1024 / 1024:.1f} MB")
+    
+    # *** ASSIGN BINGO NUMBERS TO SONGS ***
+    # Each song gets a unique number (1 to N) - this is the number shown on the card
+    for idx, song in enumerate(selected_songs):
+        song['bingo_number'] = idx + 1
+    print(f"✓ Assigned bingo numbers 1-{len(selected_songs)} to songs")
     
     # *** DISTRIBUTE SONGS UNIQUELY ACROSS ALL CARDS ***
     # Calculate number of cards based on num_players (1 card per player)
