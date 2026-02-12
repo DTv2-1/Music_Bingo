@@ -13,6 +13,7 @@ from .jingle_service import JingleService
 from .schedule_service import ScheduleService
 from .session_service import BingoSessionService
 from .card_generation_service import CardGenerationService
+from .pub_quiz_service import PubQuizService
 
 __all__ = [
     # Core services
@@ -26,4 +27,5 @@ __all__ = [
     'ScheduleService',
     'BingoSessionService',
     'CardGenerationService',
+    'PubQuizService',
 ]
