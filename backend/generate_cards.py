@@ -45,89 +45,92 @@ except ImportError:
 
 
 class BingoCell(Flowable):
-    """Custom flowable that renders a large grey bingo number behind black song text.
+    """Custom flowable that renders a large grey bingo number behind song text.
     
     Creates the traditional bingo look where each cell has a large watermark-style
-    number in light grey with the song artist/title in black text on top.
+    number in light grey with the artist (bold) and title on separate lines in
+    dark text on top. Long text is truncated with ellipsis.
     """
     
-    def __init__(self, bingo_number, song_text, cell_width, cell_height):
+    def __init__(self, bingo_number, artist, title, cell_width, cell_height):
         Flowable.__init__(self)
         self.bingo_number = bingo_number
-        self.song_text = song_text
+        self.artist = artist or ''
+        self.title = title or ''
         self.cell_width = cell_width
         self.cell_height = cell_height
         self.width = cell_width
         self.height = cell_height
     
+    def _truncate_to_fit(self, text, font_name, font_size, max_width):
+        """Truncate text with ellipsis if it exceeds max_width."""
+        canvas = self.canv
+        if canvas.stringWidth(text, font_name, font_size) <= max_width:
+            return text
+        # Binary search-ish: chop from end until it fits with ellipsis
+        for end in range(len(text), 0, -1):
+            candidate = text[:end].rstrip() + '...'
+            if canvas.stringWidth(candidate, font_name, font_size) <= max_width:
+                return candidate
+        return '...'
+    
     def draw(self):
         canvas = self.canv
         
-        # Draw large grey bingo number centered in cell
+        # --- Draw large grey bingo number centered in cell ---
         canvas.saveState()
-        canvas.setFillColor(colors.Color(0.82, 0.82, 0.82))  # Light grey
+        canvas.setFillColor(colors.Color(0.78, 0.78, 0.78))  # Grey watermark
         
-        # Scale font size based on number of digits
+        # Scale font size based on number of digits - LARGE
         num_str = str(self.bingo_number)
         if len(num_str) == 1:
-            font_size = self.cell_height * 0.75
+            font_size = self.cell_height * 0.85
         elif len(num_str) == 2:
-            font_size = self.cell_height * 0.65
+            font_size = self.cell_height * 0.75
         else:
-            font_size = self.cell_height * 0.55
+            font_size = self.cell_height * 0.60
         
         canvas.setFont('Helvetica-Bold', font_size)
         
         # Center the number in the cell
         text_width = canvas.stringWidth(num_str, 'Helvetica-Bold', font_size)
         x = (self.cell_width - text_width) / 2
-        y = (self.cell_height - font_size) / 2 + font_size * 0.15  # Slight vertical adjustment
+        y = (self.cell_height - font_size) / 2 + font_size * 0.12
         canvas.drawString(x, y, num_str)
         canvas.restoreState()
         
-        # Draw black song text on top, centered and word-wrapped
+        # --- Draw artist (bold) and title on separate lines ---
         canvas.saveState()
-        canvas.setFillColor(colors.black)
+        canvas.setFillColor(colors.Color(0.10, 0.10, 0.10))  # Near-black for readability
         
-        # Use a smaller font for the song text
-        song_font_size = 7.5
-        leading = 9
-        canvas.setFont('Helvetica', song_font_size)
+        max_text_width = self.cell_width - 8  # 4pt padding each side
+        artist_font = 'Helvetica-Bold'
+        title_font = 'Helvetica'
+        artist_size = 8.0
+        title_size = 7.5
+        line_spacing = 10  # Leading between artist and title lines
         
-        # Simple word wrapping
-        max_text_width = self.cell_width - 6  # 3pt padding each side
-        words = self.song_text.split()
-        lines = []
-        current_line = ''
+        # Truncate artist and title to fit cell width
+        artist_display = self._truncate_to_fit(self.artist, artist_font, artist_size, max_text_width)
+        title_display = self._truncate_to_fit(self.title, title_font, title_size, max_text_width)
         
-        for word in words:
-            test_line = current_line + (' ' if current_line else '') + word
-            if canvas.stringWidth(test_line, 'Helvetica', song_font_size) <= max_text_width:
-                current_line = test_line
-            else:
-                if current_line:
-                    lines.append(current_line)
-                current_line = word
-        if current_line:
-            lines.append(current_line)
+        # Calculate vertical centering for 2 lines
+        total_text_height = artist_size + title_size + (line_spacing - title_size)
+        start_y = (self.cell_height + total_text_height) / 2
         
-        # Limit to max lines that fit
-        max_lines = int(self.cell_height / leading)
-        if len(lines) > max_lines:
-            lines = lines[:max_lines]
-            # Truncate last line with ellipsis if needed
-            if lines:
-                lines[-1] = lines[-1][:len(lines[-1])-3] + '...' if len(lines[-1]) > 3 else '...'
+        # Draw artist line (bold) - centered
+        canvas.setFont(artist_font, artist_size)
+        artist_w = canvas.stringWidth(artist_display, artist_font, artist_size)
+        ax = (self.cell_width - artist_w) / 2
+        ay = start_y - artist_size + 1
+        canvas.drawString(ax, ay, artist_display)
         
-        # Calculate vertical starting position to center text block
-        total_text_height = len(lines) * leading
-        start_y = (self.cell_height + total_text_height) / 2 - leading + 2
-        
-        for i, line in enumerate(lines):
-            line_width = canvas.stringWidth(line, 'Helvetica', song_font_size)
-            x = (self.cell_width - line_width) / 2
-            y = start_y - (i * leading)
-            canvas.drawString(x, y, line)
+        # Draw title line - centered, below artist
+        canvas.setFont(title_font, title_size)
+        title_w = canvas.stringWidth(title_display, title_font, title_size)
+        tx = (self.cell_width - title_w) / 2
+        ty = ay - line_spacing
+        canvas.drawString(tx, ty, title_display)
         
         canvas.restoreState()
 
@@ -591,13 +594,16 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
                 cell_content = Paragraph("<b>FREE</b>", cell_style)
             else:
                 song = songs[song_index]
-                song_text = format_song_title(song, max_length=40)
+                artist = song.get('artist', '')
+                title = song.get('title', 'Unknown')
                 bingo_number = song.get('bingo_number', song_index + 1)
                 
-                # Use custom BingoCell flowable: large grey number behind black text
+                # Use custom BingoCell flowable: large grey number behind
+                # artist (bold) and title on separate lines
                 cell_content = BingoCell(
                     bingo_number=bingo_number,
-                    song_text=song_text,
+                    artist=artist,
+                    title=title,
                     cell_width=col_width,
                     cell_height=row_height
                 )

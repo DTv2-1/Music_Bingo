@@ -1,6 +1,7 @@
-"""Quick test to verify BingoCell rendering with large grey numbers behind black text"""
+"""Quick test to verify BingoCell rendering with large grey numbers and artist/title on separate lines"""
 import sys
-sys.path.insert(0, '.')
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib import colors
@@ -9,33 +10,33 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
 from generate_cards import BingoCell
 
-# Sample songs like in the reference image
+# Sample songs: (number, artist, title)
 songs = [
-    (5, 'Finesse (Remix) [feat. Cardi B]'),
-    (33, 'Young the Giant - Mind Over Matter'),
-    (51, 'Young the Giant - Cough Syrup'),
-    (68, 'VIOLIN COVERS - 3D'),
-    (20, 'Sean Paul - Temperature'),
-    (12, 'Jake Owen - Alone with You'),
-    (7, 'Frankie Goes to Hollywood - Relax'),
-    (44, 'Regard - Ride It'),
-    (89, 'Phil Collins - In the Air Tonight'),
-    (3, 'Queen - Bohemian Rhapsody'),
-    (15, 'Percy Sledge - When a Man Loves a Woman'),
-    (61, 'Too Many Fish In the Sea'),
+    (5, 'Bruno Mars', 'Finesse (Remix) [feat. Cardi B]'),
+    (33, 'Young the Giant', 'Mind Over Matter'),
+    (51, 'Young the Giant', 'Cough Syrup'),
+    (68, 'VIOLIN COVERS', '3D'),
+    (20, 'Sean Paul', 'Temperature'),
+    (12, 'Jake Owen', 'Alone with You'),
+    (7, 'Frankie Goes to Hollywood', 'Relax'),
+    (44, 'Regard', 'Ride It'),
+    (89, 'Phil Collins', 'In the Air Tonight'),
+    (3, 'Queen', 'Bohemian Rhapsody'),
+    (15, 'Percy Sledge', 'When a Man Loves a Woman'),
+    (61, '', 'Too Many Fish In the Sea'),
     # FREE goes here (row 2, col 2)
-    (72, 'Red Hot Chili Peppers - Dani California'),
-    (45, 'Donovan - Season of the Witch'),
-    (88, 'Earth, Wind & Fire - September'),
-    (19, 'Paul Russell - Lil Boo Thang'),
-    (37, "Jason Mraz - I Won't Give Up"),
-    (55, 'Sympathy For The Devil'),
-    (90, 'Take Me Home, Country Roads (Original...'),
-    (8, 'The Outfield - Your Love'),
-    (23, 'Wendy Rene - Give You What I Got'),
-    (42, 'Pink - Try'),
-    (66, 'Five Special - Why Leave Us Alone'),
-    (14, 'The Killers - Mr. Brightside'),
+    (72, 'Red Hot Chili Peppers', 'Dani California'),
+    (45, 'Donovan', 'Season of the Witch'),
+    (88, 'Earth, Wind & Fire', 'September'),
+    (19, 'Paul Russell', 'Lil Boo Thang'),
+    (37, 'Jason Mraz', "I Won't Give Up"),
+    (55, 'The Rolling Stones', 'Sympathy For The Devil'),
+    (90, 'John Denver', 'Take Me Home, Country Roads'),
+    (8, 'The Outfield', 'Your Love'),
+    (23, 'Wendy Rene', 'Give You What I Got'),
+    (42, 'P!nk', 'Try'),
+    (66, 'Five Special', 'Why Leave Us Alone'),
+    (14, 'The Killers', 'Mr. Brightside'),
 ]
 
 col_width = 32*mm
@@ -51,8 +52,8 @@ for row in range(5):
             cell_style = ParagraphStyle('FreeCell', parent=styles['Normal'], fontSize=14, textColor=colors.black, alignment=TA_CENTER, leading=12)
             cell_content = Paragraph('<b>FREE</b>', cell_style)
         else:
-            num, text = songs[song_idx]
-            cell_content = BingoCell(bingo_number=num, song_text=text, cell_width=col_width, cell_height=row_height)
+            num, artist, title = songs[song_idx]
+            cell_content = BingoCell(bingo_number=num, artist=artist, title=title, cell_width=col_width, cell_height=row_height)
             song_idx += 1
         row_data.append(cell_content)
     grid_data.append(row_data)
