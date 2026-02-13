@@ -44,6 +44,18 @@ except ImportError:
     from PyPDF2 import PdfWriter, PdfReader
 
 
+def clean_title_for_display(title: str) -> str:
+    """Remove text in parentheses/brackets from a song title.
+    
+    e.g. 'Long Cool Woman (In a Black Dress)' → 'Long Cool Woman'
+    e.g. 'Landslide (Remastered)' → 'Landslide'
+    """
+    import re
+    cleaned = re.sub(r'\s*\(.*?\)\s*', ' ', title)
+    cleaned = re.sub(r'\s*\[.*?\]\s*', ' ', cleaned)
+    return cleaned.strip()
+
+
 class BingoCell(Flowable):
     """Custom flowable that renders a large grey bingo number behind song text.
     
@@ -56,7 +68,7 @@ class BingoCell(Flowable):
         Flowable.__init__(self)
         self.bingo_number = bingo_number
         self.artist = artist or ''
-        self.title = title or ''
+        self.title = clean_title_for_display(title or '')
         self.cell_width = cell_width
         self.cell_height = cell_height
         self.width = cell_width
@@ -259,7 +271,7 @@ def load_pool() -> List[Dict]:
 
 def format_song_title(song: Dict, max_length: int = 45) -> str:
     """Format song title to fit in cell"""
-    title = song.get('title', 'Unknown')
+    title = clean_title_for_display(song.get('title', 'Unknown'))
     artist = song.get('artist', '')
     
     # Try full format first
@@ -594,7 +606,7 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
             else:
                 song = songs[song_index]
                 artist = song.get('artist', '')
-                title = song.get('title', 'Unknown')
+                title = clean_title_for_display(song.get('title', 'Unknown'))
                 bingo_number = song.get('bingo_number', song_index + 1)
                 
                 # Use custom BingoCell flowable: large grey number behind

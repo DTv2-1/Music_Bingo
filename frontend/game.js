@@ -1822,15 +1822,21 @@ async function announceTenSongSummary() {
 }
 
 /**
- * Remove text in brackets/parentheses from a track title for TTS announcements
+ * Remove text in brackets/parentheses from a title.
+ * Used for both TTS and visual display per Philip's feedback.
  * e.g., "Long Cool Woman (In a Black Dress)" → "Long Cool Woman"
  * e.g., "Landslide (Remastered)" → "Landslide"
  */
-function cleanTitleForTTS(title) {
+function cleanTitle(title) {
     return title
         .replace(/\s*\(.*?\)\s*/g, ' ')  // Remove (parentheses)
         .replace(/\s*\[.*?\]\s*/g, ' ')   // Remove [brackets]
         .trim();
+}
+
+// Alias for backward compatibility
+function cleanTitleForTTS(title) {
+    return cleanTitle(title);
 }
 
 /**
@@ -2652,7 +2658,7 @@ function displayFullSongList() {
             <div class="song-list-item ${calledClass}" onclick="showSongDetails('${track.id}')">
                 <div class="song-number">${index + 1}</div>
                 <div class="song-info">
-                    <div class="song-title">${track.title}</div>
+                    <div class="song-title">${cleanTitle(track.title)}</div>
                     <div class="song-artist">${track.artist}</div>
                 </div>
                 <div class="song-meta">
@@ -2768,7 +2774,7 @@ function updateCurrentTrackDisplay(track) {
     }
     
     if (title) {
-        title.textContent = track.title;
+        title.textContent = cleanTitle(track.title);
         console.log(`   Title: ${track.title}`);
     }
     
@@ -2809,7 +2815,7 @@ function updateCalledList() {
             return `
                 <div class="track-item">
                     <span class="number">#${number}</span>
-                    <strong>${track.title}</strong>
+                    <strong>${cleanTitle(track.title)}</strong>
                     <br>
                     <small>${track.artist}</small>
                 </div>
