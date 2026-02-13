@@ -13,13 +13,8 @@ except Exception as e:
     logger.error(f"❌ Failed to import karaoke_views: {e}")
     raise
 
-# Import pub quiz views
-try:
-    from . import pub_quiz_views
-    logger.info("✅ Successfully imported pub_quiz_views module")
-except Exception as e:
-    logger.error(f"❌ Failed to import pub_quiz_views: {e}")
-    pub_quiz_views = None
+# Pub quiz views are now in views/ package (Phase 3 refactor)
+# Imported via `views` module already loaded above
 
 urlpatterns = [
     path('health', views.health_check, name='health'),
@@ -52,42 +47,44 @@ urlpatterns = [
     path('venue-config/<str:venue_name>', views.venue_config, name='venue-config'),  # GET/POST: Load/save config
     
     # ============================================================
-    # PUB QUIZ ENDPOINTS
+    # PUB QUIZ ENDPOINTS (refactored — views/ package)
     # ============================================================
-    path('pub-quiz/sessions', pub_quiz_views.get_sessions, name='pub-quiz-sessions'),
-    # Removed: leaderboard endpoint - replaced by SSE
-    path('pub-quiz/team/<int:team_id>/award-points', pub_quiz_views.award_points, name='pub_quiz_award_points'),
-    path('pub-quiz/initialize-genres', pub_quiz_views.initialize_quiz_genres, name='initialize_quiz_genres'),
-    path('pub-quiz/create-session', pub_quiz_views.create_quiz_session, name='pub-quiz-create-session'),
-    path('pub-quiz/<str:session_id>/details', pub_quiz_views.get_session_details, name='pub-quiz-details'),
-    path('pub-quiz/<str:session_id>/check-team', pub_quiz_views.check_existing_team, name='pub-quiz-check-team'),
-    path('pub-quiz/<str:session_id>/register-team', pub_quiz_views.register_team, name='pub-quiz-register-team'),
-    path('pub-quiz/<str:session_id>/generate-questions', pub_quiz_views.generate_quiz_questions, name='pub-quiz-generate'),
-    path('pub-quiz/<str:session_id>/all-questions', pub_quiz_views.get_all_questions, name='pub-quiz-all-questions'),
-    path('pub-quiz/<str:session_id>/sync-question', pub_quiz_views.sync_question_to_players, name='pub-quiz-sync'),
-    path('pub-quiz/<str:session_id>/host-data', pub_quiz_views.quiz_host_data, name='pub-quiz-host-data'),
-    path('pub-quiz/<str:session_id>/start', pub_quiz_views.start_quiz, name='pub-quiz-start'),
-    path('pub-quiz/<str:session_id>/start-countdown', pub_quiz_views.start_countdown, name='pub-quiz-start-countdown'),
-    path('pub-quiz/<str:session_id>/reset', pub_quiz_views.reset_quiz, name='pub-quiz-reset'),
-    path('pub-quiz/<str:session_id>/delete', pub_quiz_views.delete_session, name='pub-quiz-delete'),
-    path('pub-quiz/bulk-delete', pub_quiz_views.bulk_delete_sessions, name='pub-quiz-bulk-delete'),  # Bulk delete sessions
-    path('pub-quiz/<str:session_id>/next', pub_quiz_views.next_question, name='pub-quiz-next'),
-    path('pub-quiz/<str:session_id>/toggle-auto-advance', pub_quiz_views.toggle_auto_advance, name='pub-quiz-toggle-auto'),
-    path('pub-quiz/<str:session_id>/pause-auto-advance', pub_quiz_views.pause_auto_advance, name='pub-quiz-pause-auto'),
-    path('pub-quiz/<str:session_id>/set-auto-advance-time', pub_quiz_views.set_auto_advance_time, name='pub-quiz-set-timer'),
-    path('pub-quiz/<str:session_id>/stream', pub_quiz_views.quiz_stream, name='pub-quiz-stream'),  # SSE endpoint for players
-    path('pub-quiz/<str:session_id>/host-stream', pub_quiz_views.host_stream, name='pub-quiz-host-stream'),  # SSE endpoint for host
-    path('pub-quiz/<str:session_id>/team/<int:team_id>/stats', pub_quiz_views.get_team_stats, name='pub-quiz-team-stats'),  # Team final stats
-    path('pub-quiz/question/<int:question_id>/answer', pub_quiz_views.get_question_answer, name='pub-quiz-answer'),
-    path('pub-quiz/question/<int:question_id>/submit', pub_quiz_views.submit_answer, name='pub-quiz-submit'),
-    path('pub-quiz/question/<int:question_id>/buzz', pub_quiz_views.record_buzz, name='pub-quiz-buzz'),
-    path('pub-quiz/<str:session_id>/submit-answers', pub_quiz_views.submit_all_answers, name='pub-quiz-submit-all'),  # NEW: Batch submit
-    # Removed polling endpoints - replaced by SSE:
-    # path('pub-quiz/<str:session_id>/leaderboard', ...)
-    # path('pub-quiz/<str:session_id>/stats', ...)
-    path('pub-quiz/<str:session_id>/qr-code', pub_quiz_views.generate_qr_code, name='pub-quiz-qr'),
-    path('pub-quiz/tts', pub_quiz_views.generate_quiz_tts, name='pub-quiz-tts'),
-    path('pub-quiz/generate-answer-sheets', pub_quiz_views.generate_answer_sheets, name='pub-quiz-answer-sheets'),
+    # Session CRUD
+    path('pub-quiz/sessions', views.pub_quiz_get_sessions, name='pub-quiz-sessions'),
+    path('pub-quiz/create-session', views.create_quiz_session, name='pub-quiz-create-session'),
+    path('pub-quiz/<str:session_id>/delete', views.pub_quiz_delete_session, name='pub-quiz-delete'),
+    path('pub-quiz/bulk-delete', views.bulk_delete_sessions, name='pub-quiz-bulk-delete'),
+    path('pub-quiz/<str:session_id>/reset', views.reset_quiz, name='pub-quiz-reset'),
+    # Registration & QR
+    path('pub-quiz/<str:session_id>/details', views.get_session_details, name='pub-quiz-details'),
+    path('pub-quiz/<str:session_id>/check-team', views.check_existing_team, name='pub-quiz-check-team'),
+    path('pub-quiz/<str:session_id>/register-team', views.register_team, name='pub-quiz-register-team'),
+    path('pub-quiz/<str:session_id>/qr-code', views.generate_qr_code, name='pub-quiz-qr'),
+    path('pub-quiz/initialize-genres', views.initialize_quiz_genres, name='initialize_quiz_genres'),
+    # Game control
+    path('pub-quiz/<str:session_id>/host-data', views.quiz_host_data, name='pub-quiz-host-data'),
+    path('pub-quiz/<str:session_id>/start', views.start_quiz, name='pub-quiz-start'),
+    path('pub-quiz/<str:session_id>/all-questions', views.get_all_questions, name='pub-quiz-all-questions'),
+    path('pub-quiz/<str:session_id>/sync-question', views.sync_question_to_players, name='pub-quiz-sync'),
+    path('pub-quiz/<str:session_id>/start-countdown', views.start_countdown, name='pub-quiz-start-countdown'),
+    path('pub-quiz/<str:session_id>/next', views.next_question, name='pub-quiz-next'),
+    path('pub-quiz/<str:session_id>/toggle-auto-advance', views.toggle_auto_advance, name='pub-quiz-toggle-auto'),
+    path('pub-quiz/<str:session_id>/pause-auto-advance', views.pause_auto_advance, name='pub-quiz-pause-auto'),
+    path('pub-quiz/<str:session_id>/set-auto-advance-time', views.set_auto_advance_time, name='pub-quiz-set-timer'),
+    path('pub-quiz/<str:session_id>/generate-questions', views.generate_quiz_questions, name='pub-quiz-generate'),
+    # Answers & scoring
+    path('pub-quiz/question/<int:question_id>/answer', views.get_question_answer, name='pub-quiz-answer'),
+    path('pub-quiz/question/<int:question_id>/submit', views.submit_answer, name='pub-quiz-submit'),
+    path('pub-quiz/question/<int:question_id>/buzz', views.record_buzz, name='pub-quiz-buzz'),
+    path('pub-quiz/<str:session_id>/submit-answers', views.submit_all_answers, name='pub-quiz-submit-all'),
+    path('pub-quiz/team/<int:team_id>/award-points', views.award_points, name='pub_quiz_award_points'),
+    path('pub-quiz/<str:session_id>/team/<int:team_id>/stats', views.get_team_stats, name='pub-quiz-team-stats'),
+    # SSE streams
+    path('pub-quiz/<str:session_id>/stream', views.quiz_stream, name='pub-quiz-stream'),
+    path('pub-quiz/<str:session_id>/host-stream', views.host_stream, name='pub-quiz-host-stream'),
+    # TTS & PDF
+    path('pub-quiz/tts', views.generate_quiz_tts, name='pub-quiz-tts'),
+    path('pub-quiz/generate-answer-sheets', views.generate_answer_sheets, name='pub-quiz-answer-sheets'),
     
     # ============================================================
     # BINGO SESSION ENDPOINTS

@@ -65,6 +65,61 @@ from .session_views import (
     bingo_session_detail,
     update_bingo_session_status
 )
+
+# Pub Quiz — Session CRUD
+from .pub_quiz_session_views import (
+    get_sessions as pub_quiz_get_sessions,
+    create_quiz_session,
+    delete_session as pub_quiz_delete_session,
+    bulk_delete_sessions,
+    reset_quiz,
+)
+
+# Pub Quiz — Registration & QR
+from .pub_quiz_registration_views import (
+    get_session_details,
+    check_existing_team,
+    register_team,
+    generate_qr_code,
+    initialize_quiz_genres,
+)
+
+# Pub Quiz — Game control
+from .pub_quiz_game_views import (
+    quiz_host_data,
+    start_quiz,
+    get_all_questions,
+    sync_question_to_players,
+    start_countdown,
+    next_question,
+    toggle_auto_advance,
+    pause_auto_advance,
+    set_auto_advance_time,
+    generate_quiz_questions,
+)
+
+# Pub Quiz — Answers & scoring
+from .pub_quiz_answer_views import (
+    get_question_answer,
+    submit_answer,
+    record_buzz,
+    submit_all_answers,
+    award_points,
+    get_team_stats,
+)
+
+# Pub Quiz — SSE streams
+from .pub_quiz_stream_views import (
+    quiz_stream,
+    host_stream,
+)
+
+# Pub Quiz — TTS & PDF
+from .pub_quiz_tts_views import (
+    generate_quiz_tts,
+    generate_answer_sheets,
+)
+
 __all__ = [
     # Core
     'health_check',
@@ -98,4 +153,40 @@ __all__ = [
     'bingo_sessions',
     'bingo_session_detail',
     'update_bingo_session_status',
+    # Pub Quiz — Session
+    'pub_quiz_get_sessions',
+    'create_quiz_session',
+    'pub_quiz_delete_session',
+    'bulk_delete_sessions',
+    'reset_quiz',
+    # Pub Quiz — Registration
+    'get_session_details',
+    'check_existing_team',
+    'register_team',
+    'generate_qr_code',
+    'initialize_quiz_genres',
+    # Pub Quiz — Game
+    'quiz_host_data',
+    'start_quiz',
+    'get_all_questions',
+    'sync_question_to_players',
+    'start_countdown',
+    'next_question',
+    'toggle_auto_advance',
+    'pause_auto_advance',
+    'set_auto_advance_time',
+    'generate_quiz_questions',
+    # Pub Quiz — Answers
+    'get_question_answer',
+    'submit_answer',
+    'record_buzz',
+    'submit_all_answers',
+    'award_points',
+    'get_team_stats',
+    # Pub Quiz — Streams
+    'quiz_stream',
+    'host_stream',
+    # Pub Quiz — TTS & PDF
+    'generate_quiz_tts',
+    'generate_answer_sheets',
 ]
