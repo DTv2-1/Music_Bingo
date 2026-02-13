@@ -29,7 +29,7 @@ import psutil
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak, Flowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.pdfgen import canvas
@@ -43,13 +43,105 @@ try:
 except ImportError:
     from PyPDF2 import PdfWriter, PdfReader
 
+
+class BingoCell(Flowable):
+    """Custom flowable that renders a large grey bingo number behind song text.
+    
+    Creates the traditional bingo look where each cell has a large watermark-style
+    number in light grey with the artist (bold) and title on separate lines in
+    dark text on top. Long text is truncated with ellipsis.
+    """
+    
+    def __init__(self, bingo_number, artist, title, cell_width, cell_height):
+        Flowable.__init__(self)
+        self.bingo_number = bingo_number
+        self.artist = artist or ''
+        self.title = title or ''
+        self.cell_width = cell_width
+        self.cell_height = cell_height
+        self.width = cell_width
+        self.height = cell_height
+    
+    def _truncate_to_fit(self, text, font_name, font_size, max_width):
+        """Truncate text with ellipsis if it exceeds max_width."""
+        canvas = self.canv
+        if canvas.stringWidth(text, font_name, font_size) <= max_width:
+            return text
+        # Binary search-ish: chop from end until it fits with ellipsis
+        for end in range(len(text), 0, -1):
+            candidate = text[:end].rstrip() + '...'
+            if canvas.stringWidth(candidate, font_name, font_size) <= max_width:
+                return candidate
+        return '...'
+    
+    def draw(self):
+        canvas = self.canv
+        
+        # --- Draw large grey bingo number centered in cell ---
+        canvas.saveState()
+        canvas.setFillColor(colors.Color(0.78, 0.78, 0.78))  # Grey watermark
+        
+        # Scale font size based on number of digits - LARGE
+        num_str = str(self.bingo_number)
+        if len(num_str) == 1:
+            font_size = self.cell_height * 0.85
+        elif len(num_str) == 2:
+            font_size = self.cell_height * 0.75
+        else:
+            font_size = self.cell_height * 0.60
+        
+        canvas.setFont('Helvetica-Bold', font_size)
+        
+        # Center the number in the cell
+        text_width = canvas.stringWidth(num_str, 'Helvetica-Bold', font_size)
+        x = (self.cell_width - text_width) / 2
+        y = (self.cell_height - font_size) / 2 + font_size * 0.12
+        canvas.drawString(x, y, num_str)
+        canvas.restoreState()
+        
+        # --- Draw artist (bold) and title on separate lines ---
+        canvas.saveState()
+        canvas.setFillColor(colors.Color(0.10, 0.10, 0.10))  # Near-black for readability
+        
+        max_text_width = self.cell_width - 8  # 4pt padding each side
+        artist_font = 'Helvetica-Bold'
+        title_font = 'Helvetica'
+        artist_size = 8.0
+        title_size = 7.5
+        line_spacing = 10  # Leading between artist and title lines
+        
+        # Truncate artist and title to fit cell width
+        artist_display = self._truncate_to_fit(self.artist, artist_font, artist_size, max_text_width)
+        title_display = self._truncate_to_fit(self.title, title_font, title_size, max_text_width)
+        
+        # Calculate vertical centering for 2 lines
+        total_text_height = artist_size + title_size + (line_spacing - title_size)
+        start_y = (self.cell_height + total_text_height) / 2
+        
+        # Draw artist line (bold) - centered
+        canvas.setFont(artist_font, artist_size)
+        artist_w = canvas.stringWidth(artist_display, artist_font, artist_size)
+        ax = (self.cell_width - artist_w) / 2
+        ay = start_y - artist_size + 1
+        canvas.drawString(ax, ay, artist_display)
+        
+        # Draw title line - centered, below artist
+        canvas.setFont(title_font, title_size)
+        title_w = canvas.stringWidth(title_display, title_font, title_size)
+        tx = (self.cell_width - title_w) / 2
+        ty = ay - line_spacing
+        canvas.drawString(tx, ty, title_display)
+        
+        canvas.restoreState()
+
+
 # Configuration
 SCRIPT_DIR = Path(__file__).parent
 # In Docker, everything is in /app/, locally need parent
 PROJECT_ROOT = SCRIPT_DIR.parent if (SCRIPT_DIR.parent / "data").exists() else SCRIPT_DIR
 INPUT_POOL = PROJECT_ROOT / "data" / "pool.json"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "cards"
-OUTPUT_FILE = OUTPUT_DIR / "music_bingo_cards.pdf"
+# OUTPUT_FILE is now generated dynamically per session (see generate_cards function)
 NUM_CARDS = 50  # Back to 50 with Professional XS resources
 GRID_SIZE = 5  # 5x5 bingo
 SONGS_PER_CARD = 24  # 25 cells - 1 FREE
@@ -75,8 +167,10 @@ def calculate_optimal_songs(num_players: int) -> int:
 
 def distribute_songs_unique(all_songs: List[Dict], num_cards: int, songs_per_card: int) -> List[List[Dict]]:
     """
-    Distribute songs uniquely across all cards - NO REPEATS in a session
-    Each song appears on AT MOST ONE card to avoid duplicates during gameplay
+    Distribute songs uniquely across all cards - NO DUPLICATE SONGS WITHIN A SINGLE CARD
+    Each card must have completely unique songs (no song appears twice on same card)
+    
+    CRITICAL: This function GUARANTEES that each card has exactly songs_per_card UNIQUE songs.
     
     Args:
         all_songs: Full pool of available songs
@@ -84,30 +178,75 @@ def distribute_songs_unique(all_songs: List[Dict], num_cards: int, songs_per_car
         songs_per_card: Songs per card (24 for 5x5 grid with FREE space)
     
     Returns:
-        List of card song lists, each with unique songs
+        List of card song lists, each with UNIQUE songs (no duplicates within a card)
     """
     total_songs_needed = num_cards * songs_per_card
     
-    # Shuffle all songs
-    shuffled = all_songs.copy()
-    random.shuffle(shuffled)
+    # Validate we have enough songs to create cards with unique songs
+    if len(all_songs) < songs_per_card:
+        raise ValueError(f"Cannot create cards: need {songs_per_card} unique songs per card but only have {len(all_songs)}")
     
-    # If we don't have enough unique songs, we need to use some songs multiple times
-    # but we'll minimize repetition by cycling through the pool
-    if len(shuffled) < total_songs_needed:
-        print(f"⚠️  Warning: Need {total_songs_needed} songs but only have {len(shuffled)}")
-        print(f"   Some songs will appear on multiple cards")
-        # Repeat the pool enough times to have enough songs
-        times_to_repeat = (total_songs_needed // len(shuffled)) + 1
-        shuffled = (shuffled * times_to_repeat)[:total_songs_needed]
-        random.shuffle(shuffled)
+    # Create an infinite pool by repeating songs
+    print(f"⚠️  Warning: Need {total_songs_needed} songs but only have {len(all_songs)}")
+    print(f"   Songs will appear on multiple cards (but NEVER twice on same card)")
     
-    # Distribute songs into cards
+    # Calculate how many times we need to repeat the pool
+    times_to_repeat = (total_songs_needed // len(all_songs)) + 2  # +2 for safety margin
+    
+    # Create extended pool with deep copies
+    extended_pool = []
+    for repeat_idx in range(times_to_repeat):
+        for song in all_songs:
+            song_copy = song.copy()
+            # Add a unique marker so we can track which "copy" this is
+            song_copy['_copy_index'] = repeat_idx
+            extended_pool.append(song_copy)
+    
+    # Shuffle the extended pool
+    random.shuffle(extended_pool)
+    
+    # Distribute songs to cards
     card_songs = []
-    for i in range(num_cards):
-        start_idx = i * songs_per_card
-        end_idx = start_idx + songs_per_card
-        card_songs.append(shuffled[start_idx:end_idx])
+    pool_index = 0
+    
+    for card_idx in range(num_cards):
+        card = []
+        used_song_ids = set()
+        attempts = 0
+        max_attempts = len(extended_pool) * 2
+        
+        while len(card) < songs_per_card and attempts < max_attempts:
+            # Wrap around if we reach the end of the pool
+            if pool_index >= len(extended_pool):
+                pool_index = 0
+                random.shuffle(extended_pool)  # Re-shuffle for variety
+            
+            song = extended_pool[pool_index]
+            song_id = song.get('id')
+            
+            # Check if this song ID is already in the current card
+            if song_id not in used_song_ids:
+                # Add to card
+                card.append(song)
+                used_song_ids.add(song_id)
+                # Remove from pool to avoid using again
+                extended_pool.pop(pool_index)
+            else:
+                # Skip this song, move to next
+                pool_index += 1
+            
+            attempts += 1
+        
+        # Validate we got enough songs
+        if len(card) != songs_per_card:
+            raise ValueError(f"CRITICAL: Card {card_idx + 1} only has {len(card)} songs (expected {songs_per_card}). This should never happen!")
+        
+        # Validate no duplicates
+        card_ids = [s.get('id') for s in card]
+        if len(card_ids) != len(set(card_ids)):
+            raise ValueError(f"CRITICAL: Card {card_idx + 1} has duplicate song IDs! This should never happen!")
+        
+        card_songs.append(card)
     
     return card_songs
 
@@ -266,6 +405,12 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
                      qr_buffer: BytesIO = None, 
                      prize_4corners: str = '', prize_first_line: str = '', prize_full_house: str = '') -> List:
     """Create a single bingo card with ReportLab elements"""
+    
+    # CRITICAL: Validate song count
+    expected_songs = 24  # 5x5 grid - 1 FREE space
+    if len(songs) != expected_songs:
+        raise ValueError(f"Card {card_num}: Expected {expected_songs} songs but got {len(songs)}")
+    
     elements = []
     
     # Styles
@@ -427,7 +572,9 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
     elements.append(Spacer(1, 1*mm))  # Reduced from 2mm to 1mm
     
     # --- BINGO GRID ---
-    # Create 5x5 grid data
+    # Create 5x5 grid data with large grey bingo numbers behind black text
+    col_width = 32*mm  # Cell width
+    row_height = 12*mm  # Cell height
     grid_data = []
     song_index = 0
     
@@ -447,25 +594,23 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
                 cell_content = Paragraph("<b>FREE</b>", cell_style)
             else:
                 song = songs[song_index]
-                song_text = format_song_title(song, max_length=40)
+                artist = song.get('artist', '')
+                title = song.get('title', 'Unknown')
+                bingo_number = song.get('bingo_number', song_index + 1)
                 
-                cell_style = ParagraphStyle(
-                    'SongCell',
-                    parent=styles['Normal'],
-                    fontSize=8,  # Increased from 7 to 8 (larger cells = more space)
-                    textColor=colors.black,
-                    alignment=TA_CENTER,
-                    leading=9,  # Increased from 7 to 9
+                # Use custom BingoCell flowable: large grey number behind
+                # artist (bold) and title on separate lines
+                cell_content = BingoCell(
+                    bingo_number=bingo_number,
+                    artist=artist,
+                    title=title,
+                    cell_width=col_width,
+                    cell_height=row_height
                 )
-                cell_content = Paragraph(song_text, cell_style)
                 song_index += 1
             
             row_data.append(cell_content)
         grid_data.append(row_data)
-    
-    # Create table - LARGER to use more space
-    col_width = 32*mm  # Increased from 28mm to 32mm
-    row_height = 12*mm  # Increased from 10mm to 12mm
     
     table = Table(grid_data, colWidths=[col_width]*GRID_SIZE, rowHeights=[row_height]*GRID_SIZE)
     
@@ -483,10 +628,15 @@ def create_bingo_card(songs: List[Dict], card_num: int, venue_name: str,
         # All cells
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 5),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 5),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+        # Keep padding for FREE cell
+        ('LEFTPADDING', (2, 2), (2, 2), 5),
+        ('RIGHTPADDING', (2, 2), (2, 2), 5),
+        ('TOPPADDING', (2, 2), (2, 2), 5),
+        ('BOTTOMPADDING', (2, 2), (2, 2), 5),
     ]))
     
     elements.append(table)
@@ -663,10 +813,29 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
                   pub_logo: str = None, social_media: str = None, include_qr: bool = False,
                   game_number: int = 1, game_date: str = None,
                   prize_4corners: str = '', prize_first_line: str = '', prize_full_house: str = '',
-                  voice_id: str = 'JBFqnCBsd6RMkjVDRZzb', decades: List[str] = None):
+                  voice_id: str = 'JBFqnCBsd6RMkjVDRZzb', decades: List[str] = None,
+                  genres: List[str] = None, session_id: str = None):
     """Generate all bingo cards"""
     import time
     start_time = time.time()
+    
+    # 🔍 DEBUG: Log function parameters
+    print(f"\n🔍 [DEBUG] generate_cards() called with:")
+    print(f"   venue_name: {venue_name} (type: {type(venue_name)})")
+    print(f"   num_players: {num_players} (type: {type(num_players)})")
+    print(f"   voice_id: {voice_id}")
+    print(f"   decades: {decades}")
+    print(f"   genres: {genres}")
+    print(f"   pub_logo: {pub_logo if pub_logo else 'None'}")
+    print(f"   Expected num_cards: {num_players * 2}")
+    
+    # Generate unique PDF filename per session
+    if session_id:
+        OUTPUT_FILE = OUTPUT_DIR / f"music_bingo_cards_{session_id}.pdf"
+    else:
+        OUTPUT_FILE = OUTPUT_DIR / "music_bingo_cards.pdf"
+    
+    print(f"📄 PDF will be saved to: {OUTPUT_FILE.name}")
     
     # Memory monitoring
     process = psutil.Process()
@@ -685,54 +854,145 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"📊 Memory at start: {mem_start.rss / 1024 / 1024:.1f} MB")
     print(f"{'='*60}\n")
     
-    # Load songs
+    # Load songs - ALWAYS generate fresh random selection per session
     step_start = time.time()
-    all_songs = load_pool()
-    mem_after_load = process.memory_info()
-    print(f"✓ Loaded {len(all_songs)} songs from pool ({time.time()-step_start:.2f}s) - Memory: {mem_after_load.rss / 1024 / 1024:.1f} MB")
+    session_file = OUTPUT_DIR / f"session_{session_id}.json" if session_id else OUTPUT_DIR / "current_session.json"
+    selected_songs = None
     
-    # Filter by decades if specified
-    if decades:
-        filtered_songs = []
-        for song in all_songs:
-            song_year = song.get('year')
-            if song_year:
-                # Determine decade from year
-                song_decade = f"{(song_year // 10) * 10}s"
-                if song_decade in decades:
+    # Check if THIS specific session already has songs selected
+    if session_id and session_file.exists():
+        try:
+            with open(session_file, 'r', encoding='utf-8') as f:
+                session_data = json.load(f)
+                if 'songs' in session_data and len(session_data['songs']) > 0:
+                    selected_songs = session_data['songs']
+                    print(f"✓ Loaded {len(selected_songs)} pre-selected songs from {session_file.name} ({time.time()-step_start:.2f}s)")
+                    print(f"   🎯 Using EXACT songs from session to match database")
+        except Exception as e:
+            print(f"⚠️  Error loading session file: {e}")
+            print(f"   Falling back to random song selection")
+    
+    # If no session file or no songs in it, select randomly
+    if selected_songs is None:
+        all_songs = load_pool()
+        mem_after_load = process.memory_info()
+        print(f"✓ Loaded {len(all_songs)} songs from pool ({time.time()-step_start:.2f}s) - Memory: {mem_after_load.rss / 1024 / 1024:.1f} MB")
+        
+        # Log first songs in pool to verify what we loaded
+        print(f"\n📚 [POOL DEBUG] First 5 songs in pool.json:")
+        for i, song in enumerate(all_songs[:5], 1):
+            print(f"   #{i}: {song['title']} - {song['artist']} ({song.get('release_year', 'N/A')})")
+        sys.stdout.flush()
+        
+        # Filter by decades if specified
+        if decades:
+            filtered_songs = []
+            for song in all_songs:
+                # Try both 'year' and 'release_year' fields
+                song_year = song.get('year') or song.get('release_year')
+                if song_year:
+                    # Convert to int if it's a string
+                    if isinstance(song_year, str):
+                        try:
+                            song_year = int(song_year)
+                        except ValueError:
+                            continue
+                    # Determine decade from year
+                    song_decade = f"{(song_year // 10) * 10}s"
+                    if song_decade in decades:
+                        filtered_songs.append(song)
+            
+            print(f"✓ Filtered to {len(filtered_songs)} songs from decades {decades}")
+            all_songs = filtered_songs
+            
+            # Log first songs after filtering
+            print(f"\n🎚️ [FILTER DEBUG] First 5 songs after decade filter:")
+            for i, song in enumerate(all_songs[:5], 1):
+                print(f"   #{i}: {song['title']} - {song['artist']} ({song.get('release_year', 'N/A')})")
+            sys.stdout.flush()
+            
+            if len(all_songs) == 0:
+                print("⚠️  WARNING: No songs found for selected decades, using all songs")
+                all_songs = load_pool()
+        
+        # Filter by genres if specified
+        if genres:
+            filtered_songs = []
+            for song in all_songs:
+                song_genre = song.get('genre')
+                if song_genre and song_genre in genres:
                     filtered_songs.append(song)
+            
+            print(f"✓ Filtered to {len(filtered_songs)} songs from genres {genres}")
+            all_songs = filtered_songs
+            
+            # Log first songs after filtering
+            print(f"\n🎸 [GENRE FILTER DEBUG] First 5 songs after genre filter:")
+            for i, song in enumerate(all_songs[:5], 1):
+                print(f"   #{i}: {song['title']} - {song['artist']} ({song.get('genre', 'N/A')})")
+            sys.stdout.flush()
+            
+            if len(all_songs) == 0:
+                print("⚠️  WARNING: No songs found for selected genres, using all songs")
+                all_songs = load_pool()
         
-        print(f"✓ Filtered to {len(filtered_songs)} songs from decades {decades}")
-        all_songs = filtered_songs
+        # Calculate optimal songs
+        step_start = time.time()
+        optimal_songs = calculate_optimal_songs(num_players)
+        print(f"✓ Using {optimal_songs} songs for {num_players} players ({time.time()-step_start:.3f}s)")
         
-        if len(all_songs) == 0:
-            print("⚠️  WARNING: No songs found for selected decades, using all songs")
-            all_songs = load_pool()
-    
-    # Calculate optimal songs
-    step_start = time.time()
-    optimal_songs = calculate_optimal_songs(num_players)
-    print(f"✓ Using {optimal_songs} songs for {num_players} players ({time.time()-step_start:.3f}s)")
-    
-    # Shuffle and select songs with randomization based on timestamp
-    # This ensures different song selection for each session
-    step_start = time.time()
-    import hashlib
-    
-    # Create a unique seed from current timestamp + venue + game number
-    seed_str = f"{time.time()}-{venue_name}-{game_number}-{num_players}"
-    seed_hash = int(hashlib.md5(seed_str.encode()).hexdigest()[:8], 16)
-    random.seed(seed_hash)
-    
-    # Shuffle the entire pool first
-    shuffled_pool = all_songs.copy()
-    random.shuffle(shuffled_pool)
-    
-    # Then select from shuffled pool
-    selected_songs = shuffled_pool[:min(optimal_songs, len(shuffled_pool))]
-    
-    print(f"✓ Selected {len(selected_songs)} songs with seed {seed_hash} ({time.time()-step_start:.3f}s)")
-    print(f"   First 3 songs: {[s['title'] for s in selected_songs[:3]]}")
+        # Shuffle and select songs with randomization based on timestamp
+        # This ensures different song selection for each session
+        step_start = time.time()
+        import hashlib
+        import uuid
+        
+        # Create a UNIQUE seed using UUID + timestamp + venue + game number + random component
+        # This ensures maximum randomness even for rapid successive generations
+        unique_id = str(uuid.uuid4())
+        random_component = random.random()
+        seed_str = f"{time.time()}-{unique_id}-{venue_name}-{game_number}-{num_players}-{random_component}"
+        seed_hash = int(hashlib.md5(seed_str.encode()).hexdigest()[:8], 16)
+        random.seed(seed_hash)
+        
+        # Log BEFORE shuffling to see original order
+        print(f"\n{'='*80}")
+        print(f"🔍 [SONG SELECTION DEBUG - DETAILED]")
+        print(f"{'='*80}")
+        print(f"   📊 Total songs in pool: {len(all_songs)}")
+        print(f"   🎯 Need to select: {optimal_songs} songs for {num_players} players")
+        print(f"   🔢 Random seed string: {seed_str}")
+        print(f"   🔑 Random seed hash: {seed_hash}")
+        print(f"   🆔 Unique ID: {unique_id}")
+        print(f"\n   📋 First 10 songs BEFORE shuffle:")
+        for i, s in enumerate(all_songs[:10], 1):
+            print(f"      {i:2d}. {s['title']:40s} - {s['artist']:30s} [ID: {s.get('id', 'N/A')}]")
+        
+        # Shuffle the entire pool MULTIPLE times for better randomization
+        shuffled_pool = all_songs.copy()
+        print(f"\n   🔀 Shuffling pool 3 times for maximum randomness...")
+        for shuffle_round in range(3):  # Shuffle 3 times
+            random.shuffle(shuffled_pool)
+            print(f"\n   After shuffle #{shuffle_round + 1} - First 5 songs:")
+            for i, s in enumerate(shuffled_pool[:5], 1):
+                print(f"      {i}. {s['title']:40s} - {s['artist']}")
+        
+        # Then select from shuffled pool
+        selected_songs = shuffled_pool[:min(optimal_songs, len(shuffled_pool))]
+        
+        print(f"\n{'='*80}")
+        print(f"✅ FINAL SELECTION: {len(selected_songs)} songs selected (seed: {seed_hash})")
+        print(f"{'='*80}")
+        print(f"   ⏱️  Selection time: {time.time()-step_start:.3f}s")
+        print(f"   🆔 Session UUID: {unique_id}")
+        print(f"\n   🎵 First 15 songs that will be used in cards:")
+        for i, song in enumerate(selected_songs[:15], 1):
+            print(f"      {i:2d}. {song['title']:40s} - {song['artist']:30s} [Year: {song.get('release_year', 'N/A')}]")
+        print(f"\n   🎵 Last 5 songs in selection:")
+        for i, song in enumerate(selected_songs[-5:], len(selected_songs)-4):
+            print(f"      {i:2d}. {song['title']:40s} - {song['artist']:30s} [Year: {song.get('release_year', 'N/A')}]")
+        print(f"{'='*80}\n")
+        sys.stdout.flush()
     
     # Create output directory
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -783,14 +1043,49 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
             mem_after_qr = process.memory_info()
             print(f"✓ Generated QR code ({time.time()-step_start:.2f}s) - Memory: {mem_after_qr.rss / 1024 / 1024:.1f} MB")
     
+    # *** ASSIGN BINGO NUMBERS TO SONGS ***
+    # Each song gets a unique number (1 to N) - this is the number shown on the card
+    for idx, song in enumerate(selected_songs):
+        song['bingo_number'] = idx + 1
+    print(f"✓ Assigned bingo numbers 1-{len(selected_songs)} to songs")
+    
     # *** DISTRIBUTE SONGS UNIQUELY ACROSS ALL CARDS ***
-    # Each song appears on AT MOST ONE card to prevent duplicates during gameplay
+    # Calculate number of cards based on num_players (1 card per player)
+    num_cards = num_players * 1
     step_start = time.time()
-    print(f"\n🎵 Distributing songs uniquely across {NUM_CARDS} cards...")
-    all_card_songs = distribute_songs_unique(selected_songs, NUM_CARDS, SONGS_PER_CARD)
+    print(f"\n🎵 Distributing songs uniquely across {num_cards} cards...")
+    all_card_songs = distribute_songs_unique(selected_songs, num_cards, SONGS_PER_CARD)
     print(f"✓ Songs distributed uniquely ({time.time()-step_start:.2f}s)")
     print(f"   Each card has {SONGS_PER_CARD} unique songs")
     print(f"   Total unique songs used: {len(set(song['id'] for card in all_card_songs for song in card))}")
+    
+    # Log first card's songs for debugging
+    print(f"\n{'='*80}")
+    print(f"🎴 [CARD #1 SONGS - Will appear on actual printed card]")
+    print(f"{'='*80}")
+    for i, song in enumerate(all_card_songs[0][:SONGS_PER_CARD], 1):
+        print(f"   {i:2d}. {song['title']:40s} - {song['artist']:30s} [ID: {song.get('id', 'N/A')}]")
+    print(f"{'='*80}\n")
+    sys.stdout.flush()
+    
+    # *** CRITICAL VALIDATION: Check for duplicate songs within each card ***
+    print(f"\n🔍 Validating cards for duplicates...")
+    duplicates_found = False
+    for card_idx, card in enumerate(all_card_songs):
+        song_ids = [s.get('id', s.get('title')) for s in card]
+        unique_ids = set(song_ids)
+        if len(song_ids) != len(unique_ids):
+            duplicates_found = True
+            duplicates = [sid for sid in song_ids if song_ids.count(sid) > 1]
+            print(f"❌ ERROR: Card {card_idx + 1} has DUPLICATE songs:")
+            for dup in set(duplicates):
+                count = song_ids.count(dup)
+                print(f"   - '{dup}' appears {count} times")
+    
+    if duplicates_found:
+        raise ValueError("CRITICAL ERROR: Duplicate songs found within cards! Cannot generate PDF.")
+    
+    print(f"✅ Validation passed: All {num_cards} cards have unique songs (no duplicates within any card)")
     
     # Check if parallel processing is beneficial
     # MEMORY-OPTIMIZED: Limit workers to avoid OOM on App Platform
@@ -811,9 +1106,9 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         
         # Prepare batch data with pre-assigned songs
         batches = []
-        for i in range(0, NUM_CARDS, batch_size):
+        for i in range(0, num_cards, batch_size):
             batch_cards = []
-            for card_idx in range(i, min(i + batch_size, NUM_CARDS)):
+            for card_idx in range(i, min(i + batch_size, num_cards)):
                 card_num = card_idx + 1
                 card_songs = all_card_songs[card_idx]
                 batch_cards.append((card_num, card_songs))
@@ -894,7 +1189,7 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
         story = []
         cards_start = time.time()
         
-        for i in range(NUM_CARDS):
+        for i in range(num_cards):
             # Use pre-assigned unique songs instead of random.sample
             card_songs = all_card_songs[i]
             
@@ -912,13 +1207,13 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
             
             story.extend(card_elements)
             
-            if (i + 1) % 2 == 0 and i < NUM_CARDS - 1:
+            if (i + 1) % 2 == 0 and i < num_cards - 1:
                 story.append(PageBreak())
-            elif i < NUM_CARDS - 1:
+            elif i < num_cards - 1:
                 story.append(Spacer(1, 5*mm))
             
             if (i + 1) % 10 == 0:
-                print(f"  ✓ Generated {i + 1}/{NUM_CARDS} cards ({time.time()-cards_start:.2f}s)")
+                print(f"  ✓ Generated {i + 1}/{num_cards} cards ({time.time()-cards_start:.2f}s)")
         
         print(f"\n📝 Building PDF document...")
         build_start = time.time()
@@ -937,12 +1232,13 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     
     # *** CRITICAL: Save session file with exact songs used ***
     # This ensures the game plays THE SAME songs that are printed on cards
-    session_file = OUTPUT_DIR / "current_session.json"
+    # Use session-specific filename to avoid conflicts between sessions
+    session_file = OUTPUT_DIR / f"session_{session_id}.json" if session_id else OUTPUT_DIR / "current_session.json"
     session_data = {
         "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         "venue_name": venue_name,
         "num_players": num_players,
-        "num_cards": NUM_CARDS,
+        "num_cards": num_cards,
         "songs_per_card": SONGS_PER_CARD,
         "game_number": game_number,
         "game_date": game_date,
@@ -958,6 +1254,12 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     with open(session_file, 'w', encoding='utf-8') as f:
         json.dump(session_data, f, indent=2, ensure_ascii=False)
     
+    # Also save to current_session.json for backwards compatibility
+    if session_id:
+        current_path = OUTPUT_DIR / "current_session.json"
+        with open(current_path, 'w', encoding='utf-8') as f:
+            json.dump(session_data, f, indent=2, ensure_ascii=False)
+    
     print(f"\n✅ Session file saved: {session_file}")
     print(f"   ⚠️  IMPORTANT: Use this session file when starting the game!")
     print(f"   This ensures songs played match the printed cards.")
@@ -966,8 +1268,8 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"✅ SUCCESS!")
     print(f"{'='*60}")
     print(f"Generated: {OUTPUT_FILE}")
-    print(f"Cards: {NUM_CARDS}")
-    print(f"Pages: {(NUM_CARDS + 1) // 2} (2 cards per page)")
+    print(f"Cards: {num_cards}")
+    print(f"Pages: {(num_cards + 1) // 2} (2 cards per page)")
     print(f"Songs per card: {SONGS_PER_CARD}")
     print(f"Total songs available: {len(selected_songs)}")
     print(f"Session file: {session_file}")
@@ -975,8 +1277,8 @@ def generate_cards(venue_name: str = "Music Bingo", num_players: int = 25,
     print(f"{'='*60}\n")
     
     return {
-        'num_cards': NUM_CARDS,
-        'num_pages': (NUM_CARDS + 1) // 2,  # 2 cards per page
+        'num_cards': num_cards,
+        'num_pages': (num_cards + 1) // 2,  # 2 cards per page
         'songs_per_card': SONGS_PER_CARD,
         'total_songs': len(selected_songs),
         'session_file': str(session_file)
@@ -1014,6 +1316,8 @@ if __name__ == '__main__':
     parser.add_argument('--prize_full_house', default='', help='Prize for Full House')
     parser.add_argument('--voice_id', default='JBFqnCBsd6RMkjVDRZzb', help='Voice ID for TTS')
     parser.add_argument('--decades', default=None, help='Comma-separated list of decades to filter (e.g., 1980s,1990s,2000s)')
+    parser.add_argument('--genres', default=None, help='Comma-separated list of genres to filter (e.g., Rock,Pop,Dance)')
+    parser.add_argument('--session_id', default=None, help='Unique session ID for PDF filename')
     
     args = parser.parse_args()
     
@@ -1021,7 +1325,13 @@ if __name__ == '__main__':
     decades_list = None
     if args.decades:
         decades_list = [d.strip() for d in args.decades.split(',')]
-        print(f"\ud83d\udcc5 Filtering songs by decades: {decades_list}")
+        print(f"📅 Filtering songs by decades: {decades_list}")
+    
+    # Parse genres if provided
+    genres_list = None
+    if args.genres:
+        genres_list = [g.strip() for g in args.genres.split(',')]
+        print(f"🎸 Filtering songs by genres: {genres_list}")
     
     generate_cards(
         venue_name=args.venue_name,
@@ -1035,5 +1345,7 @@ if __name__ == '__main__':
         prize_first_line=args.prize_first_line,
         prize_full_house=args.prize_full_house,
         voice_id=args.voice_id,
-        decades=decades_list
+        decades=decades_list,
+        genres=genres_list,
+        session_id=args.session_id
     )

@@ -17,7 +17,7 @@
 // CONFIG is defined in config.js which is loaded before this file
 
 // Extend CONFIG with additional game settings if needed
-if (!CONFIG.PREVIEW_DURATION_MS) CONFIG.PREVIEW_DURATION_MS = 15000;
+if (!CONFIG.PREVIEW_DURATION_MS) CONFIG.PREVIEW_DURATION_MS = 20000;
 if (!CONFIG.AUTO_NEXT_DELAY_MS) CONFIG.AUTO_NEXT_DELAY_MS = 15000;
 if (!CONFIG.BACKGROUND_MUSIC_VOLUME) CONFIG.BACKGROUND_MUSIC_VOLUME = 0.15;
 if (!CONFIG.TTS_VOLUME) CONFIG.TTS_VOLUME = 1.0;
@@ -34,12 +34,22 @@ let gameState = {
     remaining: [],          // Songs not yet called
     called: [],             // Songs already called (in order)
     currentTrack: null,     // Currently playing track
+    currentSound: null,     // Currently playing Howl instance (music preview)
+    currentTTS: null,       // Currently playing TTS Howl instance
     isPlaying: false,       // Is audio currently playing
+    isPaused: false,        // NEW: Track if game is paused
+    pausedDuringTTS: false, // NEW: True if paused during TTS announcement
+    pausedDuringPreview: false, // NEW: True if paused during preview  
+    pausedDuringWaiting: false, // NEW: True if paused during auto-next wait
+    pausedTrackIndex: null, // NEW: Track index when paused
+    pauseTimestamp: null,   // NEW: When pause was pressed
+    autoNextDelay: 5000,    // NEW: Auto-next delay in ms (CONFIG.AUTO_NEXT_DELAY)
     announcementsData: null, // Loaded announcements
     announcementsAI: null,   // AI-generated announcements (optional)
     venueName: localStorage.getItem('venueName') || 'this venue', // Venue name from localStorage
     welcomeAnnounced: false, // Track if welcome was announced
-    halfwayAnnounced: false  // Track if halfway announcement was made
+    halfwayAnnounced: false, // Track if halfway announcement was made
+    autoNextTimer: null      // Timer ID for auto-next playback
 };
 
 /**
@@ -47,10 +57,19 @@ let gameState = {
  */
 function resetGameState() {
     console.log('🔄 Resetting game state to initial values...');
+    
+    // Cancel any pending auto-next timer
+    if (gameState.autoNextTimer) {
+        clearTimeout(gameState.autoNextTimer);
+        gameState.autoNextTimer = null;
+    }
+    
     gameState.pool = [];
     gameState.remaining = [];
     gameState.called = [];
     gameState.currentTrack = null;
+    gameState.currentSound = null;
+    gameState.currentTTS = null;
     gameState.isPlaying = false;
     gameState.announcementsData = null;
     gameState.announcementsAI = null;
@@ -255,6 +274,12 @@ window.addEventListener('DOMContentLoaded', async () => {
  */
 async function loadSessionAndStart(sessionId) {
     try {
+        console.log(`📦 Loading session: ${sessionId}`);
+        
+        // Save session_id to localStorage for loading song pool
+        localStorage.setItem('currentSessionId', sessionId);
+        console.log(`🔑 Session ID saved to localStorage: ${sessionId}`);
+        
         const API_URL = CONFIG.API_URL || '';
         const response = await fetch(`${API_URL}/api/bingo/session/${sessionId}`);
         
@@ -319,10 +344,118 @@ async function loadSessionAndStart(sessionId) {
 
         await saveVenueConfig(session.venue_name, config);
 
-        // Update UI with venue name
+        // Update UI with session data (hidden inputs and displays)
         const venueNameInput = document.getElementById('venueName');
         if (venueNameInput) {
             venueNameInput.value = session.venue_name;
+        }
+        const venueNameDisplay = document.getElementById('venueNameDisplay');
+        if (venueNameDisplay) {
+            venueNameDisplay.textContent = session.venue_name;
+        }
+        
+        const numPlayersInput = document.getElementById('numPlayers');
+        if (numPlayersInput) {
+            numPlayersInput.value = session.num_players;
+        }
+        const numPlayersDisplay = document.getElementById('numPlayersDisplay');
+        if (numPlayersDisplay) {
+            numPlayersDisplay.textContent = session.num_players;
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('numPlayers', session.num_players.toString());
+        
+        // Update song estimation
+        updateSongEstimation();
+        
+        // Update voice display
+        const voiceDisplay = document.getElementById('voiceDisplay');
+        if (voiceDisplay && session.voice_id) {
+            const voiceNames = {
+                'XrExE9yKIg1WjnnlVkGX': 'Charlotte',
+                'JBFqnCBsd6RMkjVDRZzb': 'George',
+                'pFZP5JQG7iQjIQuC4Bku': 'Lily',
+                'nPczCjzI2devNBz1zQrb': 'Brian'
+            };
+            voiceDisplay.textContent = voiceNames[session.voice_id] || 'George';
+        }
+        
+        // Update decades display
+        const decadesDisplay = document.getElementById('decadesDisplay');
+        if (decadesDisplay && session.decades && session.decades.length > 0) {
+            const decadeLabels = session.decades.map(d => d.replace('19', "'").replace('20', "'"));
+            decadesDisplay.textContent = decadeLabels.join(', ');
+        }
+        
+        // Update genres display
+        const genresDisplayContainer = document.getElementById('genresDisplayContainer');
+        const genresDisplay = document.getElementById('genresDisplay');
+        if (genresDisplayContainer && genresDisplay && session.genres && session.genres.length > 0) {
+            genresDisplayContainer.style.display = 'flex';
+            genresDisplay.textContent = session.genres.join(', ');
+        }
+        
+        // Update logo display
+        const logoDisplayContainer = document.getElementById('logoDisplayContainer');
+        if (logoDisplayContainer && session.logo_url) {
+            logoDisplayContainer.style.display = 'flex';
+        }
+        
+        // Update QR code display
+        const qrDisplayContainer = document.getElementById('qrDisplayContainer');
+        const qrDisplay = document.getElementById('qrDisplay');
+        if (qrDisplayContainer && qrDisplay && session.include_qr && session.social_media) {
+            qrDisplayContainer.style.display = 'flex';
+            // Extract platform from URL or show URL
+            let displayText = session.social_media;
+            if (session.social_media.includes('instagram.com')) {
+                displayText = 'Instagram: ' + session.social_media.split('/').pop();
+            } else if (session.social_media.includes('facebook.com')) {
+                displayText = 'Facebook: ' + session.social_media.split('/').pop();
+            } else if (session.social_media.includes('tiktok.com')) {
+                displayText = 'TikTok: ' + session.social_media.split('@').pop();
+            } else if (session.social_media.includes('twitter.com')) {
+                displayText = 'Twitter: ' + session.social_media.split('/').pop();
+            }
+            qrDisplay.textContent = displayText;
+        }
+        
+        // Update prizes display
+        const prizesDisplayContainer = document.getElementById('prizesDisplayContainer');
+        if (prizesDisplayContainer && session.prizes) {
+            let hasPrizes = false;
+            
+            if (session.prizes.four_corners) {
+                const prize4CornersDisplay = document.getElementById('prize4CornersDisplay');
+                if (prize4CornersDisplay) {
+                    prize4CornersDisplay.style.display = 'block';
+                    prize4CornersDisplay.querySelector('span:last-child').textContent = session.prizes.four_corners;
+                    hasPrizes = true;
+                }
+            }
+            
+            if (session.prizes.first_line) {
+                const prizeFirstLineDisplay = document.getElementById('prizeFirstLineDisplay');
+                if (prizeFirstLineDisplay) {
+                    prizeFirstLineDisplay.style.display = 'block';
+                    prizeFirstLineDisplay.querySelector('span:last-child').textContent = session.prizes.first_line;
+                    hasPrizes = true;
+                }
+            }
+            
+            if (session.prizes.full_house) {
+                const prizeFullHouseDisplay = document.getElementById('prizeFullHouseDisplay');
+                if (prizeFullHouseDisplay) {
+                    prizeFullHouseDisplay.style.display = 'block';
+                    prizeFullHouseDisplay.querySelector('span:last-child').textContent = session.prizes.full_house;
+                    hasPrizes = true;
+                }
+            }
+            
+            if (hasPrizes) {
+                prizesDisplayContainer.style.display = 'block';
+            }
         }
 
         // Start the game with the session configuration
@@ -768,9 +901,14 @@ async function completeSetup() {
             jingleManagerLink.href = '/jingle-manager';
         }
 
-        // Update main UI inputs
+        // Update main UI inputs (hidden) and display elements
         document.getElementById('venueName').value = venueName;
         document.getElementById('numPlayers').value = numPlayers;
+        document.getElementById('venueNameDisplay').textContent = venueName;
+        document.getElementById('numPlayersDisplay').textContent = numPlayers;
+        
+        // Update song estimation display
+        updateSongEstimation();
 
         // Hide modal
         document.getElementById('setupModal').classList.add('hidden');
@@ -845,7 +983,25 @@ function loadVenueNameFromStorage() {
     if (savedName) {
         gameState.venueName = savedName;
         document.getElementById('venueName').value = savedName;
+        const venueDisplay = document.getElementById('venueNameDisplay');
+        if (venueDisplay) venueDisplay.textContent = savedName;
         console.log(`✓ Loaded venue: ${savedName}`);
+    }
+    
+    // Load number of players
+    const savedPlayers = localStorage.getItem('numPlayers');
+    if (savedPlayers) {
+        const numPlayersInput = document.getElementById('numPlayers');
+        if (numPlayersInput) {
+            numPlayersInput.value = savedPlayers;
+        }
+        const numPlayersDisplay = document.getElementById('numPlayersDisplay');
+        if (numPlayersDisplay) {
+            numPlayersDisplay.textContent = savedPlayers;
+        }
+        console.log(`✓ Loaded players: ${savedPlayers}`);
+        // Update song estimation
+        updateSongEstimation();
     }
 }
 
@@ -942,15 +1098,95 @@ async function loadSongPool() {
     // This ensures songs played match what's on the physical cards
     
     try {
-        // First, try to load the session file (created when cards are generated)
+        // First, check if we have a session_id (from card generation)
+        const sessionId = localStorage.getItem('currentSessionId');
+        
+        if (sessionId) {
+            console.log(`🔑 Found session ID in localStorage: ${sessionId}`);
+            console.log(`📡 Fetching session from: ${CONFIG.API_URL}/api/session?session_id=${sessionId}`);
+            
+            // Fetch session from database using session_id
+            const sessionResponse = await fetch(`${CONFIG.API_URL}/api/session?session_id=${sessionId}`);
+            
+            console.log(`📨 Response status: ${sessionResponse.status}`);
+            
+            if (sessionResponse.ok) {
+                const sessionData = await sessionResponse.json();
+                console.log('✅ Loaded session from database (session_id)');
+                console.log(`   Source: ${sessionData.source}`);
+                console.log(`   Session ID: ${sessionData.session_id}`);
+                console.log(`   Generated: ${sessionData.generated_at}`);
+                console.log(`   Venue: ${sessionData.venue_name}`);
+                console.log(`   Num Players: ${sessionData.num_players}`);
+                console.log(`   Songs count: ${sessionData.songs?.length || 0}`);
+                console.log(`   PDF URL: ${sessionData.pdf_url || 'none'}`);
+                
+                if (!sessionData.songs || sessionData.songs.length === 0) {
+                    console.warn('⚠️  Session loaded but song_pool is EMPTY!');
+                    console.warn('   This means cards have NOT been generated yet.');
+                    console.warn('   Will fall back to pool.json...');
+                } else {
+                    console.log(`   First 3 songs:`, sessionData.songs.slice(0, 3).map(s => s.title));
+                }
+                
+                // Use EXACT songs from session (no filtering, no shuffling)
+                gameState.pool = sessionData.songs || [];
+                gameState.remaining = [...(sessionData.songs || [])];
+                
+                // Update venue name if provided in session
+                if (sessionData.venue_name) {
+                    gameState.venueName = sessionData.venue_name;
+                    document.getElementById('venueName').value = sessionData.venue_name;
+                }
+                
+                console.log(`✅ Game will use ${gameState.remaining.length} songs from database`);
+                console.log('⚠️  These songs MATCH the printed cards!');
+                
+                return; // Exit early with database session
+            } else {
+                console.warn(`⚠️  Session ${sessionId} not found in database, trying fallbacks...`);
+            }
+        }
+        
+        // Second, try to load session data from localStorage (saved after card generation)
+        const storedSessionData = localStorage.getItem('currentSessionData');
+        
+        if (storedSessionData) {
+            const sessionData = JSON.parse(storedSessionData);
+            console.log('✅ Loaded session data from localStorage');
+            console.log(`   Generated: ${sessionData.generated_at}`);
+            console.log(`   Venue: ${sessionData.venue_name}`);
+            console.log(`   Songs: ${sessionData.songs.length}`);
+            
+            // Use EXACT songs from session (no filtering, no shuffling)
+            gameState.pool = sessionData.songs;
+            gameState.remaining = [...sessionData.songs]; // Use all session songs in order
+            
+            // Update venue name if provided in session
+            if (sessionData.venue_name) {
+                gameState.venueName = sessionData.venue_name;
+                document.getElementById('venueName').value = sessionData.venue_name;
+            }
+            
+            console.log(`✅ Game will use ${gameState.remaining.length} songs from localStorage`);
+            console.log('⚠️  These songs MATCH the printed cards!');
+            
+            return; // Exit early with session data
+        }
+        
+        // Third, try to load the session file from server (legacy fallback)
         const sessionResponse = await fetch(`${CONFIG.API_URL}/api/session`);
         
         if (sessionResponse.ok) {
             const sessionData = await sessionResponse.json();
-            console.log('✅ Loaded session file from card generation');
+            console.log('✅ Loaded session file from server (legacy)');
+            console.log(`   Source: ${sessionData.source}`);
             console.log(`   Generated: ${sessionData.generated_at}`);
             console.log(`   Venue: ${sessionData.venue_name}`);
             console.log(`   Songs: ${sessionData.songs.length}`);
+            
+            // Save to localStorage for future use
+            localStorage.setItem('currentSessionData', JSON.stringify(sessionData));
             
             // Use EXACT songs from session (no filtering, no shuffling)
             gameState.pool = sessionData.songs;
@@ -967,7 +1203,7 @@ async function loadSongPool() {
             
         } else {
             // Fallback: Use old pool.json method if no session file exists
-            console.warn('⚠️  No session file found - falling back to pool.json');
+            console.warn('⚠️  No session data found - falling back to pool.json');
             console.warn('⚠️  WARNING: Songs may NOT match printed cards!');
             console.warn('⚠️  Please generate cards first to create session file.');
             
@@ -1084,9 +1320,28 @@ async function loadAnnouncements() {
  */
 async function loadAIAnnouncements() {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/api/announcements-ai`);
+        // Get session_id from localStorage to fetch voice-specific announcements
+        const sessionId = localStorage.getItem('sessionId');
+        
+        let url = `${CONFIG.API_URL}/api/announcements-ai`;
+        
+        // If we have a session_id, use the session-specific endpoint
+        if (sessionId) {
+            url = `${CONFIG.API_URL}/api/session-announcements?session_id=${sessionId}`;
+            console.log(`🎤 Loading announcements for session ${sessionId} with correct voice`);
+        }
+        
+        const response = await fetch(url);
         if (response.ok) {
-            gameState.announcementsAI = await response.json();
+            const data = await response.json();
+            
+            // Remove metadata if present
+            if (data._metadata) {
+                console.log(`📢 Voice ID for announcements: ${data._metadata.voice_id}`);
+                delete data._metadata;
+            }
+            
+            gameState.announcementsAI = data;
             console.log(`✓ Loaded ${Object.keys(gameState.announcementsAI).length} AI announcements`);
         } else {
             console.log('ℹ No AI announcements found, using fallback system');
@@ -1234,6 +1489,13 @@ function clearGameState() {
  * Play next track in sequence
  */
 async function playNextTrack() {
+    // Cancel auto-next timer if button was pressed manually
+    if (gameState.autoNextTimer) {
+        clearTimeout(gameState.autoNextTimer);
+        gameState.autoNextTimer = null;
+        console.log('⏹️ Auto-next timer cancelled (manual button press)');
+    }
+
     // Check if game is over
     if (gameState.remaining.length === 0) {
         updateStatus('🎉 All songs called! Game complete!', false);
@@ -1245,6 +1507,12 @@ async function playNextTrack() {
     if (gameState.isPlaying) {
         console.log('⚠ Already playing, ignoring button press');
         return;
+    }
+
+    // Resume background music if it was paused
+    if (backgroundMusic && !backgroundMusic.playing()) {
+        console.log('🔊 Resuming background music');
+        backgroundMusic.play();
     }
 
     // Get next track
@@ -1265,8 +1533,10 @@ async function playNextTrack() {
     updateCalledList();
     updateStats();
 
-    // Disable button while playing
-    setButtonState('nextTrack', false);
+    // Change button to PAUSE while playing
+    const nextButton = document.getElementById('nextTrack');
+    nextButton.textContent = '⏸️ PAUSE';
+    nextButton.onclick = pauseCurrentTrack;
     gameState.isPlaying = true;
 
     try {
@@ -1282,9 +1552,25 @@ async function playNextTrack() {
         // Step 2: Check for jingle playback
         await checkAndPlayJingle();
 
-        // Step 3: Check for halfway announcement
-        const totalSongs = gameState.pool.length;
+        // Step 3: Play TTS announcement
+        updateStatus('🎙️ Announcing...', true);
+        await announceTrack(track);
+
+        // Step 4: Play song preview
+        updateStatus('🎵 Playing song preview...', true);
+        await playSongPreview(track);
+
+        // Step 5: Check for 10-song summary announcement (AFTER playing the track)
         const songsPlayed = gameState.called.length;
+        if (songsPlayed > 0 && songsPlayed % 10 === 0) {
+            updateStatus('📋 10-song summary...', true);
+            await announceTenSongSummary();
+            // Short pause after summary
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        // Step 6: Check for halfway announcement (AFTER playing the track)
+        const totalSongs = gameState.pool.length;
         const halfwayPoint = Math.floor(totalSongs / 2);
 
         if (!gameState.halfwayAnnounced && songsPlayed === halfwayPoint) {
@@ -1295,25 +1581,172 @@ async function playNextTrack() {
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
-        // Step 3: Play TTS announcement
-        updateStatus('🎙️ Announcing...', true);
-        await announceTrack(track);
+        // Done - wait for auto-next delay
+        const delaySeconds = CONFIG.AUTO_NEXT_DELAY_MS / 1000;
+        updateStatus(`⏱️ Next song in ${delaySeconds} seconds... (or press button to skip wait)`, false);
 
-        // Step 4: Play song preview
-        updateStatus('🎵 Playing song preview...', true);
-        await playSongPreview(track);
+        // Schedule auto-play next track after delay
+        const autoNextTimer = setTimeout(() => {
+            console.log('⏰ Auto-playing next track...');
+            // Reset button to NEXT SONG before calling playNextTrack
+            const nextButton = document.getElementById('nextTrack');
+            nextButton.textContent = '▶️ NEXT SONG';
+            nextButton.onclick = playNextTrack;
+            gameState.isPlaying = false;
+            playNextTrack();
+        }, CONFIG.AUTO_NEXT_DELAY_MS);
 
-        // Done
-        updateStatus(`✅ Ready for next song (${gameState.remaining.length} remaining)`, false);
+        // Store timer ID so it can be cancelled if button is pressed
+        gameState.autoNextTimer = autoNextTimer;
 
     } catch (error) {
         console.error('Error playing track:', error);
         updateStatus(`❌ Error: ${error.message}`, false);
-    } finally {
-        // Re-enable button
+        // On error, reset button to NEXT SONG
+        const nextButton = document.getElementById('nextTrack');
+        nextButton.textContent = '▶️ NEXT SONG';
+        nextButton.onclick = playNextTrack;
         setButtonState('nextTrack', true);
         gameState.isPlaying = false;
     }
+}
+
+/**
+ * Pause current playback - stops all audio and timers
+ */
+function pauseCurrentTrack() {
+    console.log('⏸️ Pausing playback...');
+    
+    // Mark what was playing when paused
+    gameState.isPaused = true;
+    gameState.pausedTrackIndex = gameState.called.length - 1;
+    gameState.pauseTimestamp = Date.now();
+    
+    // Check what's currently playing
+    if (gameState.currentTTS && gameState.currentTTS.playing()) {
+        console.log('  Paused during TTS announcement');
+        gameState.pausedDuringTTS = true;
+        gameState.currentTTS.pause();
+    } else {
+        gameState.pausedDuringTTS = false;
+    }
+    
+    if (gameState.currentSound && gameState.currentSound.playing()) {
+        console.log('  Paused during music preview');
+        gameState.pausedDuringPreview = true;
+        gameState.currentSound.pause();
+    } else {
+        gameState.pausedDuringPreview = false;
+    }
+    
+    // Check if paused during auto-next waiting period
+    if (gameState.autoNextTimer) {
+        console.log('  Paused during auto-next wait');
+        gameState.pausedDuringWaiting = true;
+    } else {
+        gameState.pausedDuringWaiting = false;
+    }
+    
+    // Stop global ttsPlayer if active
+    if (ttsPlayer && ttsPlayer.playing()) {
+        console.log('  Stopping global TTS player');
+        ttsPlayer.stop();
+        ttsPlayer = null;
+    }
+    
+    // Stop global musicPlayer if active
+    if (musicPlayer && musicPlayer.playing()) {
+        console.log('  Stopping global music player');
+        musicPlayer.stop();
+        musicPlayer = null;
+    }
+    
+    // Pause background music (don't stop it, just pause)
+    if (backgroundMusic && backgroundMusic.playing()) {
+        console.log('  Pausing background music');
+        backgroundMusic.pause();
+    }
+    
+    // Cancel auto-next timer
+    if (gameState.autoNextTimer) {
+        console.log('  Cancelling auto-next timer');
+        clearTimeout(gameState.autoNextTimer);
+        gameState.autoNextTimer = null;
+    }
+    
+    // Change button to RESUME
+    const nextButton = document.getElementById('nextTrack');
+    nextButton.textContent = '▶️ RESUME';
+    nextButton.onclick = resumeCurrentTrack;
+    setButtonState('nextTrack', true);
+    
+    gameState.isPlaying = false;
+    console.log('✓ Paused successfully');
+}
+
+/**
+ * Resume paused playback - continues from where it was paused
+ */
+async function resumeCurrentTrack() {
+    console.log('▶️ Resuming playback...');
+    
+    // Resume background music first
+    if (backgroundMusic && !backgroundMusic.playing()) {
+        console.log('  Resuming background music');
+        backgroundMusic.play();
+    }
+    
+    gameState.isPaused = false;
+    
+    // Resume TTS if it was playing
+    if (gameState.pausedDuringTTS && gameState.currentTTS) {
+        console.log('  Resuming TTS announcement');
+        gameState.isPlaying = true;
+        const nextButton = document.getElementById('nextTrack');
+        nextButton.textContent = '⏸️ PAUSE';
+        nextButton.onclick = pauseCurrentTrack;
+        gameState.currentTTS.play();
+        gameState.pausedDuringTTS = false;
+        return; // Let TTS finish, then preview will play automatically
+    }
+    
+    // Resume preview if it was playing
+    if (gameState.pausedDuringPreview && gameState.currentSound) {
+        console.log('  Resuming music preview');
+        gameState.isPlaying = true;
+        const nextButton = document.getElementById('nextTrack');
+        nextButton.textContent = '⏸️ PAUSE';
+        nextButton.onclick = pauseCurrentTrack;
+        gameState.currentSound.play();
+        gameState.pausedDuringPreview = false;
+        return; // Let preview finish
+    }
+    
+    // Resume auto-next timer if it was waiting
+    if (gameState.pausedDuringWaiting) {
+        console.log('  Resuming auto-next timer');
+        gameState.pausedDuringWaiting = false;
+        // Don't set isPlaying = true here, let playNextTrack set it
+        const nextButton = document.getElementById('nextTrack');
+        nextButton.textContent = '▶️ NEXT SONG'; // Back to normal during wait
+        nextButton.onclick = playNextTrack;
+        
+        // Calculate remaining time
+        const elapsedTime = Date.now() - gameState.pauseTimestamp;
+        const remainingTime = Math.max(0, gameState.autoNextDelay - elapsedTime);
+        console.log(`  ⏱️ Elapsed: ${elapsedTime}ms, Remaining: ${remainingTime}ms`);
+        
+        gameState.autoNextTimer = setTimeout(async () => {
+            console.log('⏰ Auto-playing next track...');
+            await playNextTrack();
+        }, remainingTime);
+        return;
+    }
+    
+    // If nothing was paused (shouldn't happen), just continue to next track
+    console.log('  Nothing to resume, playing next track');
+    gameState.isPlaying = false; // Reset flag before calling playNextTrack
+    await playNextTrack();
 }
 
 /**
@@ -1329,6 +1762,95 @@ function generateWelcomeText() {
     ];
 
     return welcomeScripts[Math.floor(Math.random() * welcomeScripts.length)];
+}
+
+/**
+ * Announce last 10 songs summary
+ */
+async function announceTenSongSummary() {
+    const last10 = gameState.called.slice(-10);
+    const summaryText = generate10SongSummaryText(last10);
+    
+    console.log('📋 Announcing 10-song summary...');
+    console.log(`Summary text: "${summaryText.substring(0, 100)}..."`);
+    
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Duck background music during announcement
+            if (backgroundMusic) {
+                backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME, CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, 500);
+            }
+
+            // Generate TTS audio using ElevenLabs
+            const audioUrl = await generateElevenLabsTTS(summaryText);
+
+            // Play using Howler
+            ttsPlayer = new Howl({
+                src: [audioUrl],
+                format: ['mp3'],
+                html5: true,
+                volume: CONFIG.TTS_VOLUME,
+                onend: () => {
+                    console.log('✅ 10-song summary complete');
+                    gameState.currentTTS = null;
+                    // Restore background music volume
+                    if (backgroundMusic) {
+                        backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, CONFIG.BACKGROUND_MUSIC_VOLUME, 500);
+                    }
+                    resolve();
+                },
+                onloaderror: (id, error) => {
+                    console.error('TTS load error:', error);
+                    gameState.currentTTS = null;
+                    reject(new Error('Failed to load TTS audio'));
+                },
+                onplayerror: (id, error) => {
+                    console.error('TTS play error:', error);
+                    gameState.currentTTS = null;
+                    reject(new Error('Failed to play TTS audio'));
+                }
+            });
+
+            gameState.currentTTS = ttsPlayer;
+            ttsPlayer.play();
+        } catch (error) {
+            console.error('Error playing 10-song summary:', error);
+            gameState.currentTTS = null;
+            reject(error);
+        }
+    });
+}
+
+/**
+ * Remove text in brackets/parentheses from a track title for TTS announcements
+ * e.g., "Long Cool Woman (In a Black Dress)" → "Long Cool Woman"
+ * e.g., "Landslide (Remastered)" → "Landslide"
+ */
+function cleanTitleForTTS(title) {
+    return title
+        .replace(/\s*\(.*?\)\s*/g, ' ')  // Remove (parentheses)
+        .replace(/\s*\[.*?\]\s*/g, ' ')   // Remove [brackets]
+        .trim();
+}
+
+/**
+ * Generate 10-song summary text
+ */
+function generate10SongSummaryText(last10Songs) {
+    const summaryScripts = [
+        `Alright everyone, let's run through the last 10 songs for anyone who might have missed them. Listen carefully and mark them off if you haven't already!`,
+        
+        `Time for a quick recap! Here are the last 10 tracks we've played. Make sure you've got them all marked on your cards!`,
+        
+        `Let's do a summary of the last 10 songs. If you missed any, here's your chance to catch up!`
+    ];
+    
+    const intro = summaryScripts[Math.floor(Math.random() * summaryScripts.length)];
+    const songList = last10Songs.map((song, i) => 
+        `Number ${i + 1}: ${cleanTitleForTTS(song.title)} by ${song.artist}`
+    ).join('. ');
+    
+    return `${intro} ${songList}. Alright, let's continue with the next track!`;
 }
 
 /**
@@ -1379,18 +1901,22 @@ async function announceWelcome() {
                 },
                 onloaderror: (id, error) => {
                     console.error('TTS load error:', error);
+                    gameState.currentTTS = null;
                     reject(new Error('Failed to load TTS audio'));
                 },
                 onplayerror: (id, error) => {
                     console.error('TTS play error:', error);
+                    gameState.currentTTS = null;
                     reject(new Error('Failed to play TTS audio'));
                 }
             });
 
+            gameState.currentTTS = ttsPlayer;
             ttsPlayer.play();
 
         } catch (error) {
             console.error('Welcome TTS generation error:', error);
+            gameState.currentTTS = null;
             // Don't fail the whole game if welcome fails
             resolve();
         }
@@ -1422,6 +1948,7 @@ async function announceHalfway() {
                 volume: CONFIG.TTS_VOLUME,
                 onend: () => {
                     console.log("✓ Halfway announcement complete");
+                    gameState.currentTTS = null;
                     // Restore background music volume
                     if (backgroundMusic) {
                         backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, CONFIG.BACKGROUND_MUSIC_VOLUME, 500);
@@ -1430,18 +1957,22 @@ async function announceHalfway() {
                 },
                 onloaderror: (id, error) => {
                     console.error("TTS load error:", error);
+                    gameState.currentTTS = null;
                     reject(new Error("Failed to load TTS audio"));
                 },
                 onplayerror: (id, error) => {
                     console.error("TTS play error:", error);
+                    gameState.currentTTS = null;
                     reject(new Error("Failed to play TTS audio"));
                 }
             });
 
+            gameState.currentTTS = ttsPlayer;
             ttsPlayer.play();
 
         } catch (error) {
             console.error("Halfway TTS generation error:", error);
+            gameState.currentTTS = null;
             // Don"t fail the whole game if halfway announcement fails
             resolve();
         }
@@ -1471,78 +2002,127 @@ function generateAnnouncementText(track) {
         console.log(`Available AI keys sample:`, keys.slice(0, 5));
     }
 
-    // Fallback to template system if AI not available
+    // Return null to trigger OpenAI generation in announceTrack()
+    return null;
+}
+
+/**
+ * Generate fallback announcement text using templates
+ */
+function generateFallbackAnnouncementText(track) {
     const randomType = Math.random();
 
-    // Type A: Era/Decade Context (33%)
-    if (randomType < 0.33) {
+    // Type A: Era/Decade Context with more variation (40%)
+    if (randomType < 0.40) {
         const year = parseInt(track.release_year);
-        let decade = '';
-        let description = '';
-
+        const genre = track.genre || 'music';
+        
         if (year >= 2020) {
-            decade = '2020s';
-            description = 'Get ready for this fresh hit from the 2020s';
-        } else if (year >= 2010) {
-            decade = '2010s';
-            description = 'Get ready for this modern classic from the 2010s';
-        } else if (year >= 2000) {
-            decade = '2000s';
-            description = 'Here\'s a chart-topper from the early 2000s';
-        } else if (year >= 1990) {
-            decade = '1990s';
-            description = 'Listen up for this gem from the grunge and pop explosion of the 1990s';
-        } else if (year >= 1980) {
-            decade = '1980s';
             const options = [
-                'Let\'s go straight to the 1980s for this one',
-                'Here\'s an iconic banger from the hair metal 1980s',
-                'Coming up: A massive hit from the 1980s'
+                'Here\'s a fresh hit from the 2020s',
+                'Get ready for this modern sensation from the 2020s',
+                'Coming up: A brand new track from the current decade',
+                'This one\'s straight from the 2020s charts'
             ];
-            description = options[Math.floor(Math.random() * options.length)];
+            return options[Math.floor(Math.random() * options.length)];
+        } else if (year >= 2010) {
+            const options = [
+                'Here\'s a modern classic from the 2010s',
+                'Get ready for this chart-topper from the 2010s',
+                'Time for a recent hit from the 2010s era',
+                'This 2010s anthem still gets the crowd moving'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
+        } else if (year >= 2000) {
+            const options = [
+                'Let\'s dive into the early 2000s with this gem',
+                'Here\'s a massive hit from the millennium era',
+                'Get ready for this 2000s pop sensation',
+                'Time for a turn-of-the-century classic'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
+        } else if (year >= 1990) {
+            const options = [
+                'Here comes a 90s anthem that defined a generation',
+                'Get ready for this grunge and pop explosion from the 1990s',
+                'Time for a nostalgic 90s throwback',
+                'This 90s classic still hits different',
+                'Let\'s rewind to the legendary 1990s'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
+        } else if (year >= 1980) {
+            const options = [
+                'Time for an electrifying 80s classic',
+                'Get ready for some synth-heavy 1980s magic',
+                'Here\'s an iconic track from the neon 80s',
+                'This 80s banger dominated the airwaves',
+                'Let\'s jump back to the radical 1980s',
+                'Coming up: A power-packed hit from the 1980s'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
         } else if (year >= 1970) {
-            decade = '1970s';
-            description = 'Next track: Straight out of the disco-fueled 1970s';
+            const options = [
+                'Time for a groovy track from the funky 1970s',
+                'Get ready for this disco-era sensation',
+                'Here\'s a classic from the golden age of 70s music',
+                'This 1970s jam filled dance floors worldwide',
+                'Let\'s take it back to the soulful 1970s',
+                'Coming up: A legendary hit from the 70s'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
         } else if (year >= 1960) {
-            decade = '1960s';
-            description = 'Coming up: A massive hit from the swinging 1960s';
+            const options = [
+                'Here\'s a timeless classic from the swinging 60s',
+                'Get ready for this revolutionary 1960s anthem',
+                'Time for a groovy hit from the psychedelic 60s',
+                'This 60s track changed music forever'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
         } else {
-            description = 'Here\'s a classic for you';
+            const options = [
+                'Here\'s a true vintage classic',
+                'Get ready for this timeless golden oldie',
+                'Time for a legendary track from music history'
+            ];
+            return options[Math.floor(Math.random() * options.length)];
         }
-
-        return description;
     }
 
-    // Type B: Fun Facts/Trivia (33%)
-    else if (randomType < 0.66) {
+    // Type B: Fun Facts/Trivia with genre context (40%)
+    else if (randomType < 0.80) {
         const funFacts = [
-            'This one topped the charts for weeks',
-            'This artist has won multiple awards',
-            'This track became an instant classic',
-            'This song was a massive hit worldwide',
-            'You\'ll definitely recognize this one',
-            'This artist is a true legend',
-            'This track dominated the airwaves',
-            'This one\'s a crowd favorite',
-            'This song defined a generation',
-            'This artist needs no introduction'
+            'This one topped the charts for weeks on end',
+            'This track became an instant worldwide sensation',
+            'This song was a massive commercial success',
+            'You\'ll definitely recognize this crowd favorite',
+            'This artist is considered a true music legend',
+            'This track dominated radio stations everywhere',
+            'This anthem defined a whole musical movement',
+            'This song has been covered by countless artists',
+            'This track won multiple prestigious awards',
+            'This one broke records when it was released',
+            'This song is still played at every party',
+            'This artist revolutionized their genre with this hit',
+            'This track has billions of streams worldwide',
+            'This anthem brings back so many memories',
+            'This one never gets old, no matter how many times you hear it'
         ];
         return funFacts[Math.floor(Math.random() * funFacts.length)];
     }
 
-    // Type C: Generic Simple (33%)
+    // Type C: Generic Simple (20%)
     else {
         const simpleAnnouncements = [
-            'Next song',
-            'Here we go',
-            'Coming up',
-            'Let\'s keep it going',
-            'Another one coming your way',
-            'Ready for this one',
-            'Listen closely',
-            'Mark your cards',
-            'Here\'s another',
-            'Let\'s continue'
+            'Next song coming up',
+            'Here we go with another one',
+            'Let\'s keep the music rolling',
+            'Time for the next track',
+            'Another great one on the way',
+            'Ready for this one?',
+            'Listen up for this track',
+            'Mark your cards for this one',
+            'Here comes another classic',
+            'Let\'s continue the musical journey'
         ];
         return simpleAnnouncements[Math.floor(Math.random() * simpleAnnouncements.length)];
     }
@@ -1553,7 +2133,39 @@ function generateAnnouncementText(track) {
  */
 async function announceTrack(track) {
     // Generate varied announcement - NO track name or artist (per Philip's feedback)
-    const text = generateAnnouncementText(track);
+    let text = generateAnnouncementText(track);
+    
+    // If no cached announcement, try OpenAI generation
+    if (!text) {
+        console.log('🤖 No cached announcement, generating with OpenAI...');
+        try {
+            const response = await fetch(`${CONFIG.API_URL}/api/generate-track-announcement`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: cleanTitleForTTS(track.title),
+                    artist: track.artist,
+                    release_year: track.release_year,
+                    genre: track.genre
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                text = data.announcement;
+                console.log(`✅ OpenAI generated: "${text}"`);
+            } else {
+                console.warn('OpenAI generation failed, using fallback');
+                text = generateFallbackAnnouncementText(track);
+            }
+        } catch (error) {
+            console.warn('OpenAI generation error, using fallback:', error);
+            text = generateFallbackAnnouncementText(track);
+        }
+    }
+    
     console.log(`🎙️ Announcing: "${text}" (Track: ${track.title} by ${track.artist} [${track.release_year}])`);
 
     return new Promise(async (resolve, reject) => {
@@ -1574,6 +2186,7 @@ async function announceTrack(track) {
                 volume: CONFIG.TTS_VOLUME,
                 onend: () => {
                     console.log('✓ Announcement complete');
+                    gameState.currentTTS = null;
                     // Restore background music volume
                     if (backgroundMusic) {
                         backgroundMusic.fade(CONFIG.BACKGROUND_MUSIC_VOLUME * 0.3, CONFIG.BACKGROUND_MUSIC_VOLUME, 500);
@@ -1582,18 +2195,22 @@ async function announceTrack(track) {
                 },
                 onloaderror: (id, error) => {
                     console.error('TTS load error:', error);
+                    gameState.currentTTS = null;
                     reject(new Error('Failed to load TTS audio'));
                 },
                 onplayerror: (id, error) => {
                     console.error('TTS play error:', error);
+                    gameState.currentTTS = null;
                     reject(new Error('Failed to play TTS audio'));
                 }
             });
 
+            gameState.currentTTS = ttsPlayer;
             ttsPlayer.play();
 
         } catch (error) {
             console.error('TTS generation error:', error);
+            gameState.currentTTS = null;
             reject(error);
         }
     });
@@ -1656,6 +2273,9 @@ async function playSongPreview(track) {
             onplay: () => {
                 console.log('▶ Preview playing with fade in/out');
 
+                // Store reference in gameState for pause functionality
+                gameState.currentSound = musicPlayer;
+
                 // PHILIP'S FEEDBACK #9: Fade in at start
                 musicPlayer.fade(0, 0.6, 1500);  // Fade from 0 to 60% over 1.5 seconds (balanced with TTS)
 
@@ -1674,6 +2294,7 @@ async function playSongPreview(track) {
                 setTimeout(() => {
                     if (musicPlayer) {
                         musicPlayer.stop();
+                        gameState.currentSound = null;
                         console.log(`⏹ Preview stopped (${CONFIG.PREVIEW_DURATION_MS / 1000} seconds)`);
 
                         // Restore background music
@@ -1688,6 +2309,7 @@ async function playSongPreview(track) {
             },
             onend: () => {
                 console.log('✓ Preview ended naturally');
+                gameState.currentSound = null;
 
                 // Restore background music
                 if (backgroundMusic) {
@@ -1699,6 +2321,7 @@ async function playSongPreview(track) {
             },
             onloaderror: (id, error) => {
                 console.error('Preview load error:', error);
+                gameState.currentSound = null;
 
                 // Restore background music on error
                 if (backgroundMusic) {
@@ -1709,6 +2332,7 @@ async function playSongPreview(track) {
             },
             onplayerror: (id, error) => {
                 console.error('Preview play error:', error);
+                gameState.currentSound = null;
 
                 // Restore background music on error
                 if (backgroundMusic) {
@@ -1727,6 +2351,171 @@ async function playSongPreview(track) {
         // Start playback
         musicPlayer.play();
     });
+}
+
+// ============================================================================
+// WINNER ANNOUNCEMENT SYSTEM
+// ============================================================================
+
+/**
+ * State for tracking interrupted playback
+ */
+let winnerAnnouncementInProgress = false;
+let interruptedState = {
+    wasPlaying: false,
+    hadAutoNextTimer: false,
+    autoNextDelay: 0
+};
+
+/**
+ * Stop all currently playing audio (TTS and music preview)
+ */
+function stopAllAudio() {
+    // Stop TTS
+    if (ttsPlayer) {
+        ttsPlayer.stop();
+        ttsPlayer = null;
+    }
+    if (gameState.currentTTS) {
+        gameState.currentTTS.stop();
+        gameState.currentTTS = null;
+    }
+
+    // Stop music preview
+    if (musicPlayer) {
+        musicPlayer.stop();
+        musicPlayer = null;
+    }
+    if (gameState.currentSound) {
+        gameState.currentSound.stop();
+        gameState.currentSound = null;
+    }
+
+    // Silence background music
+    if (backgroundMusic) {
+        backgroundMusic.fade(backgroundMusic.volume(), 0, 300);
+    }
+}
+
+/**
+ * Announce a winner (Line, 4 Corners, or Full House)
+ * Interrupts any current audio, plays announcement, waits 10s, then resumes
+ */
+async function announceWinner(type) {
+    if (winnerAnnouncementInProgress) {
+        console.log('⚠️ Winner announcement already in progress');
+        return;
+    }
+
+    console.log(`🏆 Winner announcement triggered: ${type}`);
+    winnerAnnouncementInProgress = true;
+
+    // Save current state before interrupting
+    interruptedState.wasPlaying = gameState.isPlaying;
+    interruptedState.hadAutoNextTimer = !!gameState.autoNextTimer;
+
+    // Cancel auto-next timer if active
+    if (gameState.autoNextTimer) {
+        clearTimeout(gameState.autoNextTimer);
+        gameState.autoNextTimer = null;
+    }
+
+    // Stop all current audio immediately
+    stopAllAudio();
+
+    // Generate announcement text based on type
+    const announcements = {
+        line: [
+            "Stop the music! We have a LINE! Can someone check that card please? Hold tight everyone!",
+            "Hold on everyone! Someone is claiming a LINE! Let's verify that card!",
+            "We've got a shout for a LINE! Let me check that card. Everyone else, hold your positions!"
+        ],
+        '4corners': [
+            "Wait a moment! We have FOUR CORNERS! Let me check that card please!",
+            "Hold everything! Someone's got all FOUR CORNERS! Time to verify!",
+            "Stop right there! We have a claim for FOUR CORNERS! Let's have a look at that card!"
+        ],
+        fullhouse: [
+            "FULL HOUSE! FULL HOUSE! We have a winner claiming FULL HOUSE! Let me verify that card!",
+            "Stop everything! Someone is shouting FULL HOUSE! This could be our big winner! Let me check!",
+            "Hold on! We've got a FULL HOUSE claim! Everyone stay calm while I check this card!"
+        ]
+    };
+
+    const texts = announcements[type] || announcements.line;
+    const text = texts[Math.floor(Math.random() * texts.length)];
+
+    updateStatus(`🏆 ${type.toUpperCase()} claimed! Verifying...`, true);
+
+    try {
+        // Generate and play TTS announcement
+        const audioUrl = await generateElevenLabsTTS(text);
+
+        await new Promise((resolve, reject) => {
+            const winnerTTS = new Howl({
+                src: [audioUrl],
+                format: ['mp3'],
+                html5: true,
+                volume: CONFIG.TTS_VOLUME,
+                onend: () => {
+                    console.log('✅ Winner announcement complete');
+                    resolve();
+                },
+                onloaderror: (id, error) => {
+                    console.error('Winner TTS load error:', error);
+                    reject(error);
+                },
+                onplayerror: (id, error) => {
+                    console.error('Winner TTS play error:', error);
+                    reject(error);
+                }
+            });
+            winnerTTS.play();
+        });
+    } catch (error) {
+        console.error('Error playing winner announcement:', error);
+    }
+
+    // Wait 10 seconds for the host to verify the card
+    updateStatus(`🏆 Checking card... Resuming in 10 seconds...`, false);
+    console.log('⏳ Waiting 10 seconds before resuming...');
+    await new Promise(resolve => setTimeout(resolve, 10000));
+
+    // Resume: restore background music and continue the game
+    winnerAnnouncementInProgress = false;
+
+    if (backgroundMusic) {
+        backgroundMusic.fade(0, CONFIG.BACKGROUND_MUSIC_VOLUME, 1500);
+    }
+
+    // If the game was in auto-next waiting state, restart auto-next
+    if (interruptedState.hadAutoNextTimer) {
+        const delaySeconds = CONFIG.AUTO_NEXT_DELAY_MS / 1000;
+        updateStatus(`⏱️ Resuming... Next song in ${delaySeconds} seconds...`, false);
+        gameState.autoNextTimer = setTimeout(() => {
+            console.log('⏰ Auto-playing next track after winner check...');
+            const nextButton = document.getElementById('nextTrack');
+            nextButton.textContent = '▶️ NEXT SONG';
+            nextButton.onclick = playNextTrack;
+            gameState.isPlaying = false;
+            playNextTrack();
+        }, CONFIG.AUTO_NEXT_DELAY_MS);
+    } else if (interruptedState.wasPlaying) {
+        // Was in the middle of playing, auto-continue with next song
+        updateStatus('▶️ Resuming game...', false);
+        const nextButton = document.getElementById('nextTrack');
+        nextButton.textContent = '▶️ NEXT SONG';
+        nextButton.onclick = playNextTrack;
+        gameState.isPlaying = false;
+        // Auto-play next track after the interruption
+        setTimeout(() => {
+            playNextTrack();
+        }, 2000);
+    } else {
+        updateStatus('Ready. Press "NEXT SONG" to continue.', false);
+    }
+
+    console.log('✅ Winner announcement flow complete, game resuming');
 }
 
 /**
@@ -1813,6 +2602,123 @@ function resetGame() {
     console.log('🔄 Game reset');
 }
 
+/**
+ * Toggle the full song list visibility
+ */
+function toggleSongList() {
+    const songListSection = document.getElementById('fullSongListSection');
+    const isVisible = songListSection.style.display !== 'none';
+    
+    if (isVisible) {
+        // Hide the list
+        songListSection.style.display = 'none';
+    } else {
+        // Show the list and populate it
+        songListSection.style.display = 'block';
+        displayFullSongList();
+        
+        // Scroll to the list
+        songListSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+/**
+ * Display all songs that will be played tonight
+ */
+function displayFullSongList() {
+    const fullSongList = document.getElementById('fullSongList');
+    const totalSongsCount = document.getElementById('totalSongsCount');
+    
+    if (!gameState.pool || gameState.pool.length === 0) {
+        fullSongList.innerHTML = '<p style="opacity: 0.6; text-align: center;">No songs loaded yet. Start a session first.</p>';
+        return;
+    }
+    
+    // Update total count
+    totalSongsCount.textContent = gameState.pool.length;
+    
+    // Sort songs alphabetically by title for easy searching
+    const sortedSongs = [...gameState.pool].sort((a, b) => 
+        a.title.localeCompare(b.title)
+    );
+    
+    // Generate HTML for all songs in list format
+    fullSongList.innerHTML = sortedSongs.map((track, index) => {
+        // Check if this song has been called already
+        const isCalled = gameState.called.some(calledTrack => calledTrack.id === track.id);
+        const calledClass = isCalled ? 'called' : '';
+        
+        return `
+            <div class="song-list-item ${calledClass}" onclick="showSongDetails('${track.id}')">
+                <div class="song-number">${index + 1}</div>
+                <div class="song-info">
+                    <div class="song-title">${track.title}</div>
+                    <div class="song-artist">${track.artist}</div>
+                </div>
+                <div class="song-meta">
+                    ${track.release_year ? `<span class="meta-badge">${track.release_year}</span>` : ''}
+                    ${track.genre ? `<span class="meta-badge">${track.genre}</span>` : ''}
+                </div>
+                ${isCalled ? '<div class="called-badge">✓ Called</div>' : ''}
+            </div>
+        `;
+    }).join('');
+    
+    console.log(`📜 Displayed ${sortedSongs.length} songs in full list`);
+}
+
+/**
+ * Show detailed information about a song in a modal
+ */
+function showSongDetails(songId) {
+    const song = gameState.pool.find(s => s.id === songId);
+    if (!song) return;
+    
+    const isCalled = gameState.called.some(calledTrack => calledTrack.id === song.id);
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'song-detail-modal';
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    };
+    
+    modal.innerHTML = `
+        <div class="song-detail-content">
+            <button class="modal-close" onclick="this.closest('.song-detail-modal').remove()">✕</button>
+            
+            <div class="song-detail-header">
+                <img src="${song.artwork_url || 'https://via.placeholder.com/200?text=🎵'}" 
+                     alt="${song.title}"
+                     class="song-detail-artwork"
+                     onerror="this.src='https://via.placeholder.com/200?text=🎵'">
+                
+                <div class="song-detail-info">
+                    <h2>${song.title}</h2>
+                    <h3>${song.artist}</h3>
+                    
+                    <div class="song-detail-meta">
+                        ${song.release_year ? `<div class="detail-item"><strong>Year:</strong> ${song.release_year}</div>` : ''}
+                        ${song.genre ? `<div class="detail-item"><strong>Genre:</strong> ${song.genre}</div>` : ''}
+                        ${song.duration_ms ? `<div class="detail-item"><strong>Duration:</strong> ${Math.floor(song.duration_ms / 60000)}:${String(Math.floor((song.duration_ms % 60000) / 1000)).padStart(2, '0')}</div>` : ''}
+                        <div class="detail-item"><strong>Status:</strong> <span style="color: ${isCalled ? '#10b981' : '#6b7280'}">${isCalled ? '✓ Called' : 'Not called yet'}</span></div>
+                    </div>
+                    
+                    ${song.preview_url ? `
+                        <audio controls style="width: 100%; margin-top: 15px;">
+                            <source src="${song.preview_url}" type="audio/mpeg">
+                            Your browser does not support audio playback.
+                        </audio>
+                    ` : '<p style="color: #9ca3af; font-size: 14px; margin-top: 10px;">No preview available</p>'}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+
 // ============================================================================
 // UI UPDATE FUNCTIONS
 // ============================================================================
@@ -1835,31 +2741,43 @@ function updateStatus(message, isPlaying) {
  * Update current track display
  */
 function updateCurrentTrackDisplay(track) {
+    console.log('🎵 updateCurrentTrackDisplay called with track:', track);
+    
     const container = document.getElementById('currentTrack');
     const artwork = document.getElementById('trackArtwork');
     const title = document.getElementById('trackTitle');
     const artist = document.getElementById('trackArtist');
 
-    // Validate all elements exist before updating
-    if (!container) {
-        console.warn('⚠️ currentTrack container not found in DOM');
+    // Validate all required elements exist before updating
+    if (!container || !artwork || !title || !artist) {
+        console.warn('⚠️  Track display elements not yet loaded in DOM, skipping update');
+        if (!container) console.log('   Missing: currentTrack container');
+        if (!artwork) console.log('   Missing: trackArtwork element');
+        if (!title) console.log('   Missing: trackTitle element');
+        if (!artist) console.log('   Missing: trackArtist element');
         return;
     }
 
+    console.log('✅ All DOM elements found, updating display...');
     container.style.display = 'flex';
     
     if (artwork) {
         artwork.src = track.artwork_url || '';
         artwork.alt = `${track.title} artwork`;
+        console.log(`   Artwork: ${track.artwork_url ? 'Set' : 'None'}`);
     }
     
     if (title) {
         title.textContent = track.title;
+        console.log(`   Title: ${track.title}`);
     }
     
     if (artist) {
         artist.textContent = track.artist;
+        console.log(`   Artist: ${track.artist}`);
     }
+    
+    console.log('✅ Display updated successfully');
 }
 
 /**
@@ -1906,7 +2824,18 @@ function updateCalledList() {
  * Update statistics
  */
 function updateStats() {
-    const totalSongs = gameState.called.length + gameState.remaining.length;
+    // If game hasn't started and we're loading old session data, use calculated optimal value
+    const numPlayers = parseInt(localStorage.getItem('numPlayers')) || 25;
+    let totalSongs;
+    
+    if (gameState.called.length === 0 && gameState.pool.length > 0) {
+        // Game not started yet - show optimal calculated songs instead of old pool size
+        totalSongs = calculateOptimalSongs(numPlayers);
+    } else {
+        // Game in progress - show actual pool size
+        totalSongs = gameState.called.length + gameState.remaining.length;
+    }
+    
     const estimatedMinutes = estimateGameDuration(totalSongs);
 
     // Update the stats counters
@@ -1919,7 +2848,12 @@ function updateStats() {
     }
     
     if (remainingCount) {
-        remainingCount.textContent = gameState.remaining.length;
+        // Show calculated optimal songs if game hasn't started
+        if (gameState.called.length === 0) {
+            remainingCount.textContent = totalSongs;
+        } else {
+            remainingCount.textContent = gameState.remaining.length;
+        }
     }
 
     // Update the top estimation text to show actual game total
@@ -2175,13 +3109,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Generate Cards function
 async function generateCards() {
-    const venueName = document.getElementById('venueName').value.trim();
-    const numPlayers = parseInt(document.getElementById('numPlayers').value) || 25;
+    // Get values from localStorage (set during setup)
+    const venueName = localStorage.getItem('venueName') || document.getElementById('venueName').value.trim();
+    const numPlayers = parseInt(localStorage.getItem('numPlayers')) || parseInt(document.getElementById('numPlayers').value) || 25;
 
     if (!venueName) {
-        alert('Please enter a venue name first!');
+        alert('Please complete setup first!');
         return;
     }
+    
+    console.log('📋 Generating cards with:', { venueName, numPlayers });
 
     // Calculate optimal songs
     const optimalSongs = calculateOptimalSongs(numPlayers);
@@ -2193,13 +3130,66 @@ async function generateCards() {
     btn.textContent = '⏳ Starting generation...';
     btn.disabled = true;
 
+    // Open new window immediately (before async request) to avoid popup blocker
+    // This window will be updated with the PDF URL when ready
+    const pdfWindow = window.open('', '_blank');
+    if (pdfWindow) {
+        pdfWindow.document.write(`
+            <html>
+                <head>
+                    <title>Generating Bingo Cards...</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            height: 100vh;
+                            margin: 0;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                        }
+                        .container {
+                            text-align: center;
+                        }
+                        .spinner {
+                            border: 8px solid rgba(255,255,255,0.3);
+                            border-top: 8px solid white;
+                            border-radius: 50%;
+                            width: 60px;
+                            height: 60px;
+                            animation: spin 1s linear infinite;
+                            margin: 0 auto 20px;
+                        }
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                        h1 { font-size: 24px; margin-bottom: 10px; }
+                        p { font-size: 16px; opacity: 0.9; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="spinner"></div>
+                        <h1>🎵 Generating Your Bingo Cards...</h1>
+                        <p>Please wait, this will take about 30-40 seconds</p>
+                    </div>
+                </body>
+            </html>
+        `);
+    }
+
     try {
         // Get branding data from localStorage
         let pubLogo = localStorage.getItem('pubLogo') || '';
 
         console.log('📋 Preparing to generate cards (ASYNC MODE)...');
         console.log('   Venue:', venueName);
-        console.log('   Players:', numPlayers);
+        console.log('🔍 [DEBUG] Players from localStorage:', localStorage.getItem('numPlayers'));
+        console.log('🔍 [DEBUG] numPlayers variable type:', typeof numPlayers);
+        console.log('🔍 [DEBUG] numPlayers variable value:', numPlayers);
+        console.log('   Players (final):', numPlayers);
         console.log('   Pub Logo (stored):', pubLogo ? `${pubLogo.substring(0, 100)}...` : 'None');
 
         // If pubLogo is a relative path, convert to full URL
@@ -2230,26 +3220,45 @@ async function generateCards() {
         console.log('   Voice ID:', voiceId);
         console.log('   Selected Decades:', selectedDecades);
 
+        // Check if we have an existing session_id (from URL param when session was loaded)
+        const existingSessionId = localStorage.getItem('currentSessionId');
+        if (existingSessionId) {
+            console.log('🔗 Using existing session_id:', existingSessionId);
+            console.log('   This will update the existing BingoSession in database');
+        } else {
+            console.log('ℹ️  No existing session_id - backend will create new BingoSession');
+        }
+
         // Use new async endpoint
+        const requestBody = {
+            venue_name: venueName,
+            num_players: numPlayers,
+            optimal_songs: optimalSongs,
+            pub_logo: pubLogo,
+            social_media: socialMedia,
+            include_qr: includeQR,
+            prize_4corners: prize4Corners,
+            prize_first_line: prizeFirstLine,
+            prize_full_house: prizeFullHouse,
+            voice_id: voiceId,
+            decades: selectedDecades,
+            session_id: existingSessionId
+        };
+        
+        console.log('📦 [DEBUG] Request body BEFORE stringify:', requestBody);
+        console.log('📦 [DEBUG] num_players in body:', requestBody.num_players, 'type:', typeof requestBody.num_players);
+        
+        const jsonString = JSON.stringify(requestBody);
+        console.log('📦 [DEBUG] JSON string being sent:', jsonString);
+        
         const response = await fetch(`${CONFIG.API_URL}/api/generate-cards-async`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                venue_name: venueName,
-                num_players: numPlayers,
-                optimal_songs: optimalSongs,
-                pub_logo: pubLogo,
-                social_media: socialMedia,
-                include_qr: includeQR,
-                prize_4corners: prize4Corners,
-                prize_first_line: prizeFirstLine,
-                prize_full_house: prizeFullHouse,
-                voice_id: voiceId,
-                decades: selectedDecades
-            })
+            body: jsonString
         });
+
 
         console.log('📨 Response status:', response.status);
 
@@ -2266,26 +3275,39 @@ async function generateCards() {
         if (result.status === 'completed' && result.cached) {
             console.log('⚡ CACHED PDF - Instant download!');
             
+            // Save session_id if provided
+            if (result.session_id) {
+                localStorage.setItem('currentSessionId', result.session_id);
+                console.log('🔑 Session ID saved (cached):', result.session_id);
+            }
+            
+            // 🔄 Reload song pool (in case session was created without cards before)
+            console.log('🔄 Reloading song pool (cached PDF)...');
+            loadSongPool().then(() => {
+                console.log('✅ Song pool reloaded from cache!');
+                updateStats();
+            }).catch(err => {
+                console.error('⚠️  Failed to reload song pool:', err);
+            });
+            
             // Show success immediately
             btn.textContent = '⚡ Downloaded (cached)!';
             btn.style.background = 'linear-gradient(135deg, #38ef7d 0%, #11998e 100%)';
             
-            // Download immediately
-            const timestamp = new Date().getTime();
-            const link = document.createElement('a');
-            
-            const downloadUrl = result.download_url;
-            if (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://')) {
-                link.href = downloadUrl;
-            } else {
-                link.href = `${CONFIG.API_URL}${downloadUrl}?t=${timestamp}`;
+            // Redirect opened window to PDF
+            const downloadUrl = result.pdf_url || result.download_url;
+            if (pdfWindow && downloadUrl) {
+                if (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://')) {
+                    pdfWindow.location.href = downloadUrl;
+                } else {
+                    const timestamp = new Date().getTime();
+                    pdfWindow.location.href = `${CONFIG.API_URL}${downloadUrl}?t=${timestamp}`;
+                }
+            } else if (!downloadUrl) {
+                if (pdfWindow) pdfWindow.close();
+                console.error('❌ No PDF URL in cached result:', result);
+                throw new Error('No PDF URL in cached response');
             }
-            
-            link.download = `music_bingo_${venueName.replace(/\s+/g, '_')}_${numPlayers}players.pdf`;
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
             
             // Reset button after 3 seconds
             setTimeout(() => {
@@ -2328,6 +3350,31 @@ async function generateCards() {
                     // Success!
                     console.log('✅ Generation completed:', status.result);
 
+                    // Save session data to localStorage if provided
+                    if (status.result.session_data) {
+                        localStorage.setItem('currentSessionData', JSON.stringify(status.result.session_data));
+                        console.log('💾 Session data saved to localStorage');
+                    }
+                    
+                    // Save session_id to localStorage for loading song pool later
+                    if (status.result.session_id) {
+                        localStorage.setItem('currentSessionId', status.result.session_id);
+                        console.log('🔑 Session ID saved to localStorage:', status.result.session_id);
+                    }
+
+                    // 🔄 Reload song pool from database now that cards are generated
+                    console.log('🔄 Reloading song pool after card generation...');
+                    console.log(`   Session ID for reload: ${status.result.session_id}`);
+                    loadSongPool().then(() => {
+                        console.log('✅ Song pool reloaded - game ready to play!');
+                        console.log(`   Songs loaded: ${gameState.remaining.length}`);
+                        console.log(`   Pool size: ${gameState.pool.length}`);
+                        updateStats();
+                    }).catch(err => {
+                        console.error('⚠️  Failed to reload song pool:', err);
+                        console.error('   Error details:', err.message);
+                    });
+
                     // Show brief success message in button (no alert modal)
                     btn.textContent = '✅ Downloaded!';
                     btn.style.background = 'linear-gradient(135deg, #38ef7d 0%, #11998e 100%)';
@@ -2348,25 +3395,25 @@ async function generateCards() {
                     console.log(`⏱️  Generation time: ${status.result.generation_time || status.elapsed_time} s`);
                     console.log(`📦 Cached: ${isCached ? 'Yes (instant)' : 'No (fresh generation)'}`);
 
-                    // Download the PDF automatically (NO ALERT)
-                    const timestamp = new Date().getTime();
-                    const link = document.createElement('a');
+                    // Redirect opened window to PDF
+                    const downloadUrl = status.result.pdf_url || status.result.download_url;
+                    console.log('🔗 Download URL:', downloadUrl);
                     
-                    // Check if download_url is already a complete URL (from GCS)
-                    const downloadUrl = status.result.download_url;
-                    if (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://')) {
-                        // Full URL from GCS (already includes signed parameters)
-                        link.href = downloadUrl;
-                    } else {
-                        // Relative path (fallback to local file)
-                        link.href = `${CONFIG.API_URL}${downloadUrl}?t=${timestamp}`;
+                    if (pdfWindow && downloadUrl) {
+                        if (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://')) {
+                            console.log('✅ Using full URL from GCS');
+                            pdfWindow.location.href = downloadUrl;
+                        } else {
+                            console.log('✅ Using relative path');
+                            const timestamp = new Date().getTime();
+                            pdfWindow.location.href = `${CONFIG.API_URL}${downloadUrl}?t=${timestamp}`;
+                        }
+                        console.log('✅ PDF window redirected to:', downloadUrl);
+                    } else if (!downloadUrl) {
+                        if (pdfWindow) pdfWindow.close();
+                        console.error('❌ No PDF URL found in result:', status.result);
+                        throw new Error('No PDF URL in response');
                     }
-                    
-                    link.download = `music_bingo_${venueName.replace(/\s+/g, '_')}_${numPlayers}players.pdf`;
-                    link.target = '_blank';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
                     
                     // Show optional notification (non-blocking)
                     if (isCached) {
@@ -2379,6 +3426,9 @@ async function generateCards() {
                     btn.textContent = originalText;
                     btn.disabled = false;
 
+                    // Close the PDF window
+                    if (pdfWindow) pdfWindow.close();
+
                     alert(`❌ Card generation failed:\n\n${status.error}\n\nPlease try again or contact support.`);
 
                 } else if (attempts >= maxAttempts) {
@@ -2387,6 +3437,9 @@ async function generateCards() {
 
                     btn.textContent = originalText;
                     btn.disabled = false;
+
+                    // Close the PDF window
+                    if (pdfWindow) pdfWindow.close();
 
                     alert('⏱️ Card generation is taking longer than expected.\n\nThe task may still complete in the background.\nPlease check back in a few minutes.');
 
@@ -2402,6 +3455,7 @@ async function generateCards() {
                 if (attempts >= maxAttempts) {
                     btn.textContent = originalText;
                     btn.disabled = false;
+                    if (pdfWindow) pdfWindow.close();
                     alert('Failed to check generation status. Please try again.');
                 } else {
                     // Retry
@@ -2415,6 +3469,7 @@ async function generateCards() {
 
     } catch (error) {
         console.error('❌ Error generating cards:', error);
+        if (pdfWindow) pdfWindow.close();
         alert('❌ Error generating cards. Please try again.');
     } finally {
         btn.textContent = originalText;

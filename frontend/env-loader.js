@@ -5,7 +5,7 @@
 
 async function loadEnv() {
     try {
-        const response = await fetch('.env');
+        const response = await fetch('/.env');
         if (!response.ok) {
             console.warn('⚠️ .env file not found. Using default configuration.');
             return;

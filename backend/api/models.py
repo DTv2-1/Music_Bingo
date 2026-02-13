@@ -532,6 +532,11 @@ class BingoSession(models.Model):
         default=list,
         help_text="Selected decades (e.g., ['1960s', '1970s', '1980s'])"
     )
+    genres = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Selected genres (e.g., ['Rock', 'Pop', 'Dance']). Empty means all genres."
+    )
     
     # Branding (Optional)
     logo_url = models.TextField(
@@ -554,6 +559,21 @@ class BingoSession(models.Model):
     prizes = models.JSONField(
         default=dict,
         help_text="Prize information (4corners, first_line, full_house)"
+    )
+    
+    # Song Pool - CRITICAL for matching cards with game
+    song_pool = models.JSONField(
+        default=list,
+        help_text="Array of songs used to generate the cards (ensures songs match printed cards)"
+    )
+    pdf_url = models.TextField(
+        blank=True,
+        null=True,
+        help_text="URL to generated PDF cards in Google Cloud Storage"
+    )
+    game_number = models.IntegerField(
+        default=1,
+        help_text="Game number for this venue/date"
     )
     
     # Game State

@@ -39,7 +39,7 @@ const CONFIG = {
     VOICE_ID: '21m00Tcm4TlvDq8ikWAM',
 
     // Game settings
-    PREVIEW_DURATION_MS: 15000,  // 15 seconds of song preview
+    PREVIEW_DURATION_MS: 20000,  // 20 seconds of song preview
     AUTO_NEXT_DELAY_MS: 15000,   // 15 seconds between songs
 
     // Audio settings
