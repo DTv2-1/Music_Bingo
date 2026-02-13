@@ -1,0 +1,138 @@
+"""
+Pub Quiz Answer Views — Answer submission, buzzer, scoring, team stats
+
+Endpoints:
+- get_question_answer: Get the correct answer for a question
+- submit_answer: Submit a single answer
+- record_buzz: Record a buzzer press
+- submit_all_answers: Batch-submit all answers at end of quiz
+- award_points: Manually award/deduct points
+- get_team_stats: Get final team statistics
+"""
+
+import logging
+
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework import status
+
+from ..pub_quiz_models import QuizQuestion, QuizTeam
+from ..utils.pub_quiz_helpers import get_session_by_code_or_id
+from ..services.pub_quiz_service import PubQuizService
+
+logger = logging.getLogger(__name__)
+
+
+@api_view(['GET'])
+def get_question_answer(request, question_id):
+    """Get the correct answer and fun fact for a question."""
+    question = get_object_or_404(QuizQuestion, id=question_id)
+
+    return Response({
+        'success': True,
+        'answer': question.correct_answer,
+        'fun_fact': question.fun_fact,
+    })
+
+
+@api_view(['POST'])
+def submit_answer(request, question_id):
+    """Submit or update a single answer for a team."""
+    question = get_object_or_404(QuizQuestion, id=question_id)
+    team_id = request.data.get('team_id')
+    team = get_object_or_404(QuizTeam, id=team_id)
+    answer_text = request.data.get('answer', '')
+    is_multiple_choice = request.data.get('is_multiple_choice', False)
+
+    result = PubQuizService.submit_answer(question, team, answer_text, is_multiple_choice)
+
+    return Response({
+        'success': True,
+        'message': 'Answer submitted successfully',
+        'is_correct': result['is_correct'],
+    })
+
+
+@api_view(['POST'])
+def record_buzz(request, question_id):
+    """Record a buzzer press for a team on a question."""
+    question = get_object_or_404(QuizQuestion, id=question_id)
+    team_id = request.data.get('team_id')
+    team = get_object_or_404(QuizTeam, id=team_id)
+
+    result = PubQuizService.record_buzz(question, team)
+
+    return Response({
+        'success': True,
+        'order': result['order'],
+        'message': result['message'],
+    })
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def submit_all_answers(request, session_id):
+    """Batch-submit all answers from a team at the end of the quiz."""
+    try:
+        session = get_session_by_code_or_id(session_id)
+        if not session:
+            return Response({'error': 'Session not found'}, status=404)
+
+        team_id = request.data.get('team_id')
+        answers = request.data.get('answers', [])
+
+        if not team_id:
+            return Response({'error': 'team_id required'}, status=400)
+
+        team = get_object_or_404(QuizTeam, id=team_id)
+        saved_count = PubQuizService.submit_batch_answers(session, team, answers)
+
+        logger.info(f"[SUBMIT_ALL] Saved {saved_count}/{len(answers)} answers for team {team.team_name}")
+
+        return Response({
+            'success': True,
+            'message': f'Submitted {saved_count} answers',
+            'saved_count': saved_count,
+        })
+
+    except Exception as e:
+        logger.error(f"[SUBMIT_ALL] Error: {e}", exc_info=True)
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['POST'])
+def award_points(request, team_id):
+    """Manually award or deduct points for a team."""
+    try:
+        team = get_object_or_404(QuizTeam, id=team_id)
+        points = request.data.get('points', 1)
+
+        team.total_score += points
+        team.save()
+
+        return Response({
+            'success': True,
+            'new_score': team.total_score,
+            'message': f'Points updated for {team.team_name}',
+        })
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def get_team_stats(request, session_id, team_id):
+    """Get final statistics for a team at quiz completion."""
+    session = get_session_by_code_or_id(session_id)
+    if not session:
+        return Response({"error": "Session not found"}, status=404)
+
+    try:
+        team = QuizTeam.objects.get(id=team_id, session=session)
+    except QuizTeam.DoesNotExist:
+        return Response({"error": "Team not found"}, status=404)
+
+    stats = PubQuizService.get_team_stats(session, team)
+
+    return Response({'success': True, **stats})
