@@ -77,45 +77,44 @@ class BingoCell(Flowable):
     def draw(self):
         canvas = self.canv
         
-        # --- Draw large grey bingo number centered in cell ---
+        # --- Draw large grey bingo number - fill as much of the cell as possible ---
         canvas.saveState()
-        canvas.setFillColor(colors.Color(0.78, 0.78, 0.78))  # Grey watermark
+        canvas.setFillColor(colors.Color(0.75, 0.75, 0.75))  # Grey watermark
         
-        # Scale font size based on number of digits - LARGE
         num_str = str(self.bingo_number)
         if len(num_str) == 1:
-            font_size = self.cell_height * 0.85
+            font_size = self.cell_height * 0.92
         elif len(num_str) == 2:
-            font_size = self.cell_height * 0.75
+            font_size = self.cell_height * 0.82
         else:
-            font_size = self.cell_height * 0.60
+            font_size = self.cell_height * 0.68
         
         canvas.setFont('Helvetica-Bold', font_size)
         
         # Center the number in the cell
         text_width = canvas.stringWidth(num_str, 'Helvetica-Bold', font_size)
         x = (self.cell_width - text_width) / 2
-        y = (self.cell_height - font_size) / 2 + font_size * 0.12
+        y = (self.cell_height - font_size) / 2 + font_size * 0.10
         canvas.drawString(x, y, num_str)
         canvas.restoreState()
         
-        # --- Draw artist (bold) and title on separate lines ---
+        # --- Draw artist (bold) and title on separate lines - LARGER font ---
         canvas.saveState()
-        canvas.setFillColor(colors.Color(0.10, 0.10, 0.10))  # Near-black for readability
+        canvas.setFillColor(colors.Color(0.08, 0.08, 0.08))  # Near-black
         
-        max_text_width = self.cell_width - 8  # 4pt padding each side
+        max_text_width = self.cell_width - 6  # 3pt padding each side
         artist_font = 'Helvetica-Bold'
         title_font = 'Helvetica'
-        artist_size = 8.0
-        title_size = 7.5
-        line_spacing = 10  # Leading between artist and title lines
+        artist_size = 9.5
+        title_size = 9.0
+        line_spacing = 11.5  # Leading between artist and title lines
         
         # Truncate artist and title to fit cell width
         artist_display = self._truncate_to_fit(self.artist, artist_font, artist_size, max_text_width)
         title_display = self._truncate_to_fit(self.title, title_font, title_size, max_text_width)
         
         # Calculate vertical centering for 2 lines
-        total_text_height = artist_size + title_size + (line_spacing - title_size)
+        total_text_height = artist_size + line_spacing
         start_y = (self.cell_height + total_text_height) / 2
         
         # Draw artist line (bold) - centered
