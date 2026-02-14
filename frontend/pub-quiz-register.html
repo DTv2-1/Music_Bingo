@@ -976,7 +976,7 @@
                 sseRetryCount = 0; // Reset retry counter on successful connection
             };
 
-            eventSource.onmessage = (event) => {
+            eventSource.onmessage = async (event) => {
                 console.log('📨 [SSE] RAW MESSAGE received:', event.data.substring(0, 200));
                 try {
                     const data = JSON.parse(event.data);
@@ -1111,6 +1111,21 @@
                             // Quiz completed - show completion screen with stats
                             console.log('🏁 [SSE] Quiz ended event received');
                             stopQuestionTimer();
+                            
+                            // 🔧 FIX: Submit all answers before fetching stats
+                            if (teamAnswers.length > 0) {
+                                console.log(`📤 [SSE] Submitting ${teamAnswers.length} answers before showing stats...`);
+                                try {
+                                    await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/submit-answers`, {
+                                        method: 'POST',
+                                        headers: {'Content-Type': 'application/json'},
+                                        body: JSON.stringify({ team_id: teamId, answers: teamAnswers })
+                                    });
+                                    console.log('✅ [SSE] Answers submitted successfully on quiz end');
+                                } catch (err) {
+                                    console.warn('⚠️ [SSE] Failed to submit answers on end:', err);
+                                }
+                            }
                             
                             // Load team stats
                             fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/team/${TEAM_ID}/stats`)
@@ -1627,6 +1642,27 @@
             console.log(`✅ [SUBMIT] ========== ANSWER SAVED SUCCESSFULLY ==========`);
             console.log(`✅ [SUBMIT] Total answers in memory: ${teamAnswers.length}`);
             console.log(`✅ [SUBMIT] All answers:`, teamAnswers);
+            
+            // 🔧 Send answer to backend in real-time (non-blocking)
+            try {
+                fetch(`${BASE_URL}/api/pub-quiz/question/${question.id}/submit`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        team_id: teamId,
+                        answer: answerText,
+                        is_multiple_choice: false
+                    })
+                }).then(r => {
+                    if (r.ok) {
+                        console.log(`📡 [SUBMIT] Answer sent to backend for Q${question.number}`);
+                    } else {
+                        console.warn(`⚠️ [SUBMIT] Backend returned ${r.status} for Q${question.number}`);
+                    }
+                }).catch(err => console.warn('⚠️ [SUBMIT] Real-time submit failed (non-critical):', err));
+            } catch (e) {
+                console.warn('⚠️ [SUBMIT] Real-time submit error (non-critical):', e);
+            }
         }
 
         // Multiple Choice Functions
@@ -1673,6 +1709,27 @@
             });
             
             console.log(`✅ MC answer saved (${teamAnswers.length} total)`);
+            
+            // 🔧 Send MC answer to backend in real-time (non-blocking)
+            try {
+                fetch(`${BASE_URL}/api/pub-quiz/question/${question.id}/submit`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        team_id: teamId,
+                        answer: selectedOption,
+                        is_multiple_choice: true
+                    })
+                }).then(r => {
+                    if (r.ok) {
+                        console.log(`📡 [MC] Answer sent to backend for Q${question.number}`);
+                    } else {
+                        console.warn(`⚠️ [MC] Backend returned ${r.status} for Q${question.number}`);
+                    }
+                }).catch(err => console.warn('⚠️ [MC] Real-time submit failed (non-critical):', err));
+            } catch (e) {
+                console.warn('⚠️ [MC] Real-time submit error (non-critical):', e);
+            }
         }
 
         document.getElementById('registrationForm').addEventListener('submit', async (e) => {
