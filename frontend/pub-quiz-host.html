@@ -978,14 +978,14 @@
                 </div>
             </div>
 
-            <!-- Live Responses -->
-            <div class="section" id="responsesCard" style="display: none;">
+            <!-- Live Answers Feed -->
+            <div class="section" id="responsesCard">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <div class="section-title" style="margin: 0;">🚨 Live Responses</div>
+                    <div class="section-title" style="margin: 0;">📋 Live Answers</div>
                     <span id="responsesCount" class="stat-badge">0/0</span>
                 </div>
-                <div id="responsesList">
-                    <!-- Teams that buzzed/submitted will appear here -->
+                <div id="responsesList" style="max-height: 350px; overflow-y: auto;">
+                    <p style="opacity: 0.4; font-size: 0.9em; text-align: center; padding: 16px 0;">Answers will appear here in real-time as teams submit them...</p>
                 </div>
             </div>
 
@@ -1256,6 +1256,9 @@
 
                             // Update leaderboard (needed for question generation)
                             updateLeaderboardFromSSE(data.leaderboard);
+                            
+                            // Update live answers feed
+                            updateLiveAnswers(data.recent_answers || [], data.stats);
                             
                             // ⚠️ Skip question updates - using local navigation
                             // Questions managed via allQuestions array + nextQuestion()
@@ -1905,8 +1908,7 @@
                         document.getElementById('btnShowAnswer').innerHTML = '<span>🙈 Hide Answer</span>';
                     }
 
-                    // Actualizar Live Responses
-                    updateLiveResponses(data);
+                    // Live answers are now updated via SSE (updateLiveAnswers)
                 }
             } catch (error) {
                 // Solo loggear errores inesperados (no 404)
@@ -1914,28 +1916,42 @@
             }
         }
 
-        function updateLiveResponses(data) {
-            const card = document.getElementById('responsesCard');
+        function updateLiveAnswers(recentAnswers, stats) {
             const list = document.getElementById('responsesList');
             const count = document.getElementById('responsesCount');
 
-            if (data.answers && data.answers.length > 0) {
-                card.style.display = 'block';
-                count.textContent = `${data.answers_count}/${data.team_count}`;
+            const totalTeams = stats ? stats.total_teams : 0;
+            const teamsAnswered = recentAnswers.length;
+            count.textContent = `${teamsAnswered}/${totalTeams}`;
 
-                list.innerHTML = data.answers.map(ans => `
-                    <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${ans.buzz_order === 1 ? 'var(--accent)' : 'transparent'}">
-                        <span style="display: flex; align-items: center; gap: 8px;">
-                            ${ans.buzz_order ? `<span style="background: var(--accent); color: #000; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7em; font-weight: 800;">${ans.buzz_order}</span>` : '✅'} 
-                            <b>${ans.team_name}</b>
-                        </span>
-                        <span style="font-size: 0.8em; opacity: 0.7;">
-                            ${ans.buzz_time ? new Date(ans.buzz_time).toLocaleTimeString() : 'OK'}
-                        </span>
-                    </div>
-                `).join('');
+            if (recentAnswers.length > 0) {
+                list.innerHTML = recentAnswers.map(ans => {
+                    const hasAnswer = ans.answer_text && ans.answer_text.trim() !== '';
+                    const borderColor = !hasAnswer ? 'rgba(255,255,255,0.1)' : (ans.is_correct ? '#4ade80' : '#f87171');
+                    const icon = !hasAnswer ? '⏳' : (ans.is_correct ? '✅' : '❌');
+                    const answerDisplay = hasAnswer ? ans.answer_text : 'Pending...';
+                    const timeStr = ans.submitted_at ? new Date(ans.submitted_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'}) : '';
+
+                    return `
+                        <div style="background: rgba(255,255,255,0.04); padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${borderColor}; transition: all 0.3s ease;">
+                            <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+                                <span style="font-size: 1em;">${icon}</span>
+                                <div style="min-width: 0;">
+                                    <div style="font-weight: 700; font-size: 0.9em;">${ans.team_name}</div>
+                                    <div style="font-size: 0.8em; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px;">${answerDisplay}</div>
+                                </div>
+                            </div>
+                            <span style="font-size: 0.7em; opacity: 0.5; white-space: nowrap; margin-left: 8px;">${timeStr}</span>
+                        </div>
+                    `;
+                }).join('');
             } else {
-                card.style.display = 'none';
+                // Only show placeholder if quiz is active
+                if (stats && (stats.status === 'in_progress' || stats.status === 'halftime')) {
+                    list.innerHTML = '<p style="opacity: 0.4; font-size: 0.9em; text-align: center; padding: 16px 0;">Waiting for teams to answer this question...</p>';
+                } else {
+                    list.innerHTML = '<p style="opacity: 0.4; font-size: 0.9em; text-align: center; padding: 16px 0;">Answers will appear here in real-time as teams submit them...</p>';
+                }
             }
         }
 
