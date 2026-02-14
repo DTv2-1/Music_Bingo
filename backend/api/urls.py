@@ -78,6 +78,7 @@ urlpatterns = [
     path('pub-quiz/question/<int:question_id>/buzz', views.record_buzz, name='pub-quiz-buzz'),
     path('pub-quiz/<str:session_id>/submit-answers', views.submit_all_answers, name='pub-quiz-submit-all'),
     path('pub-quiz/team/<int:team_id>/award-points', views.award_points, name='pub_quiz_award_points'),
+    path('pub-quiz/<str:session_id>/team-answers', views.get_all_team_answers, name='pub-quiz-team-answers'),
     path('pub-quiz/<str:session_id>/team/<int:team_id>/stats', views.get_team_stats, name='pub-quiz-team-stats'),
     # SSE streams
     path('pub-quiz/<str:session_id>/stream', views.quiz_stream, name='pub-quiz-stream'),

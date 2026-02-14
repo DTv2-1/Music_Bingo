@@ -106,6 +106,7 @@ from .pub_quiz_answer_views import (
     submit_all_answers,
     award_points,
     get_team_stats,
+    get_all_team_answers,
 )
 
 # Pub Quiz — SSE streams
@@ -183,6 +184,7 @@ __all__ = [
     'submit_all_answers',
     'award_points',
     'get_team_stats',
+    'get_all_team_answers',
     # Pub Quiz — Streams
     'quiz_stream',
     'host_stream',
