@@ -1107,6 +1107,8 @@
         let isPlayingQuestionTTS = false; // Flag to prevent multiple TTS from firing simultaneously
         let ttsQueue = []; // Queue for pending TTS requests
         let processingTTSQueue = false; // Flag to prevent concurrent queue processing
+        let currentTTSAbortController = null; // Abort controller to cancel in-flight TTS requests
+        let currentTTSAudio = null; // Reference to currently playing audio element
         let sessionData = null; // Session configuration
         
         // Auto-advance timer variables
@@ -1966,67 +1968,61 @@
             
             console.log('[TTS] 📞 Calling TTS API for text:', txt.substring(0, 50) + '...');
 
-            return new Promise(async (resolve, reject) => {
+            // Create a new abort controller and store it globally so it can be cancelled
+            const controller = new AbortController();
+            currentTTSAbortController = controller;
+
+            return new Promise((resolve) => {
                 let timeoutId;
-                const controller = new AbortController();
                 
-                try {
-                    // Timeout: 15 seconds max — if TTS is slow, skip it and keep the quiz moving
-                    timeoutId = setTimeout(() => {
-                        console.warn('[TTS] ⏱️ Timeout after 15s for:', txt.substring(0, 50));
-                        controller.abort();
-                        resolve(); // Resolve instead of reject — TTS is optional, don't block quiz
-                    }, 15000);
-                    
-                    console.log('[TTS] 📡 Fetching audio from API...');
-                    const response = await fetch(`${BASE_URL}/api/pub-quiz/tts`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text: txt, voice_id: voice }),
-                        signal: controller.signal
-                    });
-                    console.log('[TTS] 📡 API response status:', response.status);
-
-                    if (response.ok) {
-                        console.log('[TTS] 🎵 Creating audio blob...');
-                        const audioBlob = await response.blob();
-                        console.log('[TTS] 🎵 Blob size:', audioBlob.size, 'bytes');
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        const audio = new Audio(audioUrl);
-
-                        // Wait for audio to finish playing
-                        audio.onended = () => {
-                            console.log('[TTS] 🎵 Audio playback ended');
-                            clearTimeout(timeoutId);
-                            URL.revokeObjectURL(audioUrl);
-                            resolve();
-                        };
-
-                        audio.onerror = (e) => {
-                            console.error('[TTS] 🎵 Audio playback error:', e);
-                            clearTimeout(timeoutId);
-                            reject(e);
-                        };
-
-                        console.log('[TTS] 🎵 Starting audio playback...');
-                        audio.play();
-                        console.log('[TTS] 🎵 Audio.play() called successfully');
-                    } else {
-                        clearTimeout(timeoutId);
-                        console.error('[TTS] ❌ TTS API failed with status:', response.status);
-                        const errorText = await response.text();
-                        console.error('[TTS] ❌ Error response:', errorText);
-                        reject(new Error(`TTS failed: ${response.status}`));
-                    }
-                } catch (e) {
+                // Timeout: 10 seconds max — if TTS is slow, skip and keep quiz moving
+                timeoutId = setTimeout(() => {
+                    console.warn('[TTS] ⏱️ Timeout after 10s for:', txt.substring(0, 50));
+                    controller.abort();
+                    resolve();
+                }, 10000);
+                
+                fetch(`${BASE_URL}/api/pub-quiz/tts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: txt, voice_id: voice }),
+                    signal: controller.signal
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error(`TTS API status: ${response.status}`);
+                    return response.blob();
+                })
+                .then(audioBlob => {
                     clearTimeout(timeoutId);
-                    if (e.name === 'AbortError') {
-                        console.warn('[TTS] ⚠️ Fetch aborted (timeout)');
-                    } else {
+                    if (controller.signal.aborted) { resolve(); return; }
+                    
+                    console.log('[TTS] 🎵 Blob size:', audioBlob.size, 'bytes');
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    currentTTSAudio = audio;
+
+                    audio.onended = () => {
+                        console.log('[TTS] 🎵 Audio playback ended');
+                        URL.revokeObjectURL(audioUrl);
+                        if (currentTTSAudio === audio) currentTTSAudio = null;
+                        resolve();
+                    };
+
+                    audio.onerror = () => {
+                        URL.revokeObjectURL(audioUrl);
+                        if (currentTTSAudio === audio) currentTTSAudio = null;
+                        resolve();
+                    };
+
+                    audio.play().catch(() => resolve());
+                })
+                .catch(e => {
+                    clearTimeout(timeoutId);
+                    if (e.name !== 'AbortError') {
                         console.warn('[TTS] ⚠️ TTS error:', e.message);
                     }
-                    resolve(); // Always resolve — TTS is optional, never block the quiz
-                }
+                    resolve(); // Always resolve — TTS is optional
+                });
             });
         }
 
@@ -2180,7 +2176,25 @@
         }
 
         /**
-         * Play TTS for a question — countdown starts IMMEDIATELY, TTS plays in background
+         * Cancel any in-flight TTS request and stop audio playback
+         */
+        function cancelCurrentTTS() {
+            if (currentTTSAbortController) {
+                console.log('[TTS] 🛑 Cancelling previous TTS request');
+                currentTTSAbortController.abort();
+                currentTTSAbortController = null;
+            }
+            if (currentTTSAudio) {
+                currentTTSAudio.pause();
+                currentTTSAudio.src = '';
+                currentTTSAudio = null;
+            }
+            isPlayingQuestionTTS = false;
+        }
+
+        /**
+         * Play TTS for a question — countdown starts IMMEDIATELY, TTS plays in background.
+         * If a previous TTS is still running, it gets CANCELLED.
          */
         async function playQuestionTTS(question) {
             if (!question) return;
@@ -2190,29 +2204,36 @@
             questionStartedAt = new Date().toISOString();
             startCountdown();
             
-            // TTS plays in background — if it fails, quiz continues silently
-            if (isPlayingQuestionTTS) {
-                console.log('[TTS] ⚠️ Already playing TTS, skipping');
-                return;
-            }
+            // Cancel any previous TTS — new question takes priority
+            cancelCurrentTTS();
             
             isPlayingQuestionTTS = true;
             lastSpokenQuestionId = question.id;
+            const myQuestionId = question.id; // Capture for stale check
             
             try {
                 // Announce genre if first question of a round
                 if (question.number === 1) {
                     console.log('[TTS] 📢 Announcing round:', question.round, question.genre);
                     await playTTS(`Round ${question.round}: ${question.genre}`, 'daniel');
+                    // Check if we've been superseded by a newer question
+                    if (lastSpokenQuestionId !== myQuestionId) return;
                 }
                 
                 console.log('[TTS] 🎙️ Playing question:', question.text);
                 await playTTS(question.text, 'daniel');
                 console.log('[TTS] ✅ TTS complete for Q' + question.number);
             } catch (err) {
-                console.warn('[TTS] ⚠️ TTS failed for Q' + question.number + ':', err.message);
+                if (err.name === 'AbortError') {
+                    console.log('[TTS] 🛑 TTS cancelled (new question started)');
+                } else {
+                    console.warn('[TTS] ⚠️ TTS failed for Q' + question.number + ':', err.message);
+                }
             } finally {
-                isPlayingQuestionTTS = false;
+                // Only clear flag if we're still the active TTS
+                if (lastSpokenQuestionId === myQuestionId) {
+                    isPlayingQuestionTTS = false;
+                }
             }
         }
 
