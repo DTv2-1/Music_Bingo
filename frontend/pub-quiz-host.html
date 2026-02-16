@@ -757,6 +757,159 @@
             opacity: 0.4;
             font-size: 0.95em;
         }
+        /* ============================================
+           TUTORIAL OVERLAY
+           ============================================ */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 50000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .tutorial-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .tutorial-backdrop {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75);
+            z-index: 50001;
+        }
+        .tutorial-spotlight {
+            position: absolute;
+            z-index: 50002;
+            border-radius: 12px;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.75), 0 0 30px rgba(99,102,241,0.5);
+            border: 2px solid rgba(139,92,246,0.6);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+        .tutorial-tooltip {
+            position: absolute;
+            z-index: 50003;
+            background: linear-gradient(135deg, rgba(30,35,50,0.98), rgba(15,18,28,0.98));
+            border: 2px solid rgba(139,92,246,0.5);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 380px;
+            width: 90vw;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(99,102,241,0.15);
+            pointer-events: all;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tutorial-tooltip-arrow {
+            position: absolute;
+            width: 14px; height: 14px;
+            background: linear-gradient(135deg, rgba(30,35,50,0.98), rgba(15,18,28,0.98));
+            border: 2px solid rgba(139,92,246,0.5);
+            transform: rotate(45deg);
+            z-index: -1;
+        }
+        .tutorial-step-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7em;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .tutorial-title {
+            font-size: 1.15em;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, #a78bfa, #c4b5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tutorial-desc {
+            font-size: 0.9em;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 20px;
+        }
+        .tutorial-desc strong {
+            color: #c4b5fd;
+        }
+        .tutorial-desc .tip {
+            display: block;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(99,102,241,0.1);
+            border-left: 3px solid #8b5cf6;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9em;
+            color: rgba(255,255,255,0.7);
+        }
+        .tutorial-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .tutorial-btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+        .tutorial-btn-next {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+        }
+        .tutorial-btn-next:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 25px rgba(99,102,241,0.5);
+        }
+        .tutorial-btn-back {
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .tutorial-btn-back:hover {
+            background: rgba(255,255,255,0.12);
+        }
+        .tutorial-btn-skip {
+            background: none;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.8em;
+            padding: 8px 14px;
+        }
+        .tutorial-btn-skip:hover {
+            color: rgba(255,255,255,0.7);
+        }
+        .tutorial-progress {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+        .tutorial-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            transition: all 0.3s ease;
+        }
+        .tutorial-dot.active {
+            background: #8b5cf6;
+            box-shadow: 0 0 8px rgba(139,92,246,0.5);
+            transform: scale(1.3);
+        }
+        .tutorial-dot.done {
+            background: rgba(139,92,246,0.4);
+        }
     </style>
     <script src="/config.js"></script>
 </head>
@@ -766,6 +919,10 @@
         style="position: fixed; top: 20px; left: 20px; z-index: 1000; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 10px; color: white; text-decoration: none; font-weight: 600; backdrop-filter: blur(10px); transition: all 0.3s ease;">
         ← Sessions
     </a>
+    <button onclick="startTutorial()"
+        style="position: fixed; top: 20px; right: 20px; z-index: 1000; background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 10px 20px; border-radius: 10px; color: white; border: none; font-weight: 700; font-size: 0.9em; cursor: pointer; backdrop-filter: blur(10px); transition: all 0.3s ease; font-family: 'Outfit', sans-serif; box-shadow: 0 4px 15px rgba(99,102,241,0.4);">
+        ❓ Tutorial
+    </button>
     <div class="dashboard-container">
         <div class="main-panel">
             <div class="quiz-header">
@@ -3480,6 +3637,278 @@
             const overlay = document.getElementById('answersModalOverlay');
             overlay.classList.remove('show');
         }
+    </script>
+
+    <!-- ============================================
+         TUTORIAL OVERLAY
+         ============================================ -->
+    <div class="tutorial-overlay" id="tutorialOverlay">
+        <div class="tutorial-backdrop" id="tutorialBackdrop"></div>
+        <div class="tutorial-spotlight" id="tutorialSpotlight"></div>
+        <div class="tutorial-tooltip" id="tutorialTooltip">
+            <div class="tutorial-step-badge" id="tutorialBadge">Step 1 of 10</div>
+            <div class="tutorial-title" id="tutorialTitle">Welcome</div>
+            <div class="tutorial-desc" id="tutorialDesc">Description here</div>
+            <div class="tutorial-progress" id="tutorialDots"></div>
+            <div class="tutorial-nav" style="margin-top: 16px;">
+                <button class="tutorial-btn tutorial-btn-back" id="tutorialBack" onclick="tutorialPrev()">← Back</button>
+                <button class="tutorial-btn tutorial-btn-skip" id="tutorialSkip" onclick="endTutorial()">Skip</button>
+                <button class="tutorial-btn tutorial-btn-next" id="tutorialNext" onclick="tutorialNext()">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ============================================
+    // INTERACTIVE TUTORIAL
+    // ============================================
+    const TUTORIAL_STEPS = [
+        {
+            title: '🎉 Welcome to the Host Dashboard!',
+            desc: `This tutorial will guide you through running a <strong>Perfect DJ Pub Quiz</strong> step by step.<br><br>You\'ll learn how to set up, start, and manage your quiz night like a pro!<span class="tip">💡 You can re-open this tutorial anytime with the ❓ button in the top-right corner.</span>`,
+            target: '.quiz-header',
+            position: 'bottom'
+        },
+        {
+            title: '📊 Stats Overview',
+            desc: `This area shows your live stats at a glance:<br><br>• <strong>Teams</strong> — how many teams have registered<br>• <strong>Round</strong> — current round / total rounds<br>• <strong>Progress</strong> — overall quiz completion %<br>• <strong>Status</strong> — current state of the quiz<span class="tip">📈 The progress bar below fills up as you advance through questions.</span>`,
+            target: '.stat-grid',
+            position: 'bottom'
+        },
+        {
+            title: '⚙️ Quiz Settings',
+            desc: `Configure your quiz before starting:<br><br>• <strong>TTS Mode</strong> — Choose voice: Browser (free & instant), ElevenLabs (premium), or Off<br>• <strong>Voice</strong> — Select which voice reads questions aloud<br>• <strong>Question Types</strong> — Include Multiple Choice, Written, or both<br>• <strong>Difficulty Mix</strong> — Set how many Easy/Medium/Hard questions per round<span class="tip">🎙️ Browser TTS works great for most setups. Connect to external speakers for best results!</span>`,
+            target: '#ttsMode',
+            targetParent: 3,
+            position: 'bottom'
+        },
+        {
+            title: '🎮 Quiz Controls — Your Command Center',
+            desc: `These buttons control the entire quiz flow:<br><br>• <strong>▶️ Start</strong> — Begin the quiz (sends questions to players)<br>• <strong>📱 QR</strong> — Show QR code for teams to scan & register<br>• <strong>🖨️ Print</strong> — Generate PDF answer sheets<br>• <strong>🔄 Generate</strong> — AI-generate quiz questions based on genre votes<br>• <strong>👁️ Answer</strong> — Reveal/hide the correct answer<span class="tip">📱 Show the QR code on a big screen so all teams can scan it easily!</span>`,
+            target: '.host-controls',
+            position: 'bottom'
+        },
+        {
+            title: '⏭️ Navigation & Game Flow',
+            desc: `More control buttons:<br><br>• <strong>⏭️ Next</strong> — Advance to the next question<br>• <strong>🔊 Speak</strong> — Read the current question aloud via TTS<br>• <strong>📋 Answers</strong> — View all team answers in detail<br>• <strong>🔄 Reset</strong> — Reset the entire quiz (⚠️ deletes everything)<br>• <strong>⏹️ End</strong> — End the quiz early & notify all players<span class="tip">⚠️ Reset is irreversible! Only use it if you want to start completely fresh.</span>`,
+            target: '.host-controls',
+            position: 'top'
+        },
+        {
+            title: '⏱️ Auto-Advance Timer',
+            desc: `The timer automatically advances to the next question:<br><br>• <strong>Enable/Disable</strong> — Toggle auto-advance on/off<br>• <strong>Pause</strong> — Temporarily pause the countdown<br>• <strong>Duration</strong> — Set seconds per question (5-120s)<br>• <strong>Halftime</strong> — Set the break duration between rounds<span class="tip">⏰ 15 seconds works great for most quizzes. Increase to 30s for harder questions!</span>`,
+            target: '#countdown',
+            targetParent: 2,
+            position: 'top'
+        },
+        {
+            title: '🏆 Leaderboard',
+            desc: `The live leaderboard updates in real-time as answers come in:<br><br>• Teams are ranked by total score<br>• Top 3 teams get a special highlight<br>• Scores update automatically — no refresh needed!<span class="tip">🎉 Show this on a projector for maximum excitement!</span>`,
+            target: '#leaderboardList',
+            position: 'top'
+        },
+        {
+            title: '📋 Live Answers Feed',
+            desc: `Watch answers come in as teams submit them:<br><br>• <strong>🔴 Current</strong> — Shows answers for the current question only<br>• <strong>📊 All</strong> — Shows accumulated answers for all questions so far<br><br>Each answer shows the team name, their answer, and whether it\'s correct (✅) or incorrect (❌).<span class="tip">🔍 Use "All" view to see a complete history of how teams performed across all questions.</span>`,
+            target: '#responsesCard',
+            position: 'top'
+        },
+        {
+            title: '📊 Genre Votes',
+            desc: `When teams register, they vote for their preferred music genres.<br><br>The <strong>🔄 Generate</strong> button uses these votes to create AI-powered quiz questions tailored to your audience\'s preferences!<span class="tip">🎵 More diverse genre votes = more varied and fun questions!</span>`,
+            target: '#genreVotesCard',
+            position: 'top'
+        },
+        {
+            title: '🚀 Typical Quiz Flow',
+            desc: `Here\'s the recommended order to run your quiz:<br><br><strong>1.</strong> 📱 Show QR code → teams register & vote genres<br><strong>2.</strong> 🔄 Generate questions (AI creates them from votes)<br><strong>3.</strong> ⚙️ Set timer duration & TTS voice<br><strong>4.</strong> ▶️ Start the quiz<br><strong>5.</strong> ⏭️ Navigate questions (or let auto-advance do it)<br><strong>6.</strong> 👁️ Reveal answers + 🔊 Speak them<br><strong>7.</strong> 🏆 Watch the leaderboard update live!<span class="tip">✨ That\'s it! You\'re ready to host an amazing pub quiz. Have fun!</span>`,
+            target: '.quiz-header',
+            position: 'bottom'
+        }
+    ];
+
+    let tutorialStep = 0;
+    let tutorialActive = false;
+
+    function startTutorial() {
+        tutorialStep = 0;
+        tutorialActive = true;
+        const overlay = document.getElementById('tutorialOverlay');
+        overlay.classList.add('active');
+
+        // Build dots
+        const dotsContainer = document.getElementById('tutorialDots');
+        dotsContainer.innerHTML = TUTORIAL_STEPS.map((_, i) =>
+            `<div class="tutorial-dot" id="tutDot${i}"></div>`
+        ).join('');
+
+        renderTutorialStep();
+    }
+
+    function endTutorial() {
+        tutorialActive = false;
+        const overlay = document.getElementById('tutorialOverlay');
+        overlay.classList.remove('active');
+
+        // Remove any highlights
+        document.querySelectorAll('.tutorial-highlighted').forEach(el => {
+            el.classList.remove('tutorial-highlighted');
+            el.style.removeProperty('position');
+            el.style.removeProperty('z-index');
+        });
+    }
+
+    function tutorialNext() {
+        if (tutorialStep < TUTORIAL_STEPS.length - 1) {
+            tutorialStep++;
+            renderTutorialStep();
+        } else {
+            endTutorial();
+        }
+    }
+
+    function tutorialPrev() {
+        if (tutorialStep > 0) {
+            tutorialStep--;
+            renderTutorialStep();
+        }
+    }
+
+    function renderTutorialStep() {
+        const step = TUTORIAL_STEPS[tutorialStep];
+        const total = TUTORIAL_STEPS.length;
+
+        // Update text
+        document.getElementById('tutorialBadge').textContent = `Step ${tutorialStep + 1} of ${total}`;
+        document.getElementById('tutorialTitle').textContent = step.title;
+        document.getElementById('tutorialDesc').innerHTML = step.desc;
+
+        // Update dots
+        for (let i = 0; i < total; i++) {
+            const dot = document.getElementById(`tutDot${i}`);
+            if (dot) {
+                dot.className = 'tutorial-dot';
+                if (i === tutorialStep) dot.classList.add('active');
+                else if (i < tutorialStep) dot.classList.add('done');
+            }
+        }
+
+        // Update buttons
+        document.getElementById('tutorialBack').style.visibility = tutorialStep === 0 ? 'hidden' : 'visible';
+        document.getElementById('tutorialNext').textContent = tutorialStep === total - 1 ? '✅ Finish' : 'Next →';
+        document.getElementById('tutorialSkip').style.display = tutorialStep === total - 1 ? 'none' : '';
+
+        // Find target element
+        let targetEl = document.querySelector(step.target);
+        if (step.targetParent && targetEl) {
+            for (let i = 0; i < step.targetParent; i++) {
+                if (targetEl.parentElement) targetEl = targetEl.parentElement;
+            }
+        }
+
+        // Remove previous highlights
+        document.querySelectorAll('.tutorial-highlighted').forEach(el => {
+            el.classList.remove('tutorial-highlighted');
+            el.style.removeProperty('z-index');
+        });
+
+        const spotlight = document.getElementById('tutorialSpotlight');
+        const tooltip = document.getElementById('tutorialTooltip');
+
+        if (targetEl) {
+            // Scroll target into view
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Wait for scroll, then position
+            setTimeout(() => {
+                const rect = targetEl.getBoundingClientRect();
+                const pad = 10;
+
+                // Position spotlight
+                spotlight.style.display = 'block';
+                spotlight.style.top = (rect.top - pad) + 'px';
+                spotlight.style.left = (rect.left - pad) + 'px';
+                spotlight.style.width = (rect.width + pad * 2) + 'px';
+                spotlight.style.height = (rect.height + pad * 2) + 'px';
+
+                // Highlight target
+                targetEl.classList.add('tutorial-highlighted');
+                targetEl.style.zIndex = '50002';
+
+                // Position tooltip
+                positionTooltip(tooltip, rect, step.position);
+            }, 350);
+        } else {
+            // No target — center tooltip
+            spotlight.style.display = 'none';
+            tooltip.style.top = '50%';
+            tooltip.style.left = '50%';
+            tooltip.style.transform = 'translate(-50%, -50%)';
+        }
+    }
+
+    function positionTooltip(tooltip, targetRect, position) {
+        const gap = 18;
+        const tooltipWidth = 380;
+        const vpW = window.innerWidth;
+        const vpH = window.innerHeight;
+
+        // Reset transform
+        tooltip.style.transform = 'none';
+
+        if (position === 'bottom') {
+            let top = targetRect.bottom + gap;
+            let left = targetRect.left + (targetRect.width / 2) - (tooltipWidth / 2);
+
+            // Clamp horizontally
+            left = Math.max(16, Math.min(left, vpW - tooltipWidth - 16));
+
+            // If tooltip would go off bottom, flip to top
+            if (top + 250 > vpH) {
+                top = targetRect.top - gap - 250;
+                if (top < 16) top = 16;
+            }
+
+            tooltip.style.top = top + 'px';
+            tooltip.style.left = left + 'px';
+        } else {
+            // position === 'top'
+            const tooltipApproxHeight = 280;
+            let top = targetRect.top - gap - tooltipApproxHeight;
+            let left = targetRect.left + (targetRect.width / 2) - (tooltipWidth / 2);
+
+            // Clamp horizontally
+            left = Math.max(16, Math.min(left, vpW - tooltipWidth - 16));
+
+            // If tooltip would go off top, flip to bottom
+            if (top < 16) {
+                top = targetRect.bottom + gap;
+            }
+
+            tooltip.style.top = top + 'px';
+            tooltip.style.left = left + 'px';
+        }
+    }
+
+    // Close tutorial on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && tutorialActive) {
+            endTutorial();
+        }
+        if (e.key === 'ArrowRight' && tutorialActive) {
+            tutorialNext();
+        }
+        if (e.key === 'ArrowLeft' && tutorialActive) {
+            tutorialPrev();
+        }
+    });
+
+    // Reposition on resize
+    window.addEventListener('resize', () => {
+        if (tutorialActive) {
+            renderTutorialStep();
+        }
+    });
     </script>
 </body>
 
