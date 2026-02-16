@@ -29,12 +29,13 @@ echo "🔄 Running Django migrations..."\n\
 python manage.py migrate --noinput\n\
 echo "✅ Migrations complete"\n\
 echo ""\n\
-echo "🚀 Starting Gunicorn with gevent workers (async for SSE support)..."\n\
-exec gunicorn --workers 4 --bind 0.0.0.0:8080 --timeout 120 --preload --worker-class gevent --worker-connections 1000 --access-logfile - --error-logfile - --log-level info wsgi:application' > /app/start.sh \
+echo "🚀 Starting Gunicorn with gthread workers (threads handle SSE + API concurrently)..."\n\
+exec gunicorn --workers 3 --threads 4 --bind 0.0.0.0:8080 --timeout 300 --preload --worker-class gthread --access-logfile - --error-logfile - --log-level info wsgi:application' > /app/start.sh \
     && chmod +x /app/start.sh
 
-# Run gunicorn with 4 gevent workers (async — SSE streams don't block workers)
-# --access-logfile - enables access logs to stdout
-# --error-logfile - enables error logs to stdout  
-# --log-level info shows more details
+# Gunicorn gthread: 3 workers × 4 threads = 12 concurrent request slots
+# - SSE streams (host + player) hold 2 threads but other 10 remain free for API
+# - gthread works with openai library (no monkey patching like gevent)
+# - --timeout 300 prevents SSE threads from being killed (long-lived connections)
+# - Threads share memory within a worker = lower footprint than 6 sync workers
 CMD ["/app/start.sh"]
