@@ -1315,6 +1315,24 @@
                     btn.disabled = alreadyAnswered;
                 });
                 selectedOption = null;
+                
+                // Reset submit button text and state
+                const mcSubmitBtn = document.getElementById('submitMCBtn');
+                if (mcSubmitBtn) {
+                    if (alreadyAnswered) {
+                        mcSubmitBtn.disabled = true;
+                        mcSubmitBtn.textContent = '✅ Answer Submitted';
+                    } else {
+                        mcSubmitBtn.disabled = true; // Disabled until an option is selected
+                        mcSubmitBtn.textContent = 'Submit Answer';
+                    }
+                }
+                
+                // Reset answer status message
+                const answerStatus = document.getElementById('answerStatus');
+                if (answerStatus && !alreadyAnswered) {
+                    answerStatus.style.display = 'none';
+                }
             } else {
                 typeLabel.textContent = '✍️ Written Answer - Type your answer';
                 document.getElementById('multipleChoiceContainer').style.display = 'none';
@@ -1333,6 +1351,17 @@
                 if (submitBtn) {
                     submitBtn.disabled = alreadyAnswered;
                     submitBtn.textContent = alreadyAnswered ? '✅ Saved' : 'Submit Answer';
+                }
+                // Reset answer status for written answers
+                const writtenAnswerStatus = document.getElementById('answerStatus');
+                if (writtenAnswerStatus) {
+                    if (alreadyAnswered) {
+                        writtenAnswerStatus.textContent = '✅ Answer Submitted!';
+                        writtenAnswerStatus.style.display = 'block';
+                        writtenAnswerStatus.style.color = '#4ade80';
+                    } else {
+                        writtenAnswerStatus.style.display = 'none';
+                    }
                 }
             }
             
