@@ -556,6 +556,41 @@
                         </div>
                     </div>
                     
+                    <!-- Answer Summary Counters -->
+                    <div id="answerSummaryBar" style="display: none; margin-top: 20px;">
+                        <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+                            <div style="background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.3); padding: 10px 20px; border-radius: 10px; text-align: center; min-width: 80px;">
+                                <div style="font-size: 1.6em; font-weight: 800; color: #4ade80;" id="correctCount">0</div>
+                                <div style="font-size: 0.75em; color: #4ade80; opacity: 0.8;">✅ Correct</div>
+                            </div>
+                            <div style="background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.3); padding: 10px 20px; border-radius: 10px; text-align: center; min-width: 80px;">
+                                <div style="font-size: 1.6em; font-weight: 800; color: #f87171;" id="incorrectCount">0</div>
+                                <div style="font-size: 0.75em; color: #f87171; opacity: 0.8;">❌ Incorrect</div>
+                            </div>
+                            <div style="background: rgba(148,163,184,0.15); border: 1px solid rgba(148,163,184,0.3); padding: 10px 20px; border-radius: 10px; text-align: center; min-width: 80px;">
+                                <div style="font-size: 1.6em; font-weight: 800; color: #94a3b8;" id="unansweredCount">0</div>
+                                <div style="font-size: 0.75em; color: #94a3b8; opacity: 0.8;">⏭️ Skipped</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Answer Review Section -->
+                    <div id="answerReviewSection" style="display: none; margin-top: 20px; text-align: left;">
+                        <h3 style="text-align: center; margin-bottom: 16px; color: #e2e8f0;">📝 Answer Review</h3>
+                        
+                        <!-- Filter tabs -->
+                        <div style="display: flex; justify-content: center; gap: 6px; margin-bottom: 16px; flex-wrap: wrap;">
+                            <button onclick="filterAnswerReview('all')" id="filterAll" class="review-filter-btn active" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); background: var(--secondary, #6366f1); color: #fff; font-size: 0.78em; font-weight: 600; cursor: pointer; font-family: inherit;">All</button>
+                            <button onclick="filterAnswerReview('correct')" id="filterCorrect" class="review-filter-btn" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(74,222,128,0.3); background: transparent; color: #4ade80; font-size: 0.78em; font-weight: 600; cursor: pointer; font-family: inherit;">✅ Correct</button>
+                            <button onclick="filterAnswerReview('incorrect')" id="filterIncorrect" class="review-filter-btn" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(248,113,113,0.3); background: transparent; color: #f87171; font-size: 0.78em; font-weight: 600; cursor: pointer; font-family: inherit;">❌ Incorrect</button>
+                            <button onclick="filterAnswerReview('unanswered')" id="filterUnanswered" class="review-filter-btn" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(148,163,184,0.3); background: transparent; color: #94a3b8; font-size: 0.78em; font-weight: 600; cursor: pointer; font-family: inherit;">⏭️ Skipped</button>
+                        </div>
+                        
+                        <div id="answerReviewList" style="max-height: 400px; overflow-y: auto;">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
                     <div style="margin-top: 30px; padding: 20px; background: rgba(59, 130, 246, 0.1); border-radius: 10px; border: 2px solid rgba(59, 130, 246, 0.3);">
                         <p style="margin: 0; font-size: 0.95em; color: #e2e8f0;">
                             <strong id="venueNameFinal">-</strong> thanks you for participating!<br>
@@ -1128,7 +1163,7 @@
                             }
                             
                             // Load team stats
-                            fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/team/${TEAM_ID}/stats`)
+                            fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/team/${teamId}/stats`)
                                 .then(r => r.json())
                                 .then(stats => {
                                     console.log('📊 Team stats:', stats);
@@ -1137,6 +1172,11 @@
                                     document.getElementById('questionsAnswered').textContent = stats.answers_submitted || '0';
                                     document.getElementById('bonusPoints').textContent = stats.bonus_points || '0';
                                     document.getElementById('venueNameFinal').textContent = stats.venue_name || 'The venue';
+                                    
+                                    // Render answer review section
+                                    if (stats.rounds && stats.rounds.length > 0) {
+                                        renderAnswerReview(stats);
+                                    }
                                 })
                                 .catch(err => {
                                     console.warn('⚠️ Could not load team stats:', err);
@@ -1476,7 +1516,7 @@
         }
 
         function showScreen(id) {
-            ['registrationScreen', 'waitingScreen', 'buzzScreen', 'questionScreen', 'revealScreen'].forEach(s => {
+            ['registrationScreen', 'waitingScreen', 'buzzScreen', 'questionScreen', 'revealScreen', 'completedScreen'].forEach(s => {
                 const el = document.getElementById(s);
                 if (el) el.style.display = (s === id) ? 'block' : 'none';
             });
@@ -1836,6 +1876,96 @@
                 submitBtn.style.background = '';
             }
         });
+
+        // ============================================
+        // ANSWER REVIEW — Shows correct/incorrect/unanswered
+        // ============================================
+        let answerReviewData = null; // Stored for filtering
+
+        function renderAnswerReview(stats) {
+            answerReviewData = stats;
+
+            // Update summary counters
+            document.getElementById('correctCount').textContent = stats.correct_count || 0;
+            document.getElementById('incorrectCount').textContent = stats.incorrect_count || 0;
+            document.getElementById('unansweredCount').textContent = stats.unanswered_count || 0;
+            document.getElementById('answerSummaryBar').style.display = 'block';
+            document.getElementById('answerReviewSection').style.display = 'block';
+
+            filterAnswerReview('all');
+        }
+
+        function filterAnswerReview(filter) {
+            if (!answerReviewData || !answerReviewData.rounds) return;
+
+            // Update active filter button
+            document.querySelectorAll('.review-filter-btn').forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.color = btn.id === 'filterCorrect' ? '#4ade80' :
+                                   btn.id === 'filterIncorrect' ? '#f87171' :
+                                   btn.id === 'filterUnanswered' ? '#94a3b8' : 'rgba(255,255,255,0.7)';
+            });
+            const activeBtn = document.getElementById('filter' + filter.charAt(0).toUpperCase() + filter.slice(1));
+            if (activeBtn) {
+                activeBtn.style.background = filter === 'correct' ? 'rgba(74,222,128,0.2)' :
+                                             filter === 'incorrect' ? 'rgba(248,113,113,0.2)' :
+                                             filter === 'unanswered' ? 'rgba(148,163,184,0.2)' :
+                                             'var(--secondary, #6366f1)';
+                if (filter === 'all') activeBtn.style.color = '#fff';
+            }
+
+            const list = document.getElementById('answerReviewList');
+            let html = '';
+
+            for (const round of answerReviewData.rounds) {
+                const filtered = round.questions.filter(q => filter === 'all' || q.status === filter);
+                if (filtered.length === 0) continue;
+
+                html += `<div style="margin-bottom: 16px;">
+                    <div style="font-size: 0.8em; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                        🎵 Round ${round.round_number} — ${round.genre}
+                    </div>`;
+
+                for (const q of filtered) {
+                    let icon, borderColor, teamAnsColor, statusLabel;
+                    if (q.status === 'correct') {
+                        icon = '✅'; borderColor = 'rgba(74,222,128,0.4)'; teamAnsColor = '#4ade80'; statusLabel = '';
+                    } else if (q.status === 'incorrect') {
+                        icon = '❌'; borderColor = 'rgba(248,113,113,0.4)'; teamAnsColor = '#f87171'; statusLabel = '';
+                    } else {
+                        icon = '⏭️'; borderColor = 'rgba(148,163,184,0.3)'; teamAnsColor = '#94a3b8'; statusLabel = '';
+                    }
+
+                    const teamAnsDisplay = q.team_answer || 'No answer';
+                    const diffColor = q.difficulty === 'easy' ? '#4ade80' : q.difficulty === 'hard' ? '#f87171' : '#fbbf24';
+
+                    html += `
+                    <div style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; border-left: 4px solid ${borderColor};">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 0.8em; font-weight: 700; opacity: 0.5; margin-bottom: 2px;">
+                                    Q${q.question_number}
+                                    <span style="background: ${diffColor}; color: #000; padding: 1px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 4px;">${q.difficulty} · ${q.points}pts</span>
+                                </div>
+                                <div style="font-size: 0.85em; margin-bottom: 6px; opacity: 0.9;">${q.question_text}</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.8em;">
+                                    <span style="color: ${teamAnsColor};">${icon} Your answer: <strong>${teamAnsDisplay}</strong></span>
+                                    ${q.status !== 'correct' ? `<span style="color: #4ade80; opacity: 0.8;">✅ Correct: <strong>${q.correct_answer}</strong></span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+
+                html += '</div>';
+            }
+
+            if (html === '') {
+                html = '<p style="text-align: center; opacity: 0.4; padding: 20px;">No questions match this filter.</p>';
+            }
+
+            list.innerHTML = html;
+        }
     </script>
 </body>
 

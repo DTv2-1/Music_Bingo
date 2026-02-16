@@ -418,13 +418,60 @@ class PubQuizService:
 
     @staticmethod
     def get_team_stats(session, team) -> dict:
-        """Get final statistics for a team."""
+        """Get final statistics for a team, including per-question breakdown."""
         all_teams = session.teams.all().order_by('-total_score', 'team_name')
         rank = None
         for idx, t in enumerate(all_teams, 1):
             if t.id == team.id:
                 rank = idx
                 break
+
+        # Build per-question breakdown
+        all_questions = QuizQuestion.objects.filter(
+            session=session
+        ).select_related('genre').order_by('round_number', 'question_number')
+
+        team_answers = {
+            ta.question_id: ta
+            for ta in TeamAnswer.objects.filter(team=team, question__session=session)
+        }
+
+        rounds_breakdown = {}
+        correct_count = 0
+        incorrect_count = 0
+        unanswered_count = 0
+
+        for q in all_questions:
+            rn = q.round_number
+            if rn not in rounds_breakdown:
+                rounds_breakdown[rn] = {
+                    'round_number': rn,
+                    'genre': q.genre.name if q.genre else 'General',
+                    'questions': [],
+                }
+
+            ta = team_answers.get(q.id)
+            if ta:
+                status = 'correct' if ta.is_correct else 'incorrect'
+                team_answer_text = ta.answer_text
+                if ta.is_correct:
+                    correct_count += 1
+                else:
+                    incorrect_count += 1
+            else:
+                status = 'unanswered'
+                team_answer_text = None
+                unanswered_count += 1
+
+            rounds_breakdown[rn]['questions'].append({
+                'question_number': q.question_number,
+                'question_text': q.question_text,
+                'correct_answer': q.correct_answer,
+                'team_answer': team_answer_text,
+                'status': status,
+                'points': q.get_points_value(),
+                'difficulty': q.difficulty,
+            })
 
         return {
             'team_name': team.team_name,
@@ -434,6 +481,11 @@ class PubQuizService:
             'total_teams': all_teams.count(),
             'answers_submitted': TeamAnswer.objects.filter(team=team).count(),
             'venue_name': session.venue_name,
+            'correct_count': correct_count,
+            'incorrect_count': incorrect_count,
+            'unanswered_count': unanswered_count,
+            'total_questions': all_questions.count(),
+            'rounds': list(rounds_breakdown.values()),
         }
 
     @staticmethod
