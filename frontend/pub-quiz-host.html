@@ -2069,36 +2069,71 @@
             const list = document.getElementById('responsesList');
             const count = document.getElementById('responsesCount');
             
-            // Count total answers across all questions
-            let totalAnswers = 0;
-            const keys = Object.keys(liveAnswersCache).sort();
-            keys.forEach(k => { totalAnswers += liveAnswersCache[k].length; });
+            // Build a lookup of all questions up to current index
+            // so we know which ones are "unanswered"
+            const totalQuestionsShown = currentQuestionIndex + 1;
+            const questionsShown = allQuestions.slice(0, totalQuestionsShown);
             
-            if (keys.length === 0) {
+            // Build team summary from liveAnswersCache + allQuestions
+            // First, collect all teams that have answered anything
+            const teamSet = new Set();
+            const keys = Object.keys(liveAnswersCache);
+            keys.forEach(key => {
+                liveAnswersCache[key].forEach(ans => teamSet.add(ans.team_name));
+            });
+            
+            // Also check stats for registered teams count
+            const totalTeams = lastSSEStats ? lastSSEStats.total_teams : teamSet.size;
+            
+            if (teamSet.size === 0 && questionsShown.length === 0) {
                 list.innerHTML = '<p style="opacity: 0.4; font-size: 0.9em; text-align: center; padding: 16px 0;">No answers recorded yet...</p>';
                 count.textContent = '0';
                 return;
             }
             
-            // Build team summary: aggregate all answers per team
-            const teamMap = {}; // { teamName: { correct: 0, total: 0, answers: [{key, answer_text, is_correct}] } }
-            keys.forEach(key => {
-                liveAnswersCache[key].forEach(ans => {
-                    if (!teamMap[ans.team_name]) {
-                        teamMap[ans.team_name] = { correct: 0, total: 0, answers: [] };
+            // For each team, build a full picture: answered + unanswered
+            const teamMap = {};
+            teamSet.forEach(name => {
+                teamMap[name] = { correct: 0, incorrect: 0, unanswered: 0, total: 0, questions: [] };
+            });
+            
+            // Go through each question shown so far, in order
+            questionsShown.forEach((q, idx) => {
+                const key = `R${q.round}Q${q.number}`;
+                const answersForQ = liveAnswersCache[key] || [];
+                
+                teamSet.forEach(teamName => {
+                    const team = teamMap[teamName];
+                    const teamAns = answersForQ.find(a => a.team_name === teamName);
+                    
+                    if (teamAns) {
+                        const hasAns = teamAns.answer_text && teamAns.answer_text.trim() !== '';
+                        if (hasAns) {
+                            team.total++;
+                            if (teamAns.is_correct) {
+                                team.correct++;
+                                team.questions.push({ round: q.round, number: q.number, key, status: 'correct', answer: teamAns.answer_text });
+                            } else {
+                                team.incorrect++;
+                                team.questions.push({ round: q.round, number: q.number, key, status: 'incorrect', answer: teamAns.answer_text });
+                            }
+                        } else {
+                            team.unanswered++;
+                            team.questions.push({ round: q.round, number: q.number, key, status: 'unanswered', answer: null });
+                        }
+                    } else {
+                        team.unanswered++;
+                        team.questions.push({ round: q.round, number: q.number, key, status: 'unanswered', answer: null });
                     }
-                    const t = teamMap[ans.team_name];
-                    const hasAnswer = ans.answer_text && ans.answer_text.trim() !== '';
-                    if (hasAnswer) {
-                        t.total++;
-                        if (ans.is_correct) t.correct++;
-                    }
-                    t.answers.push({ key, answer_text: ans.answer_text, is_correct: ans.is_correct });
                 });
             });
             
             // Sort teams by correct answers (descending)
             const teamNames = Object.keys(teamMap).sort((a, b) => teamMap[b].correct - teamMap[a].correct);
+            
+            // Count totals
+            let totalAnswers = 0;
+            teamNames.forEach(n => { totalAnswers += teamMap[n].total; });
             
             count.textContent = `${totalAnswers} total`;
             
@@ -2106,13 +2141,14 @@
             
             // Summary header
             html += `<div style="background: rgba(99,102,241,0.1); padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; font-size: 0.8em; text-align: center; color: #a5b4fc;">
-                📊 ${teamNames.length} team${teamNames.length !== 1 ? 's' : ''} · ${totalAnswers} answer${totalAnswers !== 1 ? 's' : ''} · ${keys.length} question${keys.length !== 1 ? 's' : ''}
+                📊 ${teamNames.length} team${teamNames.length !== 1 ? 's' : ''} · ${totalAnswers} answer${totalAnswers !== 1 ? 's' : ''} · ${totalQuestionsShown} question${totalQuestionsShown !== 1 ? 's' : ''}
             </div>`;
             
             // Each team card
             teamNames.forEach(name => {
                 const team = teamMap[name];
-                const pct = team.total > 0 ? Math.round((team.correct / team.total) * 100) : 0;
+                const answered = team.correct + team.incorrect;
+                const pct = answered > 0 ? Math.round((team.correct / answered) * 100) : 0;
                 const barColor = pct >= 70 ? '#4ade80' : pct >= 40 ? '#fbbf24' : '#f87171';
                 
                 html += `
@@ -2121,26 +2157,32 @@
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <span style="font-weight: 700; font-size: 0.95em;">${name}</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 12px; font-size: 0.8em;">
+                        <div style="display: flex; align-items: center; gap: 10px; font-size: 0.8em;">
                             <span style="color: #4ade80; font-weight: 700;">✅ ${team.correct}</span>
-                            <span style="color: #f87171; font-weight: 700;">❌ ${team.total - team.correct}</span>
+                            <span style="color: #f87171; font-weight: 700;">❌ ${team.incorrect}</span>
+                            ${team.unanswered > 0 ? `<span style="color: #94a3b8; font-weight: 700;">⏭️ ${team.unanswered}</span>` : ''}
                             <span style="background: ${barColor}; color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 0.85em;">${pct}%</span>
                         </div>
                     </div>
                     <div style="padding: 0 12px 8px; display: flex; flex-wrap: wrap; gap: 4px;">
-                        ${team.answers.map(a => {
-                            const hasAns = a.answer_text && a.answer_text.trim() !== '';
-                            const bg = !hasAns ? 'rgba(255,255,255,0.05)' : (a.is_correct ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)');
-                            const border = !hasAns ? 'rgba(255,255,255,0.1)' : (a.is_correct ? 'rgba(74,222,128,0.3)' : 'rgba(248,113,113,0.3)');
-                            const icon = !hasAns ? '⏳' : (a.is_correct ? '✅' : '❌');
-                            const txt = hasAns ? a.answer_text : '—';
-                            return `<div title="${a.key}: ${txt}" style="background: ${bg}; border: 1px solid ${border}; padding: 3px 8px; border-radius: 5px; font-size: 0.75em; display: flex; align-items: center; gap: 4px;">
-                                <span style="opacity: 0.5; font-size: 0.85em;">${a.key.replace('R','').replace('Q','.')}</span>
+                        ${team.questions.map(q => {
+                            const bg = q.status === 'correct' ? 'rgba(74,222,128,0.15)' :
+                                       q.status === 'incorrect' ? 'rgba(248,113,113,0.15)' :
+                                       'rgba(148,163,184,0.08)';
+                            const border = q.status === 'correct' ? 'rgba(74,222,128,0.3)' :
+                                           q.status === 'incorrect' ? 'rgba(248,113,113,0.3)' :
+                                           'rgba(148,163,184,0.2)';
+                            const icon = q.status === 'correct' ? '✅' :
+                                         q.status === 'incorrect' ? '❌' : '—';
+                            const tooltip = q.answer ? `${q.key}: ${q.answer}` : `${q.key}: No answer`;
+                            return `<div title="${tooltip}" style="background: ${bg}; border: 1px solid ${border}; padding: 3px 8px; border-radius: 5px; font-size: 0.75em; display: flex; align-items: center; gap: 4px;">
+                                <span style="opacity: 0.5; font-size: 0.85em;">${q.round}.${q.number}</span>
                                 ${icon}
                             </div>`;
                         }).join('')}
                     </div>
                 </div>`;
+            });
             });
             
             list.innerHTML = html;
