@@ -223,6 +223,27 @@ def set_auto_advance_time(request, session_id):
 
 
 @api_view(['POST'])
+def end_quiz(request, session_id):
+    """Force-end the quiz: set status to 'completed' so SSE notifies all players."""
+    session = get_session_by_code_or_id(session_id)
+    if not session:
+        return Response({"error": "Session not found"}, status=404)
+
+    if session.status == 'completed':
+        return Response({'success': True, 'message': 'Quiz already completed', 'status': 'completed'})
+
+    session.status = 'completed'
+    session.save(update_fields=['status'])
+    logger.info(f"[END_QUIZ] Quiz {session_id} force-ended by host")
+
+    return Response({
+        'success': True,
+        'message': 'Quiz ended successfully',
+        'status': 'completed',
+    })
+
+
+@api_view(['POST'])
 def generate_quiz_questions(request, session_id):
     """Generate quiz questions via AI based on genre votes."""
     session = get_session_by_code_or_id(session_id)

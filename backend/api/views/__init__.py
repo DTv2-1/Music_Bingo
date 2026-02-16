@@ -92,6 +92,7 @@ from .pub_quiz_game_views import (
     sync_question_to_players,
     start_countdown,
     next_question,
+    end_quiz,
     toggle_auto_advance,
     pause_auto_advance,
     set_auto_advance_time,

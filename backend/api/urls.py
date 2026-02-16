@@ -68,6 +68,7 @@ urlpatterns = [
     path('pub-quiz/<str:session_id>/sync-question', views.sync_question_to_players, name='pub-quiz-sync'),
     path('pub-quiz/<str:session_id>/start-countdown', views.start_countdown, name='pub-quiz-start-countdown'),
     path('pub-quiz/<str:session_id>/next', views.next_question, name='pub-quiz-next'),
+    path('pub-quiz/<str:session_id>/end', views.end_quiz, name='pub-quiz-end'),
     path('pub-quiz/<str:session_id>/toggle-auto-advance', views.toggle_auto_advance, name='pub-quiz-toggle-auto'),
     path('pub-quiz/<str:session_id>/pause-auto-advance', views.pause_auto_advance, name='pub-quiz-pause-auto'),
     path('pub-quiz/<str:session_id>/set-auto-advance-time', views.set_auto_advance_time, name='pub-quiz-set-timer'),

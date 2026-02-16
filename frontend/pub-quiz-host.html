@@ -2501,10 +2501,52 @@
             stopCountdown();
             
             if (currentQuestionIndex >= allQuestions.length - 1) {
-                // Quiz completed
-                showModal('success', '🎉 Quiz Completed!', 'All questions finished!');
-                document.getElementById('questionText').textContent = 'QUIZ COMPLETED! 🎉';
-                document.getElementById('currentGenre').textContent = 'FINISH';
+                // ===== QUIZ COMPLETED — notify backend, TTS, lock UI =====
+                console.log('🏁 [QUIZ END] Last question reached, finalizing quiz...');
+                
+                // 1. Notify backend to set session.status = 'completed'
+                //    This triggers SSE 'ended' event for all players
+                try {
+                    const response = await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/end`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const data = await response.json();
+                    console.log('🏁 [QUIZ END] Backend notified:', data);
+                } catch (error) {
+                    console.error('🏁 [QUIZ END] Failed to notify backend:', error);
+                }
+                
+                // 2. Update host UI to completion state
+                document.getElementById('questionText').textContent = '🎉 QUIZ COMPLETED!';
+                document.getElementById('currentGenre').textContent = 'THANK YOU FOR PLAYING!';
+                
+                // 3. Disable all host controls
+                const buttonsToDisable = ['btnNext', 'btnPrev', 'btnShowAnswer', 'btnSpeakAnswer', 'btnSpeakQuestion'];
+                buttonsToDisable.forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.style.opacity = '0.4';
+                        btn.style.pointerEvents = 'none';
+                    }
+                });
+                
+                // Hide countdown and answer display
+                const countdownEl = document.getElementById('countdownTimer');
+                if (countdownEl) countdownEl.style.display = 'none';
+                const answerDisplay = document.getElementById('answerDisplay');
+                if (answerDisplay) answerDisplay.style.display = 'none';
+                
+                // 4. Play TTS thank you message
+                const thankYouMessage = "That's the end of the quiz! Thank you all for participating! The host will announce the final results shortly. Great job everyone!";
+                console.log('🏁 [QUIZ END] Playing TTS thank you...');
+                await playTTS(thankYouMessage, 'daniel');
+                console.log('🏁 [QUIZ END] TTS complete');
+                
+                // 5. Show completion modal
+                showModal('success', '🎉 Quiz Completed!', 'All questions are finished! Players have been notified and can now see their results.\n\nYou can review the leaderboard in the stats panel.');
+                
                 return;
             }
             
@@ -2964,9 +3006,26 @@
             }
         }
 
-        function endQuiz() {
-            if (confirm('Are you sure you want to end this session?')) {
+        async function endQuiz() {
+            if (confirm('Are you sure you want to end this session? Players will see the completion screen.')) {
                 clearInterval(updateInterval);
+                stopCountdown();
+                
+                // Notify backend to mark quiz as completed
+                try {
+                    await fetch(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/end`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    console.log('🏁 [END QUIZ] Backend notified - session marked as completed');
+                } catch (error) {
+                    console.warn('⚠️ [END QUIZ] Failed to notify backend:', error);
+                }
+                
+                // Play farewell TTS
+                const farewellMessage = "The quiz has been ended by the host. Thank you all for playing! See you next time!";
+                await playTTS(farewellMessage, 'daniel');
+                
                 window.location.href = '/index';
             }
         }
