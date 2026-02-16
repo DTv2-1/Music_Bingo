@@ -1702,13 +1702,21 @@
         // Inicializar
         document.addEventListener('DOMContentLoaded', init);
 
+        let quizStarting = false; // Guard against multiple Start clicks
+
         async function startQuiz() {
+            if (quizStarting) {
+                console.log('[START] ⚠️ Already starting, ignoring duplicate click');
+                return;
+            }
             if (!questionsGenerated || allQuestions.length === 0) {
                 showModal('warning', 'Generate Questions First', 'Please generate questions first by clicking the "🔄 Generate" button!');
                 return;
             }
 
+            quizStarting = true;
             document.getElementById('btnStart').disabled = true;
+            document.getElementById('btnStart').textContent = '⏳ Starting...';
             document.getElementById('btnShowAnswer').disabled = false;
             document.getElementById('btnNext').disabled = false;
             
