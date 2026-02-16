@@ -1195,11 +1195,13 @@
         /**
          * Connect to Host SSE stream for real-time updates
          */
+        let sseReconnectCount = 0;
         function connectHostSSE() {
             if (hostEventSource) {
                 hostEventSource.close();
             }
-            console.log('🔌 Connecting to Host SSE stream...');
+            sseReconnectCount++;
+            console.log(`🔌 Connecting to Host SSE stream... (attempt #${sseReconnectCount})`);
             hostEventSource = new EventSource(`${BASE_URL}/api/pub-quiz/${SESSION_ID}/host-stream`);
 
             hostEventSource.onopen = () => {
@@ -1292,13 +1294,13 @@
                     hostEventSource.close();
                     hostEventSource = null;
                 }
-                // Retry connection after 5 seconds
-                console.log('Retrying Host SSE connection in 5 seconds...');
+                // Retry connection after 3 seconds
+                console.log('Retrying Host SSE connection in 3 seconds...');
                 setTimeout(() => {
                     if (!hostEventSource) {
                         connectHostSSE();
                     }
-                }, 5000);
+                }, 3000);
             };
         }
 

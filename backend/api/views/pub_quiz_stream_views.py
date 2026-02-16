@@ -128,9 +128,9 @@ def quiz_stream(request, session_id):
 
                     last_status = session.status
 
-                # Data keepalive every 30s
+                # Data keepalive every 15s (Cloud Run may kill idle connections)
                 current_time = timezone.now()
-                if (current_time - last_keepalive).total_seconds() >= 30:
+                if (current_time - last_keepalive).total_seconds() >= 15:
                     yield f"data: {json.dumps({'type': 'keepalive', 'timestamp': current_time.isoformat()})}\n\n"
                     last_keepalive = current_time
 
@@ -146,6 +146,7 @@ def quiz_stream(request, session_id):
     response = StreamingHttpResponse(event_generator(), content_type='text/event-stream')
     response['Cache-Control'] = 'no-cache'
     response['X-Accel-Buffering'] = 'no'
+    response['Connection'] = 'keep-alive'
     return response
 
 
@@ -260,8 +261,8 @@ def host_stream(request, session_id):
                     last_question = session.current_question
                     last_answer_count = current_answer_count
 
-                # Data keepalive every 30s
-                if (current_time - last_keepalive).total_seconds() >= 30:
+                # Data keepalive every 15s (Cloud Run may kill idle connections)
+                if (current_time - last_keepalive).total_seconds() >= 15:
                     yield f"data: {json.dumps({'type': 'keepalive', 'timestamp': current_time.isoformat()})}\n\n"
                     last_keepalive = current_time
 
@@ -276,4 +277,5 @@ def host_stream(request, session_id):
     response = StreamingHttpResponse(event_generator(), content_type='text/event-stream')
     response['Cache-Control'] = 'no-cache'
     response['X-Accel-Buffering'] = 'no'
+    response['Connection'] = 'keep-alive'
     return response
