@@ -1726,12 +1726,16 @@
                 const data = await response.json();
                 console.log('[START] ✅ Backend notified, quiz started for players');
                 
-                // Play welcome message locally on host
+                // Play welcome message locally on host (non-blocking — don't let TTS failure stop the quiz)
                 isPlayingWelcomeMessage = true;
                 const welcomeMessage = data.welcome_message || `Welcome to ${sessionData.venue_name}'s Pub Quiz! We have ${sessionData.total_teams || 0} teams competing today. Good luck everyone!`;
                 
-                await playTTS(welcomeMessage, 'daniel');
-                console.log('[TTS] ✅ Welcome message completed');
+                try {
+                    await playTTS(welcomeMessage, 'daniel');
+                    console.log('[TTS] ✅ Welcome message completed');
+                } catch (ttsErr) {
+                    console.warn('[TTS] ⚠️ Welcome message failed, continuing without audio:', ttsErr.message);
+                }
                 
             } catch (err) {
                 console.error('[START] ❌ Error starting quiz:', err);
@@ -2188,20 +2192,28 @@
                 // Announce genre if first question of round (split into 2 parts for faster TTS)
                 if (question.number === 1) {
                     console.log('[TTS] 📢 Announcing round:', question.round, question.genre);
-                    await playTTS(`Round ${question.round}: ${question.genre}`, 'daniel');
-                    await playTTS(`Here comes the first question.`, 'daniel');
+                    try {
+                        await playTTS(`Round ${question.round}: ${question.genre}`, 'daniel');
+                        await playTTS(`Here comes the first question.`, 'daniel');
+                    } catch (e) {
+                        console.warn('[TTS] ⚠️ Round announcement failed, continuing:', e.message);
+                    }
                 }
                 
                 console.log('[TTS] 🎙️ Playing question:', question.text);
-                await playTTS(question.text, 'daniel');
-                
-                console.log('[TTS] ✅ TTS complete, starting countdown');
-                // Start countdown locally
+                try {
+                    await playTTS(question.text, 'daniel');
+                    console.log('[TTS] ✅ TTS complete');
+                } catch (e) {
+                    console.warn('[TTS] ⚠️ Question TTS failed, continuing without audio:', e.message);
+                }
+            } catch (err) {
+                console.error('[TTS] ❌ Unexpected error:', err);
+            } finally {
+                // ALWAYS start countdown — TTS failure must never block the quiz
+                console.log('[TTS] ⏱️ Starting countdown (TTS done or failed)');
                 questionStartedAt = new Date().toISOString();
                 startCountdown();
-            } catch (err) {
-                console.error('[TTS] ❌ Error:', err);
-            } finally {
                 isPlayingQuestionTTS = false;
             }
         }
