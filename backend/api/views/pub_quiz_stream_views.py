@@ -172,7 +172,10 @@ def host_stream(request, session_id):
         last_update_time = timezone.now()
         last_answer_count = -1
 
+        logger.info(f"[HOST_SSE] Host stream STARTED for session {session_id}, status={session.status}")
         yield f"data: {json.dumps({'type': 'connected', 'session_id': session_id})}\n\n"
+
+        generation_complete_sent = False
 
         while True:
             try:
@@ -183,15 +186,19 @@ def host_stream(request, session_id):
 
                 session.refresh_from_db()
 
-                # Generation progress
+                # Generation progress — only track ACTIVE generation, don't break on stale 100%
                 progress_data = session.generation_progress
-                if progress_data and progress_data != last_progress:
+                if progress_data and progress_data != last_progress and not generation_complete_sent:
                     yield f"data: {json.dumps({'type': 'generation_progress', 'progress': progress_data['progress'], 'status': progress_data['status']})}\n\n"
                     last_progress = progress_data
 
                     if progress_data.get('progress', 0) >= 100:
-                        yield f"data: {json.dumps({'type': 'generation_complete', 'message': 'Generation complete, closing connection'})}\n\n"
-                        break
+                        yield f"data: {json.dumps({'type': 'generation_complete', 'message': 'Questions generated successfully'})}\n\n"
+                        generation_complete_sent = True
+                        # Clear stale progress so it doesn't trigger on reconnect
+                        session.generation_progress = None
+                        session.save(update_fields=['generation_progress'])
+                        # DON'T break — keep streaming for host_update events
 
                 # Session completed
                 if session.status == 'completed':

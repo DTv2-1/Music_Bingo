@@ -1225,13 +1225,8 @@
                             break;
                         
                         case 'generation_complete':
-                            // Backend force-closed SSE after 100% - acknowledge and close
-                            console.log('✅ Generation complete, backend closed SSE');
-                            if (hostEventSource) {
-                                hostEventSource.close();
-                                hostEventSource = null;
-                                console.log('🔌 Host SSE connection closed by backend');
-                            }
+                            // Generation done — SSE stays open for host_update events
+                            console.log('✅ Generation complete — SSE continues for live updates');
                             break;
                         
                         case 'timeout':
