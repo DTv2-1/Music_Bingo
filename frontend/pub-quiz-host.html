@@ -1971,12 +1971,12 @@
                 const controller = new AbortController();
                 
                 try {
-                    // 🔧 FIX: Add 50-second timeout with AbortController (backend has 45s)
+                    // Timeout: 15 seconds max — if TTS is slow, skip it and keep the quiz moving
                     timeoutId = setTimeout(() => {
-                        console.error('[TTS] ⏱️ Timeout after 50 seconds for text:', txt.substring(0, 50));
+                        console.warn('[TTS] ⏱️ Timeout after 15s for:', txt.substring(0, 50));
                         controller.abort();
-                        reject(new Error('TTS timeout'));
-                    }, 50000);
+                        resolve(); // Resolve instead of reject — TTS is optional, don't block quiz
+                    }, 15000);
                     
                     console.log('[TTS] 📡 Fetching audio from API...');
                     const response = await fetch(`${BASE_URL}/api/pub-quiz/tts`, {
@@ -2021,11 +2021,11 @@
                 } catch (e) {
                     clearTimeout(timeoutId);
                     if (e.name === 'AbortError') {
-                        console.error('[TTS] ❌ Fetch aborted due to timeout');
+                        console.warn('[TTS] ⚠️ Fetch aborted (timeout)');
                     } else {
-                        console.error('[TTS] ❌ TTS failed with error:', e);
+                        console.warn('[TTS] ⚠️ TTS error:', e.message);
                     }
-                    reject(e);
+                    resolve(); // Always resolve — TTS is optional, never block the quiz
                 }
             });
         }
@@ -2180,40 +2180,38 @@
         }
 
         /**
-         * Play TTS for a question
+         * Play TTS for a question — countdown starts IMMEDIATELY, TTS plays in background
          */
         async function playQuestionTTS(question) {
-            if (!question || isPlayingQuestionTTS) return;
+            if (!question) return;
+            
+            // ALWAYS start countdown immediately — never wait for TTS
+            console.log('[TTS] ⏱️ Starting countdown IMMEDIATELY for Q' + question.number);
+            questionStartedAt = new Date().toISOString();
+            startCountdown();
+            
+            // TTS plays in background — if it fails, quiz continues silently
+            if (isPlayingQuestionTTS) {
+                console.log('[TTS] ⚠️ Already playing TTS, skipping');
+                return;
+            }
             
             isPlayingQuestionTTS = true;
             lastSpokenQuestionId = question.id;
             
             try {
-                // Announce genre if first question of round (split into 2 parts for faster TTS)
+                // Announce genre if first question of a round
                 if (question.number === 1) {
                     console.log('[TTS] 📢 Announcing round:', question.round, question.genre);
-                    try {
-                        await playTTS(`Round ${question.round}: ${question.genre}`, 'daniel');
-                        await playTTS(`Here comes the first question.`, 'daniel');
-                    } catch (e) {
-                        console.warn('[TTS] ⚠️ Round announcement failed, continuing:', e.message);
-                    }
+                    await playTTS(`Round ${question.round}: ${question.genre}`, 'daniel');
                 }
                 
                 console.log('[TTS] 🎙️ Playing question:', question.text);
-                try {
-                    await playTTS(question.text, 'daniel');
-                    console.log('[TTS] ✅ TTS complete');
-                } catch (e) {
-                    console.warn('[TTS] ⚠️ Question TTS failed, continuing without audio:', e.message);
-                }
+                await playTTS(question.text, 'daniel');
+                console.log('[TTS] ✅ TTS complete for Q' + question.number);
             } catch (err) {
-                console.error('[TTS] ❌ Unexpected error:', err);
+                console.warn('[TTS] ⚠️ TTS failed for Q' + question.number + ':', err.message);
             } finally {
-                // ALWAYS start countdown — TTS failure must never block the quiz
-                console.log('[TTS] ⏱️ Starting countdown (TTS done or failed)');
-                questionStartedAt = new Date().toISOString();
-                startCountdown();
                 isPlayingQuestionTTS = false;
             }
         }
