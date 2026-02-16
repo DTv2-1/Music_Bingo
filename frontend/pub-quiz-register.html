@@ -1679,8 +1679,7 @@
                 selectedOption = letter;
                 document.getElementById('submitMCBtn').disabled = false;
                 
-                // Auto-submit on selection
-                submitMultipleChoice();
+                // Don't auto-submit — let player change their mind before clicking Submit
             }
         }
 
@@ -1703,10 +1702,15 @@
             // Mark question as answered
             answeredQuestions.add(question.id);
             
-            // Disable all options
+            // Disable all options and submit button AFTER confirming
             document.querySelectorAll('.option-btn').forEach(btn => {
                 btn.disabled = true;
             });
+            const mcSubmitBtn = document.getElementById('submitMCBtn');
+            if (mcSubmitBtn) {
+                mcSubmitBtn.disabled = true;
+                mcSubmitBtn.textContent = '✅ Answer Submitted';
+            }
             
             console.log(`✅ MC answer saved (${teamAnswers.length} total)`);
             

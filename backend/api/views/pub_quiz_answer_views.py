@@ -41,13 +41,29 @@ def get_question_answer(request, question_id):
 @api_view(['POST'])
 def submit_answer(request, question_id):
     """Submit or update a single answer for a team."""
+    logger.info(f"[SUBMIT_ANSWER] === Received answer for question_id={question_id} ===")
+    logger.info(f"[SUBMIT_ANSWER] Request data: {request.data}")
+    
     question = get_object_or_404(QuizQuestion, id=question_id)
+    logger.info(f"[SUBMIT_ANSWER] Question found: R{question.round_number}Q{question.question_number} - '{question.question_text[:50]}'")
+    logger.info(f"[SUBMIT_ANSWER] Session: {question.session.session_code} (current R{question.session.current_round}Q{question.session.current_question})")
+    
     team_id = request.data.get('team_id')
     team = get_object_or_404(QuizTeam, id=team_id)
     answer_text = request.data.get('answer', '')
     is_multiple_choice = request.data.get('is_multiple_choice', False)
+    
+    logger.info(f"[SUBMIT_ANSWER] Team: '{team.team_name}' (id={team_id}), Answer: '{answer_text}', MC: {is_multiple_choice}")
+    logger.info(f"[SUBMIT_ANSWER] Correct answer: '{question.correct_answer}', correct_option: '{question.correct_option}'")
 
     result = PubQuizService.submit_answer(question, team, answer_text, is_multiple_choice)
+    
+    logger.info(f"[SUBMIT_ANSWER] Result: is_correct={result['is_correct']}, created={result['created']}")
+    
+    # Log current answer count for this question (for SSE detection)
+    from ..pub_quiz_models import TeamAnswer
+    total_answers = TeamAnswer.objects.filter(question=question).count()
+    logger.info(f"[SUBMIT_ANSWER] Total answers for this question now: {total_answers}")
 
     return Response({
         'success': True,

@@ -147,22 +147,28 @@ def check_answer_correctness(question, answer_text, is_multiple_choice=False):
         bool: True if the answer is correct
     """
     if not answer_text:
+        logger.info(f"[CHECK_ANSWER] Empty answer for Q{question.question_number} — returning False")
         return False
 
     if is_multiple_choice and question.question_type == 'multiple_choice':
-        return answer_text.upper() == question.correct_option.upper()
+        result = answer_text.upper() == question.correct_option.upper()
+        logger.info(f"[CHECK_ANSWER] MC check: '{answer_text.upper()}' vs correct_option '{question.correct_option.upper()}' = {result}")
+        return result
 
     # Written answer: exact match against correct answer and alternatives
     answer_lower = answer_text.lower().strip()
     correct_lower = question.correct_answer.lower().strip()
 
     if answer_lower == correct_lower:
+        logger.info(f"[CHECK_ANSWER] Written exact match: '{answer_lower}' = '{correct_lower}'")
         return True
 
     # Check alternative answers
     if question.alternative_answers:
         for alt in question.alternative_answers:
             if answer_lower == alt.lower().strip():
+                logger.info(f"[CHECK_ANSWER] Written alt match: '{answer_lower}' = alt '{alt}'")
                 return True
 
+    logger.info(f"[CHECK_ANSWER] No match: '{answer_lower}' vs correct '{correct_lower}' (alts: {question.alternative_answers})")
     return False

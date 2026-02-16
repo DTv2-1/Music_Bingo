@@ -206,6 +206,7 @@ def host_stream(request, session_id):
                 )
 
                 if question_changed:
+                    logger.info(f"[HOST_SSE] Question changed: R{last_round}Q{last_question} -> R{session.current_round}Q{session.current_question}")
                     last_answer_count = -1
 
                 # Check answer count
@@ -220,16 +221,30 @@ def host_stream(request, session_id):
                     ).first()
                     if current_q:
                         current_answer_count = TeamAnswer.objects.filter(question=current_q).count()
+                    else:
+                        logger.warning(f"[HOST_SSE] No question found for R{session.current_round}Q{session.current_question} in session {session_id}")
 
                 answers_changed = current_answer_count != last_answer_count
+                if answers_changed and current_answer_count >= 0:
+                    logger.info(f"[HOST_SSE] Answers changed for R{session.current_round}Q{session.current_question}: {last_answer_count} -> {current_answer_count}")
 
                 current_time = timezone.now()
                 time_diff = (current_time - last_update_time).total_seconds()
                 should_send = status_changed or question_changed or answers_changed or time_diff >= 10
 
                 if should_send:
+                    reason = []
+                    if status_changed: reason.append(f'status:{last_status}->{session.status}')
+                    if question_changed: reason.append(f'question:R{session.current_round}Q{session.current_question}')
+                    if answers_changed: reason.append(f'answers:{last_answer_count}->{current_answer_count}')
+                    if time_diff >= 10: reason.append(f'periodic:{time_diff:.0f}s')
+                    logger.info(f"[HOST_SSE] Sending host_update for session {session_id}: {', '.join(reason)}")
+                    
                     host_data = PubQuizService.get_host_update_data(session)
                     host_data['timestamp'] = current_time.isoformat()
+                    
+                    logger.info(f"[HOST_SSE] host_update payload: recent_answers={len(host_data.get('recent_answers', []))}, leaderboard={len(host_data.get('leaderboard', []))}")
+                    
                     yield f"data: {json.dumps(host_data)}\n\n"
 
                     last_update_time = current_time

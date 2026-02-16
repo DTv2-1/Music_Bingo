@@ -340,7 +340,9 @@ class PubQuizService:
     @staticmethod
     def submit_answer(question, team, answer_text, is_multiple_choice=False) -> dict:
         """Submit or update a single answer."""
+        logger.info(f"[SVC_SUBMIT] Checking correctness: answer='{answer_text}', correct='{question.correct_answer}', option='{question.correct_option}', MC={is_multiple_choice}")
         is_correct = check_answer_correctness(question, answer_text, is_multiple_choice)
+        logger.info(f"[SVC_SUBMIT] Correctness result: {is_correct}")
 
         ans, created = TeamAnswer.objects.get_or_create(
             team=team,
@@ -351,9 +353,12 @@ class PubQuizService:
             }
         )
         if not created:
+            logger.info(f"[SVC_SUBMIT] Updating existing answer (id={ans.id}): '{ans.answer_text}' -> '{answer_text}'")
             ans.answer_text = answer_text
             ans.is_correct = is_correct
             ans.save()
+        else:
+            logger.info(f"[SVC_SUBMIT] Created new answer (id={ans.id}) for team '{team.team_name}' on Q{question.question_number}")
 
         return {'is_correct': is_correct, 'created': created}
 
@@ -438,12 +443,18 @@ class PubQuizService:
         """
         teams = session.teams.all()
         current_q = None
+        logger.info(f"[HOST_DATA] Building host_update for session {session.session_code}: R{session.current_round}Q{session.current_question}, status={session.status}")
+        
         if session.current_round and session.current_question:
             current_q = QuizQuestion.objects.filter(
                 session=session,
                 round_number=session.current_round,
                 question_number=session.current_question,
             ).first()
+            if current_q:
+                logger.info(f"[HOST_DATA] Current question found: id={current_q.id}, '{current_q.question_text[:50]}'")
+            else:
+                logger.warning(f"[HOST_DATA] NO question found for R{session.current_round}Q{session.current_question}!")
 
         # Answer count
         current_answer_count = 0
@@ -453,13 +464,17 @@ class PubQuizService:
                 question=current_q
             ).select_related('team').order_by('-submitted_at')
             current_answer_count = answers_qs.count()
+            logger.info(f"[HOST_DATA] Found {current_answer_count} answers for question id={current_q.id}")
             for ans in answers_qs:
+                logger.info(f"[HOST_DATA]   Answer: team='{ans.team.team_name}', text='{ans.answer_text}', correct={ans.is_correct}, submitted={ans.submitted_at}")
                 recent_answers.append({
                     'team_name': ans.team.team_name,
                     'answer_text': ans.answer_text,
                     'is_correct': ans.is_correct,
                     'submitted_at': ans.submitted_at.isoformat() if ans.submitted_at else None,
                 })
+        else:
+            logger.info(f"[HOST_DATA] No current question — skipping answers")
 
         # Leaderboard
         leaderboard = [

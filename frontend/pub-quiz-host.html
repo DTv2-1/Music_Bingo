@@ -1258,6 +1258,10 @@
                             updateLeaderboardFromSSE(data.leaderboard);
                             
                             // Update live answers feed
+                            console.log(`📨 [SSE] host_update: recent_answers=${(data.recent_answers || []).length}, R${data.stats?.current_round}Q${data.stats?.current_question}, status=${data.stats?.status}`);
+                            if (data.recent_answers && data.recent_answers.length > 0) {
+                                console.log('📨 [SSE] Answers:', JSON.stringify(data.recent_answers));
+                            }
                             updateLiveAnswers(data.recent_answers || [], data.stats);
                             
                             // ⚠️ Skip question updates - using local navigation
