@@ -992,9 +992,8 @@
                     <div>
                         <div class="stat-label" style="margin-bottom: 8px;">🎙️ TTS Mode</div>
                         <select id="ttsMode" class="btn btn-secondary" style="width: 100%; text-align: left; padding: 8px;" onchange="onTTSModeChange()">
-                            <option value="browser">🖥️ Browser (instant)</option>
-                            <option value="elevenlabs">🎧 ElevenLabs (premium)</option>
-                            <option value="off">🔇 Off (no voice)</option>
+                            <option value="elevenlabs">ElevenLabs</option>
+                            <option value="off">Off (no voice)</option>
                         </select>
                     </div>
                     <div>
@@ -2351,10 +2350,10 @@
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TTS ENGINE — Browser SpeechSynthesis (default) + ElevenLabs fallback
+        // TTS ENGINE — ElevenLabs
         // ═══════════════════════════════════════════════════════════
         
-        // ElevenLabs voice map (for premium mode)
+        // ElevenLabs voice map
         const ELEVENLABS_VOICES = {
             'daniel': 'onwK4e9ZLuTAKqWW03F9',
             'charlotte': '21m00Tcm4TlvDq8ikWAM',
@@ -2362,43 +2361,19 @@
             'alice': 'Xb7hH8MSUJpSbSDYk0k2',
         };
 
-        // Populate browser voices dropdown
-        function populateBrowserVoices() {
+        // Populate voice dropdown
+        function populateVoices() {
             const select = document.getElementById('ttsVoice');
             const mode = document.getElementById('ttsMode').value;
             select.innerHTML = '';
             
             if (mode === 'elevenlabs') {
-                // Show ElevenLabs voices
                 ['daniel', 'charlotte', 'callum', 'alice'].forEach(name => {
                     const opt = document.createElement('option');
                     opt.value = name;
                     opt.textContent = name.charAt(0).toUpperCase() + name.slice(1);
                     select.appendChild(opt);
                 });
-            } else if (mode === 'browser') {
-                // Show browser SpeechSynthesis voices
-                const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-                
-                // Prefer English voices, show best first
-                const englishVoices = voices.filter(v => v.lang.startsWith('en'));
-                const otherVoices = voices.filter(v => !v.lang.startsWith('en'));
-                const sorted = [...englishVoices, ...otherVoices];
-                
-                if (sorted.length === 0) {
-                    const opt = document.createElement('option');
-                    opt.value = 'default';
-                    opt.textContent = 'Default voice';
-                    select.appendChild(opt);
-                } else {
-                    sorted.forEach((voice, idx) => {
-                        const opt = document.createElement('option');
-                        opt.value = idx.toString();
-                        opt.textContent = `${voice.name} (${voice.lang})${voice.default ? ' ★' : ''}`;
-                        opt.dataset.voiceName = voice.name;
-                        select.appendChild(opt);
-                    });
-                }
             } else {
                 // TTS off
                 const opt = document.createElement('option');
@@ -2409,100 +2384,29 @@
         }
 
         function onTTSModeChange() {
-            populateBrowserVoices();
+            populateVoices();
         }
 
-        // Init voices on load (some browsers load them async)
-        if (window.speechSynthesis) {
-            populateBrowserVoices();
-            window.speechSynthesis.onvoiceschanged = populateBrowserVoices;
-        }
+        // Init voices on load
+        populateVoices();
 
         /**
-         * Play TTS — uses Browser SpeechSynthesis (instant) or ElevenLabs (server)
-         * depending on ttsMode setting. Always resolves, never rejects.
+         * Play TTS via ElevenLabs. Always resolves, never rejects.
          */
         async function playTTS(text, voiceId) {
             const txt = text || document.getElementById('questionText').textContent;
             const mode = document.getElementById('ttsMode').value;
             
             if (mode === 'off' || !txt) {
-                return; // TTS disabled
+                return;
             }
 
-            console.log(`[TTS] 📞 Mode=${mode}, text: "${txt.substring(0, 50)}..."`);
+            console.log(`[TTS] Mode=${mode}, text: "${txt.substring(0, 50)}..."`);
 
-            // Create a new abort controller for cancellation
             const controller = new AbortController();
             currentTTSAbortController = controller;
 
-            if (mode === 'browser') {
-                return playBrowserTTS(txt, controller);
-            } else {
-                return playElevenLabsTTS(txt, voiceId, controller);
-            }
-        }
-
-        /**
-         * Browser SpeechSynthesis — instant, free, no server call
-         */
-        function playBrowserTTS(text, controller) {
-            return new Promise((resolve) => {
-                if (!window.speechSynthesis) {
-                    console.warn('[TTS] ⚠️ Browser SpeechSynthesis not available');
-                    resolve();
-                    return;
-                }
-
-                // Cancel any ongoing speech
-                window.speechSynthesis.cancel();
-
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.rate = 0.95;   // Slightly slower for quiz clarity
-                utterance.pitch = 1.0;
-                utterance.volume = 1.0;
-
-                // Select voice from dropdown
-                const voiceSelect = document.getElementById('ttsVoice');
-                const voices = window.speechSynthesis.getVoices();
-                const selectedIdx = parseInt(voiceSelect.value);
-                if (!isNaN(selectedIdx) && voices[selectedIdx]) {
-                    utterance.voice = voices[selectedIdx];
-                }
-
-                // Timeout: 30s max for very long texts
-                const timeoutId = setTimeout(() => {
-                    console.warn('[TTS] ⏱️ Browser TTS timeout');
-                    window.speechSynthesis.cancel();
-                    resolve();
-                }, 30000);
-
-                utterance.onend = () => {
-                    clearTimeout(timeoutId);
-                    console.log('[TTS] 🎵 Browser TTS complete');
-                    resolve();
-                };
-
-                utterance.onerror = (e) => {
-                    clearTimeout(timeoutId);
-                    if (e.error !== 'canceled') {
-                        console.warn('[TTS] ⚠️ Browser TTS error:', e.error);
-                    }
-                    resolve();
-                };
-
-                // Listen for abort
-                if (controller) {
-                    controller.signal.addEventListener('abort', () => {
-                        window.speechSynthesis.cancel();
-                        clearTimeout(timeoutId);
-                        resolve();
-                    });
-                }
-
-                window.speechSynthesis.speak(utterance);
-                console.log('[TTS] 🔊 Browser speaking...');
-            });
+            return playElevenLabsTTS(txt, voiceId, controller);
         }
 
         /**
@@ -2764,7 +2668,7 @@
         function cancelCurrentTTS() {
             // Cancel ElevenLabs fetch
             if (currentTTSAbortController) {
-                console.log('[TTS] 🛑 Cancelling previous TTS request');
+                console.log('[TTS] Cancelling previous TTS request');
                 currentTTSAbortController.abort();
                 currentTTSAbortController = null;
             }
@@ -2773,10 +2677,6 @@
                 currentTTSAudio.pause();
                 currentTTSAudio.src = '';
                 currentTTSAudio = null;
-            }
-            // Cancel Browser SpeechSynthesis
-            if (window.speechSynthesis) {
-                window.speechSynthesis.cancel();
             }
             isPlayingQuestionTTS = false;
         }
