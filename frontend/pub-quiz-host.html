@@ -3814,7 +3814,7 @@
 
         // Update text
         document.getElementById('tutorialBadge').textContent = `Step ${tutorialStep + 1} of ${total}`;
-        document.getElementById('tutorialTitle').textContent = step.title;
+        document.getElementById('tutorialTitle').innerHTML = step.title;
         document.getElementById('tutorialDesc').innerHTML = step.desc;
 
         // Update dots
