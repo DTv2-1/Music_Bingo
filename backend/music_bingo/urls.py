@@ -95,6 +95,21 @@ def bingo_sessions_view(request):
     with open(FRONTEND_DIR / 'bingo-sessions.html', 'rb') as f:
         return HttpResponse(f.read(), content_type='text/html')
 
+def blind_date_sessions_view(request):
+    from django.http import HttpResponse
+    with open(FRONTEND_DIR / 'blind-date-sessions.html', 'rb') as f:
+        return HttpResponse(f.read(), content_type='text/html')
+
+def blind_date_host_view(request, session_id=None):
+    from django.http import HttpResponse
+    with open(FRONTEND_DIR / 'blind-date-host.html', 'rb') as f:
+        return HttpResponse(f.read(), content_type='text/html')
+
+def blind_date_join_view(request, session_id=None):
+    from django.http import HttpResponse
+    with open(FRONTEND_DIR / 'blind-date-join.html', 'rb') as f:
+        return HttpResponse(f.read(), content_type='text/html')
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
@@ -114,6 +129,14 @@ urlpatterns = [
     
     # Bingo pages
     path("bingo-sessions.html", bingo_sessions_view, name="bingo-sessions"),
+    
+    # Blind Date pages
+    path("blind-date", blind_date_sessions_view, name="blind-date"),
+    path("blind-date/", blind_date_sessions_view, name="blind-date-slash"),
+    path("blind-date/sessions", blind_date_sessions_view, name="blind-date-sessions"),
+    path("blind-date/sessions/", blind_date_sessions_view, name="blind-date-sessions-slash"),
+    path("blind-date/host/<str:session_id>", blind_date_host_view, name="blind-date-host"),
+    path("blind-date/join/<str:session_id>", blind_date_join_view, name="blind-date-join"),
     
     # Game pages
     path("game.html", game_view, name="game"),
