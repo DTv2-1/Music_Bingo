@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blind Date — Join the Game</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+    <link rel="apple-touch-icon" href="assets/favicon-32x32.png">
+    <meta name="theme-color" content="#e91e63">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #e91e63 0%, #9c27b0 50%, #673ab7 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 2.2em;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .header .venue {
+            font-size: 1.1em;
+            opacity: 0.8;
+        }
+        .header .player-count {
+            margin-top: 8px;
+            font-size: 0.95em;
+            background: rgba(255,255,255,0.15);
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 100px;
+        }
+
+        /* ── FORM ── */
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+        .form-group .hint {
+            font-size: 0.8em;
+            opacity: 0.6;
+            margin-bottom: 4px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.12);
+            color: white;
+            font-family: inherit;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input::placeholder, .form-group textarea::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: rgba(255,255,255,0.6);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.75em;
+            opacity: 0.5;
+            margin-top: 2px;
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            width: 100%;
+        }
+        .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .btn-primary { background: linear-gradient(135deg, #e91e63, #c2185b); color: white; }
+        .btn-success { background: linear-gradient(135deg, #4caf50, #388e3c); color: white; }
+        .btn-accent { background: linear-gradient(135deg, #ff9800, #f57c00); color: white; }
+        .btn-like { background: linear-gradient(135deg, #e91e63, #c2185b); color: white; }
+
+        .error-msg {
+            background: rgba(244, 67, 54, 0.3);
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 0.9em;
+        }
+
+        /* ── GAME VIEW ── */
+        .game-view {
+            text-align: center;
+        }
+        .game-view .status-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            background: rgba(76, 175, 80, 0.3);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            border-radius: 100px;
+            margin-bottom: 16px;
+        }
+
+        .question-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 16px 0;
+            text-align: left;
+        }
+        .question-card .from {
+            font-size: 0.9em;
+            opacity: 0.7;
+            margin-bottom: 6px;
+        }
+        .question-card .q-text {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.12);
+            color: white;
+            font-family: inherit;
+            font-size: 1em;
+            min-height: 80px;
+            resize: vertical;
+        }
+        .answer-input::placeholder { color: rgba(255,255,255,0.4); }
+
+        .timer-display {
+            font-size: 2.5em;
+            font-weight: 800;
+            margin: 12px 0;
+        }
+        .timer-display.warning { color: #ffd93d; }
+        .timer-display.danger { color: #f44336; }
+
+        /* ── WAITING LOBBY ── */
+        .waiting {
+            text-align: center;
+            padding: 30px 0;
+        }
+        .waiting .pulse {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: rgba(233, 30, 99, 0.4);
+            margin: 20px auto;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.5; }
+        }
+
+        /* ── LIKES ── */
+        .player-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin: 16px 0;
+        }
+        .player-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .player-card:hover { background: rgba(255,255,255,0.2); }
+        .player-card.liked { border-color: #e91e63; background: rgba(233,30,99,0.2); }
+        .player-card .nick { font-weight: 700; font-size: 1.1em; }
+
+        .match-banner {
+            background: linear-gradient(135deg, #e91e63, #ff6b6b);
+            padding: 16px;
+            border-radius: 12px;
+            margin: 12px 0;
+            text-align: center;
+            font-weight: 700;
+            animation: matchPop 0.5s;
+        }
+        @keyframes matchPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <script src="config.js"></script>
+
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>Blind Date</h1>
+            <div class="venue" id="venueName">Loading...</div>
+            <div class="player-count" id="playerCountBadge">0 players</div>
+        </div>
+
+        <!-- ERROR -->
+        <div class="error-msg hidden" id="errorMsg"></div>
+
+        <!-- ═══════ REGISTRATION FORM ═══════ -->
+        <div id="registrationView">
+            <form id="joinForm" onsubmit="submitJoin(event)">
+                <div class="form-group">
+                    <label>Your Nickname</label>
+                    <input type="text" id="nickname" placeholder="e.g., CheekyChris" maxlength="100" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Describe Yourself</label>
+                    <div class="hint">Short, fun, anonymous description</div>
+                    <textarea id="description" placeholder="e.g., Tall, loves tacos, terrible dancer" maxlength="300" required></textarea>
+                    <div class="char-count"><span id="descCount">0</span>/300</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Question 1 (required)</label>
+                    <div class="hint">A question you'd ask potential dates</div>
+                    <input type="text" id="q1" placeholder="e.g., What's your guilty pleasure song?" maxlength="200" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Question 2 (optional)</label>
+                    <input type="text" id="q2" placeholder="e.g., Cats or dogs and why?" maxlength="200">
+                </div>
+
+                <div class="form-group">
+                    <label>Question 3 (optional)</label>
+                    <input type="text" id="q3" placeholder="e.g., What's the worst date you've been on?" maxlength="200">
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="btnJoin">Join the Game</button>
+            </form>
+        </div>
+
+        <!-- ═══════ WAITING LOBBY ═══════ -->
+        <div id="waitingView" class="hidden">
+            <div class="waiting">
+                <div class="pulse"></div>
+                <h2>You're in!</h2>
+                <p style="opacity:0.8; margin-top:8px;">Waiting for the host to start the game...</p>
+                <p style="margin-top:16px;"><span id="waitingCount">0</span> players joined</p>
+            </div>
+        </div>
+
+        <!-- ═══════ GAME VIEW — ANSWERING ═══════ -->
+        <div id="gameView" class="hidden game-view">
+            <div class="status-badge" id="statusBadge">Round in Progress</div>
+
+            <div class="question-card">
+                <div class="from">Question from <strong id="questionFrom">???</strong>:</div>
+                <div class="q-text" id="questionText">Loading question...</div>
+            </div>
+
+            <div class="timer-display" id="timerDisplay">2:00</div>
+
+            <textarea class="answer-input" id="answerInput" placeholder="Type your witty answer here..."></textarea>
+            <div class="char-count" style="margin-bottom: 12px;"><span id="ansCount">0</span>/500</div>
+
+            <button class="btn btn-success" id="btnSubmitAnswer" onclick="submitAnswer()">Submit Answer</button>
+            <div id="answerStatus" style="margin-top:8px; font-size:0.9em; opacity:0.7;"></div>
+        </div>
+
+        <!-- ═══════ YOUR TURN — WATCHING ANSWERS ═══════ -->
+        <div id="yourTurnView" class="hidden game-view">
+            <div class="status-badge" style="background: rgba(233,30,99,0.3); border-color: rgba(233,30,99,0.5);">
+                It's YOUR Turn!
+            </div>
+            <h2 style="margin-bottom:8px;">Others are answering your question</h2>
+            <p style="opacity:0.7;" id="yourQuestionText"></p>
+            <div class="timer-display" id="yourTimerDisplay">2:00</div>
+            <p style="opacity:0.6; margin-top:8px;">Sit back and wait for the results!</p>
+        </div>
+
+        <!-- ═══════ GAME OVER / LIKES ═══════ -->
+        <div id="gameOverView" class="hidden">
+            <div style="text-align:center; margin-bottom:20px;">
+                <h2 style="font-size:1.8em;">Game Over!</h2>
+                <p style="opacity:0.8;">Fancy anyone? Tap their card to send a like!</p>
+            </div>
+
+            <div class="player-cards" id="likeCards"></div>
+
+            <div id="matchesSection" class="hidden">
+                <h3 style="margin-bottom:8px;">Your Matches</h3>
+                <div id="matchesList"></div>
+            </div>
+
+            <button class="btn btn-accent" onclick="checkMatches()" style="margin-top:16px;">
+                Check for Matches
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        // CONFIG
+        // ================================================================
+        const API = window.BACKEND_URL || '';
+        let SESSION_CODE = '';
+        let PLAYER_TOKEN = '';
+        let PLAYER_ID = null;
+        let PLAYER_NICKNAME = '';
+        let currentQuestionPlayerId = null;
+        let timerInterval = null;
+        let likedPlayers = new Set();
+
+        // Get session from URL
+        const urlParts = window.location.pathname.split('/');
+        SESSION_CODE = urlParts[urlParts.length - 1] || new URLSearchParams(window.location.search).get('session');
+
+        // Check if player already registered (localStorage)
+        const savedToken = localStorage.getItem(`blinddate_${SESSION_CODE}_token`);
+        const savedNickname = localStorage.getItem(`blinddate_${SESSION_CODE}_nickname`);
+
+        // ================================================================
+        // INIT
+        // ================================================================
+        async function init() {
+            if (!SESSION_CODE) {
+                showError('No session code found. Please scan the QR code again.');
+                return;
+            }
+
+            await loadSessionDetails();
+
+            if (savedToken) {
+                PLAYER_TOKEN = savedToken;
+                PLAYER_NICKNAME = savedNickname || '';
+                showWaiting();
+                connectSSE();
+            }
+        }
+
+        async function loadSessionDetails() {
+            try {
+                const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/details`);
+                const data = await res.json();
+                if (!res.ok) { showError(data.error); return; }
+
+                document.getElementById('venueName').textContent = data.venue_name;
+                document.getElementById('playerCountBadge').textContent = `${data.player_count} players`;
+
+                if (data.status !== 'lobby' && !savedToken) {
+                    showError('This game is already in progress. Ask the host for the next round!');
+                    document.getElementById('btnJoin').disabled = true;
+                }
+            } catch (e) {
+                showError('Cannot connect to server');
+            }
+        }
+
+        // ================================================================
+        // REGISTRATION
+        // ================================================================
+        async function submitJoin(e) {
+            e.preventDefault();
+            hideError();
+
+            const nickname = document.getElementById('nickname').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const q1 = document.getElementById('q1').value.trim();
+            const q2 = document.getElementById('q2').value.trim();
+            const q3 = document.getElementById('q3').value.trim();
+
+            if (!nickname || !description || !q1) {
+                showError('Nickname, description, and at least one question are required.');
+                return;
+            }
+
+            document.getElementById('btnJoin').disabled = true;
+            document.getElementById('btnJoin').textContent = 'Joining...';
+
+            try {
+                const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/join`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nickname, description, question_1: q1, question_2: q2, question_3: q3 }),
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showError(data.error);
+                    document.getElementById('btnJoin').disabled = false;
+                    document.getElementById('btnJoin').textContent = 'Join the Game';
+                    return;
+                }
+
+                PLAYER_TOKEN = data.session_token;
+                PLAYER_ID = data.player_id;
+                PLAYER_NICKNAME = data.nickname;
+
+                localStorage.setItem(`blinddate_${SESSION_CODE}_token`, PLAYER_TOKEN);
+                localStorage.setItem(`blinddate_${SESSION_CODE}_nickname`, PLAYER_NICKNAME);
+
+                showWaiting();
+                connectSSE();
+
+            } catch (e) {
+                showError('Failed to join. Try again.');
+                document.getElementById('btnJoin').disabled = false;
+                document.getElementById('btnJoin').textContent = 'Join the Game';
+            }
+        }
+
+        // ================================================================
+        // SSE — REAL-TIME
+        // ================================================================
+        let eventSource = null;
+
+        function connectSSE() {
+            if (eventSource) eventSource.close();
+            eventSource = new EventSource(`${API}/api/blind-date/${SESSION_CODE}/player-stream`);
+
+            eventSource.onmessage = (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    handleSSE(data);
+                } catch (err) {}
+            };
+
+            eventSource.onerror = () => {
+                setTimeout(connectSSE, 3000);
+            };
+        }
+
+        function handleSSE(data) {
+            switch (data.type) {
+                case 'player_joined':
+                    document.getElementById('waitingCount').textContent = data.player_count;
+                    document.getElementById('playerCountBadge').textContent = `${data.player_count} players`;
+                    break;
+
+                case 'status_change':
+                case 'question_change':
+                    if (data.status === 'in_progress' || data.type === 'question_change') {
+                        handleQuestionUpdate(data);
+                    }
+                    if (data.status === 'completed') {
+                        showGameOver();
+                    }
+                    break;
+
+                case 'game_ended':
+                    showGameOver();
+                    break;
+            }
+        }
+
+        function handleQuestionUpdate(data) {
+            if (!data.current_player) return;
+
+            currentQuestionPlayerId = data.current_player.id;
+            const isMyTurn = (data.current_player.nickname.toLowerCase() === PLAYER_NICKNAME.toLowerCase());
+
+            if (isMyTurn) {
+                // It's my turn — others are answering MY questions
+                showView('yourTurnView');
+                document.getElementById('yourQuestionText').textContent = data.current_question || '';
+                startTimer('yourTimerDisplay', data.answer_time || 120);
+            } else {
+                // Answer someone else's question
+                showView('gameView');
+                document.getElementById('questionFrom').textContent = data.current_player.nickname;
+                document.getElementById('questionText').textContent = data.current_question || 'Waiting for question...';
+                document.getElementById('answerInput').value = '';
+                document.getElementById('answerStatus').textContent = '';
+                document.getElementById('btnSubmitAnswer').disabled = false;
+                document.getElementById('btnSubmitAnswer').textContent = 'Submit Answer';
+                startTimer('timerDisplay', data.answer_time || 120);
+            }
+        }
+
+        // ================================================================
+        // SUBMIT ANSWER
+        // ================================================================
+        async function submitAnswer() {
+            const answer = document.getElementById('answerInput').value.trim();
+            if (!answer) return;
+
+            document.getElementById('btnSubmitAnswer').disabled = true;
+            document.getElementById('btnSubmitAnswer').textContent = 'Sending...';
+
+            try {
+                const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/submit-answer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: PLAYER_TOKEN, answer }),
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    document.getElementById('answerStatus').textContent = data.error;
+                    document.getElementById('btnSubmitAnswer').disabled = false;
+                    document.getElementById('btnSubmitAnswer').textContent = 'Submit Answer';
+                    return;
+                }
+
+                document.getElementById('answerStatus').textContent = data.status === 'updated' ? 'Answer updated!' : 'Answer submitted!';
+                document.getElementById('btnSubmitAnswer').textContent = 'Update Answer';
+                document.getElementById('btnSubmitAnswer').disabled = false;
+
+            } catch (e) {
+                document.getElementById('answerStatus').textContent = 'Failed to submit';
+                document.getElementById('btnSubmitAnswer').disabled = false;
+                document.getElementById('btnSubmitAnswer').textContent = 'Submit Answer';
+            }
+        }
+
+        // ================================================================
+        // GAME OVER — LIKES
+        // ================================================================
+        async function showGameOver() {
+            showView('gameOverView');
+            clearInterval(timerInterval);
+
+            // Load all players for liking
+            try {
+                const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/details`);
+                const data = await res.json();
+
+                const cards = document.getElementById('likeCards');
+                cards.innerHTML = '';
+
+                (data.players || []).forEach(p => {
+                    if (p.nickname.toLowerCase() === PLAYER_NICKNAME.toLowerCase()) return;
+
+                    const card = document.createElement('div');
+                    card.className = 'player-card';
+                    card.dataset.nickname = p.nickname;
+                    card.innerHTML = `<div class="nick">${p.nickname}</div>`;
+                    card.onclick = () => likePlayer(p, card);
+                    cards.appendChild(card);
+                });
+            } catch (e) {}
+        }
+
+        async function likePlayer(player, cardEl) {
+            if (likedPlayers.has(player.nickname)) return;
+
+            try {
+                // We need player_id — fetch player data
+                const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/like`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: PLAYER_TOKEN, to_player_id: player.id || 0 }),
+                });
+                const data = await res.json();
+
+                likedPlayers.add(player.nickname);
+                cardEl.classList.add('liked');
+
+                if (data.is_mutual) {
+                    const banner = document.createElement('div');
+                    banner.className = 'match-banner';
+                    banner.textContent = `It's a match with ${data.match_nickname}!`;
+                    document.getElementById('matchesSection').before(banner);
+                }
+            } catch (e) {}
+        }
+
+        async function checkMatches() {
+            try {
+                const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/matches?token=${PLAYER_TOKEN}`);
+                const data = await res.json();
+
+                const section = document.getElementById('matchesSection');
+                const list = document.getElementById('matchesList');
+
+                if (data.matches && data.matches.length > 0) {
+                    section.classList.remove('hidden');
+                    list.innerHTML = data.matches.map(m =>
+                        `<div class="match-banner">${m.nickname}</div>`
+                    ).join('');
+                } else {
+                    section.classList.remove('hidden');
+                    list.innerHTML = '<p style="opacity:0.7;">No mutual matches yet. Keep liking!</p>';
+                }
+            } catch (e) {}
+        }
+
+        // ================================================================
+        // HELPERS
+        // ================================================================
+        function showView(viewId) {
+            ['registrationView', 'waitingView', 'gameView', 'yourTurnView', 'gameOverView'].forEach(id => {
+                document.getElementById(id).classList.toggle('hidden', id !== viewId);
+            });
+        }
+
+        function showWaiting() {
+            showView('waitingView');
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorMsg');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+        function hideError() {
+            document.getElementById('errorMsg').classList.add('hidden');
+        }
+
+        function startTimer(elementId, seconds) {
+            clearInterval(timerInterval);
+            let remaining = seconds;
+            const el = document.getElementById(elementId);
+
+            function updateDisplay() {
+                const m = Math.floor(remaining / 60);
+                const s = remaining % 60;
+                el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+                el.className = 'timer-display';
+                if (remaining <= 10) el.classList.add('danger');
+                else if (remaining <= 30) el.classList.add('warning');
+            }
+
+            updateDisplay();
+            timerInterval = setInterval(() => {
+                remaining--;
+                if (remaining < 0) {
+                    clearInterval(timerInterval);
+                    el.textContent = "Time's up!";
+                    return;
+                }
+                updateDisplay();
+            }, 1000);
+        }
+
+        // Character counters
+        document.getElementById('description')?.addEventListener('input', function() {
+            document.getElementById('descCount').textContent = this.value.length;
+        });
+        document.getElementById('answerInput')?.addEventListener('input', function() {
+            document.getElementById('ansCount').textContent = this.value.length;
+        });
+
+        // START
+        init();
+    </script>
+</body>
+</html>

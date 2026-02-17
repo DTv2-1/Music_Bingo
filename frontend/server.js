@@ -88,6 +88,26 @@ app.get('/pub-quiz/host/:id', (req, res) => {
   serveHtmlFile(res, 'pub-quiz-host.html');
 });
 
+// ── BLIND DATE ROUTES ──
+app.get('/blind-date', (req, res) => {
+  console.log('📄 Request for /blind-date - serving blind-date-sessions.html');
+  serveHtmlFile(res, 'blind-date-sessions.html');
+});
+
+app.get('/blind-date/sessions', (req, res) => {
+  serveHtmlFile(res, 'blind-date-sessions.html');
+});
+
+app.get('/blind-date/host/:id', (req, res) => {
+  console.log(`📄 Request for /blind-date/host/${req.params.id} - serving blind-date-host.html`);
+  serveHtmlFile(res, 'blind-date-host.html');
+});
+
+app.get('/blind-date/join/:id', (req, res) => {
+  console.log(`📄 Request for /blind-date/join/${req.params.id} - serving blind-date-join.html`);
+  serveHtmlFile(res, 'blind-date-join.html');
+});
+
 // Legacy .html routes (redirect to clean URLs)
 app.get('/game.html', (req, res) => {
   console.log('📄 Redirecting /game.html -> /game');

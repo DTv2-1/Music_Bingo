@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blind Date — Host Dashboard</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #e91e63 0%, #9c27b0 50%, #673ab7 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        /* ── TOP BAR ── */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        .top-bar h1 { font-size: 1.4em; }
+        .top-bar .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 14px;
+            border-radius: 100px;
+            font-size: 0.85em;
+        }
+
+        /* ── LAYOUT ── */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: calc(100vh - 60px);
+        }
+        @media (max-width: 1024px) {
+            .dashboard { grid-template-columns: 1fr; }
+        }
+
+        /* ── PANELS ── */
+        .panel {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .panel h2 {
+            font-size: 1.1em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel h2 svg { width: 20px; height: 20px; }
+
+        /* ── PLAYER LIST ── */
+        .player-list { list-style: none; }
+        .player-list li {
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .player-list li.active {
+            background: rgba(233, 30, 99, 0.4);
+            border: 1px solid rgba(233, 30, 99, 0.6);
+        }
+        .player-list li .avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.9em;
+        }
+        .player-list li.done { opacity: 0.5; }
+
+        /* ── CENTER STAGE ── */
+        .center-stage {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .spotlight-card {
+            background: linear-gradient(135deg, rgba(233,30,99,0.3), rgba(156,39,176,0.3));
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.2);
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .spotlight-card .player-name {
+            font-size: 2em;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .spotlight-card .player-desc {
+            font-size: 1.1em;
+            opacity: 0.85;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        .spotlight-card .question-text {
+            font-size: 1.6em;
+            font-weight: 600;
+            background: rgba(0,0,0,0.3);
+            padding: 16px 24px;
+            border-radius: 14px;
+            margin-top: 12px;
+        }
+
+        .answer-counter {
+            text-align: center;
+            padding: 16px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            font-size: 1.2em;
+        }
+        .answer-counter .big { font-size: 2.5em; font-weight: 800; }
+
+        .top-answers {
+            list-style: none;
+        }
+        .top-answers li {
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+        }
+        .top-answers li .rank {
+            display: inline-block;
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, #ffd700, #ff6b35);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+        .top-answers li .score {
+            float: right;
+            background: rgba(255,255,255,0.2);
+            padding: 2px 10px;
+            border-radius: 100px;
+            font-size: 0.85em;
+        }
+        .top-answers li .commentary {
+            display: block;
+            margin-top: 6px;
+            font-style: italic;
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+
+        /* ── CONTROLS ── */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .btn-primary { background: linear-gradient(135deg, #e91e63, #c2185b); color: white; }
+        .btn-secondary { background: rgba(255,255,255,0.2); color: white; }
+        .btn-success { background: linear-gradient(135deg, #4caf50, #388e3c); color: white; }
+        .btn-danger { background: linear-gradient(135deg, #f44336, #c62828); color: white; }
+        .btn-accent { background: linear-gradient(135deg, #ff9800, #f57c00); color: white; }
+        .btn-tts { background: linear-gradient(135deg, #7c4dff, #651fff); color: white; }
+
+        /* ── LOBBY VIEW ── */
+        .lobby-view {
+            text-align: center;
+            padding: 40px;
+        }
+        .lobby-view h2 {
+            font-size: 2em;
+            margin-bottom: 12px;
+            justify-content: center;
+        }
+        .lobby-view .count {
+            font-size: 4em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .lobby-view .min-label {
+            opacity: 0.7;
+            margin-bottom: 20px;
+        }
+
+        .qr-img {
+            width: 200px;
+            height: 200px;
+            border-radius: 12px;
+            background: white;
+            margin: 16px auto;
+        }
+
+        /* ── TTS SETTINGS ── */
+        .tts-settings {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .tts-settings select {
+            flex: 1;
+            min-width: 120px;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-family: inherit;
+        }
+        .tts-settings select option { color: #333; }
+
+        /* ── TIMER ── */
+        .timer-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .timer-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #ffd93d, #f44336);
+            transition: width 1s linear;
+            border-radius: 3px;
+        }
+
+        /* ── COMPLETED ── */
+        .completed-view { text-align: center; padding: 40px; }
+        .completed-view h2 { font-size: 2.5em; margin-bottom: 16px; justify-content: center; }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            font-weight: 600;
+            z-index: 9999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        /* Hide sections */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <script src="config.js"></script>
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <h1>Blind Date — Host</h1>
+        <span class="badge" id="sessionBadge">Loading...</span>
+        <a href="/index" class="btn btn-secondary" style="text-decoration:none; font-size:0.85em;">Back</a>
+    </div>
+
+    <div class="dashboard">
+        <!-- LEFT: PLAYER LIST -->
+        <div class="panel" id="playerPanel">
+            <h2>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Players (<span id="playerCount">0</span>)
+            </h2>
+            <ul class="player-list" id="playerList"></ul>
+        </div>
+
+        <!-- CENTER: MAIN STAGE -->
+        <div class="center-stage">
+            <!-- LOBBY -->
+            <div class="panel lobby-view" id="lobbyView">
+                <h2>Waiting for Players</h2>
+                <div class="count" id="lobbyCount">0</div>
+                <div class="min-label">Minimum: <span id="minPlayers">5</span> to start</div>
+                <img id="qrImage" class="qr-img" alt="QR Code" />
+                <div style="margin-top: 12px; opacity: 0.7; font-size: 0.9em;" id="joinUrl"></div>
+                <button class="btn btn-primary" id="btnStartGame" disabled onclick="startGame()" style="margin-top: 20px; font-size: 1.2em; padding: 16px 40px;">
+                    Start Game
+                </button>
+            </div>
+
+            <!-- IN-PROGRESS: SPOTLIGHT -->
+            <div class="panel spotlight-card hidden" id="spotlightCard">
+                <div class="player-name" id="spotlightName"></div>
+                <div class="player-desc" id="spotlightDesc"></div>
+                <div class="question-text" id="spotlightQuestion"></div>
+                <div class="timer-bar" style="width:100%; margin-top:16px;">
+                    <div class="fill" id="timerFill" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <!-- ANSWER COUNT -->
+            <div class="panel answer-counter hidden" id="answerCounter">
+                Answers received: <span class="big" id="answerCount">0</span>
+            </div>
+
+            <!-- TOP ANSWERS (after evaluation) -->
+            <div class="panel hidden" id="topAnswersPanel">
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Funniest Answers
+                </h2>
+                <ul class="top-answers" id="topAnswersList"></ul>
+            </div>
+
+            <!-- ALL ANSWERS (for questioner, private) -->
+            <div class="panel hidden" id="allAnswersPanel">
+                <h2>All Answers (Questioner's View)</h2>
+                <ul class="top-answers" id="allAnswersList"></ul>
+            </div>
+
+            <!-- COMPLETED -->
+            <div class="panel completed-view hidden" id="completedView">
+                <h2>Game Over!</h2>
+                <p style="font-size:1.2em; opacity:0.8; margin-bottom:20px;">Thanks for playing Blind Date!</p>
+                <button class="btn btn-primary" onclick="location.href='/index'">Back to Home</button>
+            </div>
+        </div>
+
+        <!-- RIGHT: CONTROLS -->
+        <div class="panel controls" id="controlsPanel">
+            <h2>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Controls
+            </h2>
+
+            <!-- TTS Settings -->
+            <div class="tts-settings">
+                <select id="ttsVoice">
+                    <option value="daniel">Daniel</option>
+                    <option value="charlotte">Charlotte</option>
+                    <option value="callum">Callum</option>
+                    <option value="alice">Alice</option>
+                </select>
+                <select id="ttsMode">
+                    <option value="elevenlabs">ElevenLabs</option>
+                    <option value="off">Off</option>
+                </select>
+            </div>
+
+            <!-- Game Buttons -->
+            <button class="btn btn-tts" id="btnAnnounce" onclick="announceCurrentPlayer()" disabled>
+                Announce Player
+            </button>
+            <button class="btn btn-tts" id="btnReadQuestion" onclick="readCurrentQuestion()" disabled>
+                Read Question
+            </button>
+            <button class="btn btn-accent" id="btnEvaluate" onclick="evaluateCurrentAnswers()" disabled>
+                Evaluate Answers (AI)
+            </button>
+            <button class="btn btn-tts" id="btnReadFunniest" onclick="readFunniestAnswers()" disabled>
+                Read Funniest Answers
+            </button>
+            <button class="btn btn-success" id="btnNext" onclick="nextStep()" disabled>
+                Next →
+            </button>
+
+            <hr style="border-color: rgba(255,255,255,0.2); margin: 8px 0;">
+
+            <button class="btn btn-danger" id="btnEndGame" onclick="endGame()" disabled>
+                End Game
+            </button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ================================================================
+        // CONFIG
+        // ================================================================
+        const API = window.BACKEND_URL || '';
+        let SESSION_CODE = '';
+        let gameState = {};
+        let timerInterval = null;
+        let currentTTSAudio = null;
+        let currentTTSAbortController = null;
+        let topAnswersCache = [];
+
+        // Get session from URL
+        const urlParts = window.location.pathname.split('/');
+        SESSION_CODE = urlParts[urlParts.length - 1] || new URLSearchParams(window.location.search).get('session');
+
+        if (!SESSION_CODE) {
+            document.body.innerHTML = '<div style="text-align:center;padding:60px;"><h1>No session specified</h1><a href="/index" style="color:white;">Go home</a></div>';
+        }
+
+        // ================================================================
+        // INIT
+        // ================================================================
+        async function init() {
+            await loadHostData();
+            connectSSE();
+        }
+
+        async function loadHostData() {
+            try {
+                const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/host-data`);
+                const data = await res.json();
+                gameState = data;
+                renderDashboard(data);
+            } catch (e) {
+                showToast('Failed to load game data');
+                console.error(e);
+            }
+        }
+
+        // ================================================================
+        // SSE — REAL-TIME UPDATES
+        // ================================================================
+        let eventSource = null;
+
+        function connectSSE() {
+            if (eventSource) eventSource.close();
+            eventSource = new EventSource(`${API}/api/blind-date/${SESSION_CODE}/host-stream`);
+
+            eventSource.onmessage = (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    handleSSE(data);
+                } catch (err) {}
+            };
+
+            eventSource.onerror = () => {
+                setTimeout(connectSSE, 3000);
+            };
+        }
+
+        function handleSSE(data) {
+            switch (data.type) {
+                case 'player_joined':
+                    showToast(`${data.nickname} joined!`);
+                    loadHostData();
+                    break;
+                case 'answer_update':
+                    document.getElementById('answerCount').textContent = data.answers_received;
+                    break;
+                case 'status_change':
+                    loadHostData();
+                    break;
+            }
+        }
+
+        // ================================================================
+        // RENDER
+        // ================================================================
+        function renderDashboard(data) {
+            document.getElementById('sessionBadge').textContent = `${data.venue_name} — ${data.session_code}`;
+            document.getElementById('playerCount').textContent = data.player_count;
+
+            // Player list
+            const list = document.getElementById('playerList');
+            list.innerHTML = '';
+            (data.players || []).forEach((p, i) => {
+                const li = document.createElement('li');
+                li.className = (data.status === 'in_progress' && i === data.current_player_idx) ? 'active' : '';
+                if (p.round_completed) li.classList.add('done');
+                li.innerHTML = `
+                    <div class="avatar">${p.nickname.charAt(0).toUpperCase()}</div>
+                    <div>
+                        <strong>${p.nickname}</strong>
+                        <div style="font-size:0.8em;opacity:0.7;">${p.round_completed ? '✓ Done' : ''}</div>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+
+            // Show/hide views based on status
+            const isLobby = data.status === 'lobby';
+            const isPlaying = data.status === 'in_progress';
+            const isDone = data.status === 'completed';
+
+            document.getElementById('lobbyView').classList.toggle('hidden', !isLobby);
+            document.getElementById('spotlightCard').classList.toggle('hidden', !isPlaying);
+            document.getElementById('answerCounter').classList.toggle('hidden', !isPlaying);
+            document.getElementById('completedView').classList.toggle('hidden', !isDone);
+
+            if (isLobby) {
+                document.getElementById('lobbyCount').textContent = data.player_count;
+                document.getElementById('minPlayers').textContent = data.min_players;
+                document.getElementById('btnStartGame').disabled = !data.can_start;
+
+                // QR
+                const qr = document.getElementById('qrImage');
+                qr.src = `${API}/api/blind-date/${SESSION_CODE}/qr-code`;
+                const joinUrl = `${window.location.origin}/blind-date/join/${SESSION_CODE}`;
+                document.getElementById('joinUrl').textContent = joinUrl;
+            }
+
+            if (isPlaying && data.current_player) {
+                document.getElementById('spotlightName').textContent = data.current_player.nickname;
+                document.getElementById('spotlightDesc').textContent = `"${data.current_player.description}"`;
+                document.getElementById('spotlightQuestion').textContent = data.current_question_text || '';
+                document.getElementById('answerCount').textContent = data.answers_received || 0;
+
+                // Enable controls
+                document.getElementById('btnAnnounce').disabled = false;
+                document.getElementById('btnReadQuestion').disabled = false;
+                document.getElementById('btnEvaluate').disabled = false;
+                document.getElementById('btnNext').disabled = false;
+                document.getElementById('btnEndGame').disabled = false;
+
+                startTimer(data.answer_time_seconds || 120);
+            }
+
+            if (isDone) {
+                disableAllControls();
+            }
+        }
+
+        // ================================================================
+        // GAME CONTROLS
+        // ================================================================
+        async function startGame() {
+            try {
+                const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/start`, { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) { showToast(data.error); return; }
+                showToast('Game started!');
+                await loadHostData();
+
+                // Announce via TTS
+                await playTTS("Welcome to Blind Date! Let the games begin, you beautiful disasters!");
+            } catch (e) {
+                showToast('Failed to start game');
+            }
+        }
+
+        async function nextStep() {
+            cancelCurrentTTS();
+            hideAnswerPanels();
+
+            try {
+                const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/next`, { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) { showToast(data.error); return; }
+
+                if (data.action === 'next_player') {
+                    showToast(`Next player: ${data.current_player?.nickname}`);
+                    await loadHostData();
+                    // Auto-announce new player
+                    setTimeout(() => announceCurrentPlayer(), 500);
+                } else if (data.action === 'game_completed') {
+                    showToast('Game over!');
+                    await playTTS("That's all folks! Thanks for playing Blind Date. Now go buy each other drinks, you gorgeous humans!");
+                    await loadHostData();
+                } else {
+                    await loadHostData();
+                }
+            } catch (e) {
+                showToast('Failed to advance');
+            }
+        }
+
+        async function evaluateCurrentAnswers() {
+            if (!gameState.current_player) return;
+
+            document.getElementById('btnEvaluate').disabled = true;
+            document.getElementById('btnEvaluate').textContent = 'Evaluating...';
+
+            try {
+                const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/evaluate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        player_id: gameState.current_player.id,
+                        question_index: gameState.current_question_idx,
+                    }),
+                });
+                const data = await res.json();
+                if (!res.ok) { showToast(data.error); return; }
+
+                topAnswersCache = data.top_answers || [];
+                renderTopAnswers(data.top_answers || []);
+                renderAllAnswers(data.all_answers || []);
+                document.getElementById('btnReadFunniest').disabled = false;
+
+            } catch (e) {
+                showToast('Evaluation failed');
+            } finally {
+                document.getElementById('btnEvaluate').disabled = false;
+                document.getElementById('btnEvaluate').textContent = 'Evaluate Answers (AI)';
+            }
+        }
+
+        function renderTopAnswers(answers) {
+            const panel = document.getElementById('topAnswersPanel');
+            const list = document.getElementById('topAnswersList');
+            list.innerHTML = '';
+            panel.classList.remove('hidden');
+
+            answers.forEach((a, i) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="rank">${i + 1}</span>
+                    <strong>${a.from}</strong>: ${a.text}
+                    <span class="score">${a.humor_score}/10</span>
+                    ${a.commentary ? `<span class="commentary">"${a.commentary}"</span>` : ''}
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function renderAllAnswers(answers) {
+            const panel = document.getElementById('allAnswersPanel');
+            const list = document.getElementById('allAnswersList');
+            list.innerHTML = '';
+            panel.classList.remove('hidden');
+
+            answers.forEach(a => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${a.from}</strong>: ${a.text} <span class="score">${a.humor_score || '?'}/10</span>`;
+                list.appendChild(li);
+            });
+        }
+
+        function hideAnswerPanels() {
+            document.getElementById('topAnswersPanel').classList.add('hidden');
+            document.getElementById('allAnswersPanel').classList.add('hidden');
+            document.getElementById('btnReadFunniest').disabled = true;
+            topAnswersCache = [];
+        }
+
+        async function endGame() {
+            if (!confirm('End the game now?')) return;
+            cancelCurrentTTS();
+            try {
+                await fetch(`${API}/api/blind-date/${SESSION_CODE}/end`, { method: 'POST' });
+                await playTTS("Game over! Thanks for playing, you legends!");
+                await loadHostData();
+            } catch (e) {
+                showToast('Failed to end game');
+            }
+        }
+
+        // ================================================================
+        // TTS — ElevenLabs
+        // ================================================================
+        async function playTTS(text) {
+            const mode = document.getElementById('ttsMode').value;
+            if (mode === 'off' || !text) return;
+
+            cancelCurrentTTS();
+            const controller = new AbortController();
+            currentTTSAbortController = controller;
+
+            try {
+                const voice = document.getElementById('ttsVoice').value;
+                const res = await fetch(`${API}/api/blind-date/tts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, voice_id: voice }),
+                    signal: controller.signal,
+                });
+
+                if (!res.ok) throw new Error('TTS request failed');
+
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const audio = new Audio(url);
+                currentTTSAudio = audio;
+
+                return new Promise(resolve => {
+                    audio.onended = () => { currentTTSAudio = null; resolve(); };
+                    audio.onerror = () => { currentTTSAudio = null; resolve(); };
+                    audio.play().catch(() => resolve());
+                });
+            } catch (e) {
+                if (e.name !== 'AbortError') console.error('[TTS]', e);
+            }
+        }
+
+        function cancelCurrentTTS() {
+            if (currentTTSAbortController) {
+                currentTTSAbortController.abort();
+                currentTTSAbortController = null;
+            }
+            if (currentTTSAudio) {
+                currentTTSAudio.pause();
+                currentTTSAudio.src = '';
+                currentTTSAudio = null;
+            }
+        }
+
+        async function announceCurrentPlayer() {
+            if (!gameState.current_player) return;
+            const p = gameState.current_player;
+            const hints = p.questions.map(q => q.substring(0, 30)).join(', ');
+            const text = `Ladies and gents, put your hands together for ${p.nickname}! ${p.description}. They've got some cheeky questions for ya about: ${hints}. Let's see who can win them over!`;
+            await playTTS(text);
+        }
+
+        async function readCurrentQuestion() {
+            const qText = document.getElementById('spotlightQuestion').textContent;
+            if (qText) {
+                await playTTS(`Here's the question: ${qText}. You've got two minutes, so get typing!`);
+            }
+        }
+
+        async function readFunniestAnswers() {
+            if (!topAnswersCache.length) return;
+            let script = "And the funniest answers are... ";
+            topAnswersCache.forEach((a, i) => {
+                script += `Number ${i + 1}: ${a.from} said "${a.text}". ${a.commentary || ''} `;
+            });
+            script += "Brilliant stuff!";
+            await playTTS(script);
+        }
+
+        // ================================================================
+        // TIMER
+        // ================================================================
+        function startTimer(seconds) {
+            clearInterval(timerInterval);
+            let remaining = seconds;
+            const fill = document.getElementById('timerFill');
+            fill.style.width = '100%';
+
+            timerInterval = setInterval(() => {
+                remaining--;
+                const pct = (remaining / seconds) * 100;
+                fill.style.width = `${Math.max(0, pct)}%`;
+
+                if (remaining <= 0) {
+                    clearInterval(timerInterval);
+                }
+            }, 1000);
+        }
+
+        // ================================================================
+        // HELPERS
+        // ================================================================
+        function disableAllControls() {
+            ['btnAnnounce', 'btnReadQuestion', 'btnEvaluate', 'btnReadFunniest', 'btnNext', 'btnEndGame'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = true;
+            });
+        }
+
+        function showToast(msg, duration = 3000) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), duration);
+        }
+
+        // START
+        init();
+    </script>
+</body>
+</html>

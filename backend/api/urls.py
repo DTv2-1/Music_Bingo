@@ -111,4 +111,32 @@ urlpatterns = [
     # Karafun API Integration
     path('karaoke/karafun/devices', karaoke_views.list_karafun_devices, name='karafun-devices'),  # GET: List devices
     path('karaoke/karafun/session', karaoke_views.create_karafun_session, name='karafun-create-session'),  # POST: Create Karafun session
+    
+    # ============================================================
+    # BLIND DATE PUB GAME ENDPOINTS
+    # ============================================================
+    # Session CRUD
+    path('blind-date/sessions', views.blind_date_get_sessions, name='blind-date-sessions'),
+    path('blind-date/create-session', views.blind_date_create_session, name='blind-date-create-session'),
+    path('blind-date/<str:session_id>/delete', views.blind_date_delete_session, name='blind-date-delete'),
+    # Registration
+    path('blind-date/<str:session_id>/details', views.blind_date_get_session_details, name='blind-date-details'),
+    path('blind-date/<str:session_id>/join', views.blind_date_join_session, name='blind-date-join'),
+    path('blind-date/<str:session_id>/player', views.blind_date_get_player_data, name='blind-date-player'),
+    path('blind-date/<str:session_id>/qr-code', views.blind_date_qr_code, name='blind-date-qr'),
+    # Game control
+    path('blind-date/<str:session_id>/host-data', views.blind_date_host_data, name='blind-date-host-data'),
+    path('blind-date/<str:session_id>/start', views.blind_date_start_game, name='blind-date-start'),
+    path('blind-date/<str:session_id>/next', views.blind_date_next_step, name='blind-date-next'),
+    path('blind-date/<str:session_id>/submit-answer', views.blind_date_submit_answer, name='blind-date-submit'),
+    path('blind-date/<str:session_id>/evaluate', views.blind_date_evaluate_answers, name='blind-date-evaluate'),
+    path('blind-date/<str:session_id>/end', views.blind_date_end_game, name='blind-date-end'),
+    # Social / Likes
+    path('blind-date/<str:session_id>/like', views.blind_date_like_player, name='blind-date-like'),
+    path('blind-date/<str:session_id>/matches', views.blind_date_get_matches, name='blind-date-matches'),
+    # SSE Streams
+    path('blind-date/<str:session_id>/player-stream', views.blind_date_player_stream, name='blind-date-player-stream'),
+    path('blind-date/<str:session_id>/host-stream', views.blind_date_host_stream, name='blind-date-host-stream'),
+    # TTS (reuse pub quiz TTS endpoint)
+    path('blind-date/tts', views.generate_quiz_tts, name='blind-date-tts'),
 ]

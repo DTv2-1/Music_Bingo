@@ -122,6 +122,35 @@ from .pub_quiz_tts_views import (
     generate_answer_sheets,
 )
 
+# ============================================================
+# BLIND DATE PUB GAME
+# ============================================================
+from .blind_date_session_views import (
+    get_sessions as blind_date_get_sessions,
+    create_session as blind_date_create_session,
+    delete_session as blind_date_delete_session,
+    get_session_details as blind_date_get_session_details,
+    join_session as blind_date_join_session,
+    get_player_data as blind_date_get_player_data,
+    generate_qr_code as blind_date_qr_code,
+)
+
+from .blind_date_game_views import (
+    start_game as blind_date_start_game,
+    host_data as blind_date_host_data,
+    next_step as blind_date_next_step,
+    submit_answer as blind_date_submit_answer,
+    evaluate_answers as blind_date_evaluate_answers,
+    like_player as blind_date_like_player,
+    get_matches as blind_date_get_matches,
+    end_game as blind_date_end_game,
+)
+
+from .blind_date_stream_views import (
+    player_stream as blind_date_player_stream,
+    host_stream as blind_date_host_stream,
+)
+
 __all__ = [
     # Core
     'health_check',
@@ -192,4 +221,22 @@ __all__ = [
     # Pub Quiz — TTS & PDF
     'generate_quiz_tts',
     'generate_answer_sheets',
+    # Blind Date
+    'blind_date_get_sessions',
+    'blind_date_create_session',
+    'blind_date_delete_session',
+    'blind_date_get_session_details',
+    'blind_date_join_session',
+    'blind_date_get_player_data',
+    'blind_date_qr_code',
+    'blind_date_start_game',
+    'blind_date_host_data',
+    'blind_date_next_step',
+    'blind_date_submit_answer',
+    'blind_date_evaluate_answers',
+    'blind_date_like_player',
+    'blind_date_get_matches',
+    'blind_date_end_game',
+    'blind_date_player_stream',
+    'blind_date_host_stream',
 ]
