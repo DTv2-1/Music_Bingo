@@ -920,8 +920,9 @@
         ← Sessions
     </a>
     <button onclick="startTutorial()"
-        style="position: fixed; top: 20px; right: 20px; z-index: 1000; background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 10px 20px; border-radius: 10px; color: white; border: none; font-weight: 700; font-size: 0.9em; cursor: pointer; backdrop-filter: blur(10px); transition: all 0.3s ease; font-family: 'Outfit', sans-serif; box-shadow: 0 4px 15px rgba(99,102,241,0.4);">
-        ❓ Tutorial
+        style="position: fixed; top: 20px; right: 20px; z-index: 1000; background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 10px 20px; border-radius: 10px; color: white; border: none; font-weight: 700; font-size: 0.9em; cursor: pointer; backdrop-filter: blur(10px); transition: all 0.3s ease; font-family: 'Outfit', sans-serif; box-shadow: 0 4px 15px rgba(99,102,241,0.4); display: flex; align-items: center; gap: 6px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Tutorial
     </button>
     <div class="dashboard-container">
         <div class="main-panel">
@@ -3651,9 +3652,9 @@
             <div class="tutorial-desc" id="tutorialDesc">Description here</div>
             <div class="tutorial-progress" id="tutorialDots"></div>
             <div class="tutorial-nav" style="margin-top: 16px;">
-                <button class="tutorial-btn tutorial-btn-back" id="tutorialBack" onclick="tutorialPrev()">← Back</button>
+                <button class="tutorial-btn tutorial-btn-back" id="tutorialBack" onclick="tutorialPrev()" style="display:flex;align-items:center;gap:5px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
                 <button class="tutorial-btn tutorial-btn-skip" id="tutorialSkip" onclick="endTutorial()">Skip</button>
-                <button class="tutorial-btn tutorial-btn-next" id="tutorialNext" onclick="tutorialNext()">Next →</button>
+                <button class="tutorial-btn tutorial-btn-next" id="tutorialNext" onclick="tutorialNext()" style="display:flex;align-items:center;gap:5px;">Next <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
             </div>
         </div>
     </div>
@@ -3662,66 +3663,99 @@
     // ============================================
     // INTERACTIVE TUTORIAL
     // ============================================
+    // SVG icon helper — returns inline SVG strings at 16x16 by default
+    const _ico = {
+        party:     `<svg style="display:inline;vertical-align:-2px" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v0c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11v0c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98v0C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/></svg>`,
+        chart:     `<svg style="display:inline;vertical-align:-2px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
+        settings:  `<svg style="display:inline;vertical-align:-2px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+        gamepad:   `<svg style="display:inline;vertical-align:-2px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>`,
+        skipFwd:   `<svg style="display:inline;vertical-align:-2px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>`,
+        timer:     `<svg style="display:inline;vertical-align:-2px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+        trophy:    `<svg style="display:inline;vertical-align:-2px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`,
+        clipboard: `<svg style="display:inline;vertical-align:-2px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>`,
+        barChart:  `<svg style="display:inline;vertical-align:-2px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="8" rx="1"/><rect x="10" y="4" width="4" height="16" rx="1"/><rect x="17" y="8" width="4" height="12" rx="1"/></svg>`,
+        rocket:    `<svg style="display:inline;vertical-align:-2px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>`,
+        // Small inline icons for lists
+        play:      `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="#c4b5fd" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>`,
+        qr:        `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4" rx="1"/><line x1="22" y1="14" x2="22" y2="14.01"/><line x1="22" y1="22" x2="22" y2="22.01"/><line x1="18" y1="22" x2="18" y2="22.01"/></svg>`,
+        printer:   `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`,
+        refresh:   `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`,
+        eye:       `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+        volume:    `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`,
+        stop:      `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>`,
+        warn:      `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+        check:     `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+        x:         `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+        bulb:      `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>`,
+        trending:  `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`,
+        mic:       `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>`,
+        search:    `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+        music:     `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+        sparkle:   `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>`,
+        live:      `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="#ef4444" stroke="none"><circle cx="12" cy="12" r="5"/></svg>`,
+        clock:     `<svg style="display:inline;vertical-align:-2px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+    };
+
     const TUTORIAL_STEPS = [
         {
-            title: '🎉 Welcome to the Host Dashboard!',
-            desc: `This tutorial will guide you through running a <strong>Perfect DJ Pub Quiz</strong> step by step.<br><br>You\'ll learn how to set up, start, and manage your quiz night like a pro!<span class="tip">💡 You can re-open this tutorial anytime with the ❓ button in the top-right corner.</span>`,
+            title: `${_ico.party} Welcome to the Host Dashboard!`,
+            desc: `This tutorial will guide you through running a <strong>Perfect DJ Pub Quiz</strong> step by step.<br><br>You\'ll learn how to set up, start, and manage your quiz night like a pro!<span class="tip">${_ico.bulb} You can re-open this tutorial anytime with the button in the top-right corner.</span>`,
             target: '.quiz-header',
             position: 'bottom'
         },
         {
-            title: '📊 Stats Overview',
-            desc: `This area shows your live stats at a glance:<br><br>• <strong>Teams</strong> — how many teams have registered<br>• <strong>Round</strong> — current round / total rounds<br>• <strong>Progress</strong> — overall quiz completion %<br>• <strong>Status</strong> — current state of the quiz<span class="tip">📈 The progress bar below fills up as you advance through questions.</span>`,
+            title: `${_ico.chart} Stats Overview`,
+            desc: `This area shows your live stats at a glance:<br><br>• <strong>Teams</strong> — how many teams have registered<br>• <strong>Round</strong> — current round / total rounds<br>• <strong>Progress</strong> — overall quiz completion %<br>• <strong>Status</strong> — current state of the quiz<span class="tip">${_ico.trending} The progress bar below fills up as you advance through questions.</span>`,
             target: '.stat-grid',
             position: 'bottom'
         },
         {
-            title: '⚙️ Quiz Settings',
-            desc: `Configure your quiz before starting:<br><br>• <strong>TTS Mode</strong> — Choose voice: Browser (free & instant), ElevenLabs (premium), or Off<br>• <strong>Voice</strong> — Select which voice reads questions aloud<br>• <strong>Question Types</strong> — Include Multiple Choice, Written, or both<br>• <strong>Difficulty Mix</strong> — Set how many Easy/Medium/Hard questions per round<span class="tip">🎙️ Browser TTS works great for most setups. Connect to external speakers for best results!</span>`,
+            title: `${_ico.settings} Quiz Settings`,
+            desc: `Configure your quiz before starting:<br><br>• <strong>TTS Mode</strong> — Choose voice: Browser (free & instant), ElevenLabs (premium), or Off<br>• <strong>Voice</strong> — Select which voice reads questions aloud<br>• <strong>Question Types</strong> — Include Multiple Choice, Written, or both<br>• <strong>Difficulty Mix</strong> — Set how many Easy/Medium/Hard questions per round<span class="tip">${_ico.mic} Browser TTS works great for most setups. Connect to external speakers for best results!</span>`,
             target: '#ttsMode',
             targetParent: 3,
             position: 'bottom'
         },
         {
-            title: '🎮 Quiz Controls — Your Command Center',
-            desc: `These buttons control the entire quiz flow:<br><br>• <strong>▶️ Start</strong> — Begin the quiz (sends questions to players)<br>• <strong>📱 QR</strong> — Show QR code for teams to scan & register<br>• <strong>🖨️ Print</strong> — Generate PDF answer sheets<br>• <strong>🔄 Generate</strong> — AI-generate quiz questions based on genre votes<br>• <strong>👁️ Answer</strong> — Reveal/hide the correct answer<span class="tip">📱 Show the QR code on a big screen so all teams can scan it easily!</span>`,
+            title: `${_ico.gamepad} Quiz Controls — Your Command Center`,
+            desc: `These buttons control the entire quiz flow:<br><br>• ${_ico.play} <strong>Start</strong> — Begin the quiz (sends questions to players)<br>• ${_ico.qr} <strong>QR</strong> — Show QR code for teams to scan & register<br>• ${_ico.printer} <strong>Print</strong> — Generate PDF answer sheets<br>• ${_ico.refresh} <strong>Generate</strong> — AI-generate quiz questions based on genre votes<br>• ${_ico.eye} <strong>Answer</strong> — Reveal/hide the correct answer<span class="tip">${_ico.qr} Show the QR code on a big screen so all teams can scan it easily!</span>`,
             target: '.host-controls',
             position: 'bottom'
         },
         {
-            title: '⏭️ Navigation & Game Flow',
-            desc: `More control buttons:<br><br>• <strong>⏭️ Next</strong> — Advance to the next question<br>• <strong>🔊 Speak</strong> — Read the current question aloud via TTS<br>• <strong>📋 Answers</strong> — View all team answers in detail<br>• <strong>🔄 Reset</strong> — Reset the entire quiz (⚠️ deletes everything)<br>• <strong>⏹️ End</strong> — End the quiz early & notify all players<span class="tip">⚠️ Reset is irreversible! Only use it if you want to start completely fresh.</span>`,
+            title: `${_ico.skipFwd} Navigation & Game Flow`,
+            desc: `More control buttons:<br><br>• ${_ico.skipFwd} <strong>Next</strong> — Advance to the next question<br>• ${_ico.volume} <strong>Speak</strong> — Read the current question aloud via TTS<br>• ${_ico.clipboard} <strong>Answers</strong> — View all team answers in detail<br>• ${_ico.refresh} <strong>Reset</strong> — Reset the entire quiz (${_ico.warn} deletes everything)<br>• ${_ico.stop} <strong>End</strong> — End the quiz early & notify all players<span class="tip">${_ico.warn} Reset is irreversible! Only use it if you want to start completely fresh.</span>`,
             target: '.host-controls',
             position: 'top'
         },
         {
-            title: '⏱️ Auto-Advance Timer',
-            desc: `The timer automatically advances to the next question:<br><br>• <strong>Enable/Disable</strong> — Toggle auto-advance on/off<br>• <strong>Pause</strong> — Temporarily pause the countdown<br>• <strong>Duration</strong> — Set seconds per question (5-120s)<br>• <strong>Halftime</strong> — Set the break duration between rounds<span class="tip">⏰ 15 seconds works great for most quizzes. Increase to 30s for harder questions!</span>`,
+            title: `${_ico.timer} Auto-Advance Timer`,
+            desc: `The timer automatically advances to the next question:<br><br>• <strong>Enable/Disable</strong> — Toggle auto-advance on/off<br>• <strong>Pause</strong> — Temporarily pause the countdown<br>• <strong>Duration</strong> — Set seconds per question (5-120s)<br>• <strong>Halftime</strong> — Set the break duration between rounds<span class="tip">${_ico.clock} 15 seconds works great for most quizzes. Increase to 30s for harder questions!</span>`,
             target: '#countdown',
             targetParent: 2,
             position: 'top'
         },
         {
-            title: '🏆 Leaderboard',
-            desc: `The live leaderboard updates in real-time as answers come in:<br><br>• Teams are ranked by total score<br>• Top 3 teams get a special highlight<br>• Scores update automatically — no refresh needed!<span class="tip">🎉 Show this on a projector for maximum excitement!</span>`,
+            title: `${_ico.trophy} Leaderboard`,
+            desc: `The live leaderboard updates in real-time as answers come in:<br><br>• Teams are ranked by total score<br>• Top 3 teams get a special highlight<br>• Scores update automatically — no refresh needed!<span class="tip">${_ico.party} Show this on a projector for maximum excitement!</span>`,
             target: '#leaderboardList',
             position: 'top'
         },
         {
-            title: '📋 Live Answers Feed',
-            desc: `Watch answers come in as teams submit them:<br><br>• <strong>🔴 Current</strong> — Shows answers for the current question only<br>• <strong>📊 All</strong> — Shows accumulated answers for all questions so far<br><br>Each answer shows the team name, their answer, and whether it\'s correct (✅) or incorrect (❌).<span class="tip">🔍 Use "All" view to see a complete history of how teams performed across all questions.</span>`,
+            title: `${_ico.clipboard} Live Answers Feed`,
+            desc: `Watch answers come in as teams submit them:<br><br>• ${_ico.live} <strong>Current</strong> — Shows answers for the current question only<br>• ${_ico.barChart} <strong>All</strong> — Shows accumulated answers for all questions so far<br><br>Each answer shows the team name, their answer, and whether it\'s correct (${_ico.check}) or incorrect (${_ico.x}).<span class="tip">${_ico.search} Use "All" view to see a complete history of how teams performed across all questions.</span>`,
             target: '#responsesCard',
             position: 'top'
         },
         {
-            title: '📊 Genre Votes',
-            desc: `When teams register, they vote for their preferred music genres.<br><br>The <strong>🔄 Generate</strong> button uses these votes to create AI-powered quiz questions tailored to your audience\'s preferences!<span class="tip">🎵 More diverse genre votes = more varied and fun questions!</span>`,
+            title: `${_ico.barChart} Genre Votes`,
+            desc: `When teams register, they vote for their preferred music genres.<br><br>The ${_ico.refresh} <strong>Generate</strong> button uses these votes to create AI-powered quiz questions tailored to your audience\'s preferences!<span class="tip">${_ico.music} More diverse genre votes = more varied and fun questions!</span>`,
             target: '#genreVotesCard',
             position: 'top'
         },
         {
-            title: '🚀 Typical Quiz Flow',
-            desc: `Here\'s the recommended order to run your quiz:<br><br><strong>1.</strong> 📱 Show QR code → teams register & vote genres<br><strong>2.</strong> 🔄 Generate questions (AI creates them from votes)<br><strong>3.</strong> ⚙️ Set timer duration & TTS voice<br><strong>4.</strong> ▶️ Start the quiz<br><strong>5.</strong> ⏭️ Navigate questions (or let auto-advance do it)<br><strong>6.</strong> 👁️ Reveal answers + 🔊 Speak them<br><strong>7.</strong> 🏆 Watch the leaderboard update live!<span class="tip">✨ That\'s it! You\'re ready to host an amazing pub quiz. Have fun!</span>`,
+            title: `${_ico.rocket} Typical Quiz Flow`,
+            desc: `Here\'s the recommended order to run your quiz:<br><br><strong>1.</strong> ${_ico.qr} Show QR code — teams register & vote genres<br><strong>2.</strong> ${_ico.refresh} Generate questions (AI creates them from votes)<br><strong>3.</strong> ${_ico.settings} Set timer duration & TTS voice<br><strong>4.</strong> ${_ico.play} Start the quiz<br><strong>5.</strong> ${_ico.skipFwd} Navigate questions (or let auto-advance do it)<br><strong>6.</strong> ${_ico.eye} Reveal answers + ${_ico.volume} Speak them<br><strong>7.</strong> ${_ico.trophy} Watch the leaderboard update live!<span class="tip">${_ico.sparkle} That\'s it! You\'re ready to host an amazing pub quiz. Have fun!</span>`,
             target: '.quiz-header',
             position: 'bottom'
         }
@@ -3795,7 +3829,12 @@
 
         // Update buttons
         document.getElementById('tutorialBack').style.visibility = tutorialStep === 0 ? 'hidden' : 'visible';
-        document.getElementById('tutorialNext').textContent = tutorialStep === total - 1 ? '✅ Finish' : 'Next →';
+        const nextBtn = document.getElementById('tutorialNext');
+        if (tutorialStep === total - 1) {
+            nextBtn.innerHTML = `<svg style="display:inline;vertical-align:-2px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Finish`;
+        } else {
+            nextBtn.innerHTML = `Next <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+        }
         document.getElementById('tutorialSkip').style.display = tutorialStep === total - 1 ? 'none' : '';
 
         // Find target element
