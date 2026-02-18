@@ -134,6 +134,8 @@ urlpatterns = [
     # Social / Likes
     path('blind-date/<str:session_id>/like', views.blind_date_like_player, name='blind-date-like'),
     path('blind-date/<str:session_id>/matches', views.blind_date_get_matches, name='blind-date-matches'),
+    # Test helpers
+    path('blind-date/<str:session_id>/seed-test-players', views.blind_date_seed_test_players, name='blind-date-seed-test-players'),
     # SSE Streams
     path('blind-date/<str:session_id>/player-stream', views.blind_date_player_stream, name='blind-date-player-stream'),
     path('blind-date/<str:session_id>/host-stream', views.blind_date_host_stream, name='blind-date-host-stream'),

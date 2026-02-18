@@ -133,6 +133,7 @@ from .blind_date_session_views import (
     join_session as blind_date_join_session,
     get_player_data as blind_date_get_player_data,
     generate_qr_code as blind_date_qr_code,
+    seed_test_players as blind_date_seed_test_players,
 )
 
 from .blind_date_game_views import (
@@ -239,4 +240,5 @@ __all__ = [
     'blind_date_end_game',
     'blind_date_player_stream',
     'blind_date_host_stream',
+    'blind_date_seed_test_players',
 ]

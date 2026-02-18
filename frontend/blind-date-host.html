@@ -319,6 +319,9 @@
                 <button class="btn btn-primary" id="btnStartGame" disabled onclick="startGame()" style="margin-top: 20px; font-size: 1.2em; padding: 16px 40px;">
                     Start Game
                 </button>
+                <button class="btn" id="btnSeedPlayers" onclick="seedTestPlayers()" style="margin-top: 12px; font-size: 0.95em; padding: 10px 28px; background: #6c5ce7; border: none; border-radius: 10px; color: #fff; cursor: pointer;">
+                    🤖 Add 5 Test Players (AI)
+                </button>
             </div>
 
             <!-- IN-PROGRESS: SPOTLIGHT -->
@@ -553,6 +556,25 @@
         // ================================================================
         // GAME CONTROLS
         // ================================================================
+
+        async function seedTestPlayers() {
+            const btn = document.getElementById('btnSeedPlayers');
+            btn.disabled = true;
+            btn.textContent = '⏳ Generating…';
+            try {
+                const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/seed-test-players`, { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) { showToast(data.error || 'Failed to seed players'); return; }
+                showToast(`✅ Added ${data.count} AI test players!`);
+                await loadHostData();
+            } catch (e) {
+                showToast('Failed to generate test players');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🤖 Add 5 Test Players (AI)';
+            }
+        }
+
         async function startGame() {
             try {
                 const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/start`, { method: 'POST' });

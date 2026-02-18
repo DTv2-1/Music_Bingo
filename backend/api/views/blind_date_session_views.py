@@ -8,8 +8,11 @@ Endpoints:
 - get_session_details: GET — public session info for player join page
 - join_session: POST — player registers with nickname/description/questions
 - get_player_data: GET — retrieve player data by session token
+- seed_test_players: POST — generate 5 AI-created test players
 """
 
+import os
+import json
 import logging
 import random
 
@@ -219,6 +222,90 @@ def generate_qr_code(request, session_id):
     buf.seek(0)
 
     return HttpResponse(buf.getvalue(), content_type='image/png')
+
+
+# ============================================================
+# SEED TEST PLAYERS (AI)
+# ============================================================
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def seed_test_players(request, session_id):
+    """Generate 5 fictional contestants via OpenAI and register them."""
+    session = _get_session(session_id)
+    if not session:
+        return Response({'error': 'Session not found'}, status=404)
+
+    if session.status != 'lobby':
+        return Response({'error': 'Can only add test players while in lobby'}, status=400)
+
+    api_key = os.getenv('OPENAI_API_KEY')
+    if not api_key:
+        return Response({'error': 'OPENAI_API_KEY not configured'}, status=500)
+
+    try:
+        import openai
+        client = openai.OpenAI(api_key=api_key)
+
+        prompt = (
+            "Generate 5 fictional, fun and diverse pub-goers for a Blind Date game. "
+            "Each person should have a unique personality. "
+            "Return a JSON object with a key \"players\" containing an array of 5 objects. "
+            "Each object must have:\n"
+            "- \"nickname\": a catchy, funny first name or alias (max 20 chars)\n"
+            "- \"description\": a short, cheeky self-description for a dating game (1-2 sentences, max 150 chars)\n"
+            "- \"question_1\": a fun, flirty or quirky dating question they want to ask\n"
+            "- \"question_2\": another creative dating question\n"
+            "- \"question_3\": a third original dating question\n\n"
+            "Make the personalities varied: shy, outgoing, nerdy, adventurous, etc. "
+            "Keep the tone playful and pub-appropriate. "
+            "Return ONLY valid JSON, no extra text."
+        )
+
+        resp = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+            temperature=0.9,
+        )
+
+        data = json.loads(resp.choices[0].message.content)
+        players_data = data.get('players', [])
+
+        if not players_data or len(players_data) < 5:
+            return Response({'error': 'AI returned insufficient player data'}, status=500)
+
+        created = []
+        for p in players_data[:5]:
+            nickname = p.get('nickname', 'TestPlayer')[:20]
+            # Ensure unique nickname in session
+            base = nickname
+            counter = 1
+            while BlindDatePlayer.objects.filter(session=session, nickname=nickname).exists():
+                nickname = f"{base}{counter}"
+                counter += 1
+
+            player = BlindDatePlayer.objects.create(
+                session=session,
+                nickname=nickname,
+                description=p.get('description', 'A mystery contestant')[:200],
+                question_1=p.get('question_1', 'What is your idea of a perfect date?'),
+                question_2=p.get('question_2', 'What makes you laugh?'),
+                question_3=p.get('question_3', 'What is your hidden talent?'),
+            )
+            created.append({
+                'id': player.id,
+                'nickname': player.nickname,
+                'description': player.description,
+                'questions': [player.question_1, player.question_2, player.question_3],
+            })
+
+        logger.info(f"Seeded {len(created)} test players in session {session.session_code}")
+        return Response({'players': created, 'count': len(created)})
+
+    except Exception as e:
+        logger.error(f"Failed to generate test players: {e}")
+        return Response({'error': f'AI generation failed: {str(e)}'}, status=500)
 
 
 # ============================================================
