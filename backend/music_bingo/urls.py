@@ -151,6 +151,7 @@ urlpatterns = [
     
     # Index pages - MUST be last
     path("index.html", index_view, name="index-html"),
+    path("index", index_view, name="index-no-ext"),
     path("", index_view, name="index"),
 ]
 
