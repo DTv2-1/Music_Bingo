@@ -435,7 +435,7 @@
         // ================================================================
         async function init() {
             await loadHostData();
-            connectSSE();
+            startPolling();
         }
 
         async function loadHostData() {
@@ -451,38 +451,62 @@
         }
 
         // ================================================================
-        // SSE — REAL-TIME UPDATES
+        // POLLING — REAL-TIME UPDATES (replaces SSE to avoid blocking server threads)
         // ================================================================
-        let eventSource = null;
+        let pollInterval = null;
+        let lastPlayerCount = 0;
+        let lastStatus = '';
+        let lastPosition = '';
+        let lastAnswerCount = 0;
 
-        function connectSSE() {
-            if (eventSource) eventSource.close();
-            eventSource = new EventSource(`${API}/api/blind-date/${SESSION_CODE}/host-stream`);
-
-            eventSource.onmessage = (e) => {
-                try {
-                    const data = JSON.parse(e.data);
-                    handleSSE(data);
-                } catch (err) {}
-            };
-
-            eventSource.onerror = () => {
-                setTimeout(connectSSE, 3000);
-            };
+        function startPolling() {
+            stopPolling();
+            // Poll every 2 seconds — fast enough for real-time feel
+            pollInterval = setInterval(pollForUpdates, 2000);
         }
 
-        function handleSSE(data) {
-            switch (data.type) {
-                case 'player_joined':
-                    showToast(`${data.nickname} joined!`);
-                    loadHostData();
-                    break;
-                case 'answer_update':
-                    document.getElementById('answerCount').textContent = data.answers_received;
-                    break;
-                case 'status_change':
-                    loadHostData();
-                    break;
+        function stopPolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+        }
+
+        async function pollForUpdates() {
+            try {
+                const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/host-data`);
+                if (!res.ok) return;
+                const data = await res.json();
+
+                // Detect changes and fire handlers
+                if (data.player_count !== lastPlayerCount) {
+                    if (data.player_count > lastPlayerCount && lastPlayerCount > 0) {
+                        const newest = data.players[data.players.length - 1];
+                        showToast(`${newest?.nickname || 'Someone'} joined!`);
+                    }
+                    lastPlayerCount = data.player_count;
+                }
+
+                if (data.status !== lastStatus) {
+                    lastStatus = data.status;
+                }
+
+                const pos = `${data.current_player_idx}.${data.current_question_idx}`;
+                if (pos !== lastPosition) {
+                    lastPosition = pos;
+                }
+
+                const answers = data.answers_received || 0;
+                if (answers !== lastAnswerCount) {
+                    document.getElementById('answerCount').textContent = answers;
+                    lastAnswerCount = answers;
+                }
+
+                // Update full dashboard
+                gameState = data;
+                renderDashboard(data);
+            } catch (e) {
+                // Silent fail — will retry on next poll
             }
         }
 

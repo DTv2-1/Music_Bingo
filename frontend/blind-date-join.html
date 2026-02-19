@@ -402,7 +402,7 @@
                 }
 
                 showWaiting();
-                connectSSE();
+                startPolling();
             }
         }
 
@@ -468,7 +468,7 @@
                 localStorage.setItem(`blinddate_${SESSION_CODE}_nickname`, PLAYER_NICKNAME);
 
                 showWaiting();
-                connectSSE();
+                startPolling();
 
             } catch (e) {
                 showError('Failed to join. Try again.');
@@ -478,46 +478,77 @@
         }
 
         // ================================================================
-        // SSE — REAL-TIME
+        // POLLING — REAL-TIME (replaces SSE to avoid blocking server threads)
         // ================================================================
-        let eventSource = null;
+        let pollInterval = null;
+        let lastPollStatus = '';
+        let lastPollPosition = '';
+        let lastPollPlayerCount = 0;
 
-        function connectSSE() {
-            if (eventSource) eventSource.close();
-            eventSource = new EventSource(`${API}/api/blind-date/${SESSION_CODE}/player-stream`);
-
-            eventSource.onmessage = (e) => {
-                try {
-                    const data = JSON.parse(e.data);
-                    handleSSE(data);
-                } catch (err) {}
-            };
-
-            eventSource.onerror = () => {
-                setTimeout(connectSSE, 3000);
-            };
+        function startPolling() {
+            stopPolling();
+            pollInterval = setInterval(pollForUpdates, 2000);
         }
 
-        function handleSSE(data) {
-            switch (data.type) {
-                case 'player_joined':
+        function stopPolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+        }
+
+        async function pollForUpdates() {
+            try {
+                const res = await fetch(`${API}/api/blind-date/${SESSION_CODE}/host-data`);
+                if (!res.ok) return;
+                const data = await res.json();
+
+                // Player count change (lobby)
+                if (data.player_count !== lastPollPlayerCount) {
+                    lastPollPlayerCount = data.player_count;
                     document.getElementById('waitingCount').textContent = data.player_count;
                     document.getElementById('playerCountBadge').textContent = `${data.player_count} players`;
-                    break;
+                }
 
-                case 'status_change':
-                case 'question_change':
-                    if (data.status === 'in_progress' || data.type === 'question_change') {
-                        handleQuestionUpdate(data);
+                // Status change
+                if (data.status !== lastPollStatus) {
+                    lastPollStatus = data.status;
+
+                    if (data.status === 'in_progress' && data.current_player) {
+                        handleQuestionUpdate({
+                            current_player: data.current_player,
+                            current_question: data.current_question_text,
+                            current_question_idx: data.current_question_idx,
+                            current_player_idx: data.current_player_idx,
+                            answer_time: data.answer_time_seconds,
+                            status: data.status,
+                        });
                     }
                     if (data.status === 'completed') {
                         showGameOver();
+                        stopPolling();
                     }
-                    break;
+                }
 
-                case 'game_ended':
-                    showGameOver();
-                    break;
+                // Question/player position change (in-progress)
+                if (data.status === 'in_progress') {
+                    const pos = `${data.current_player_idx}.${data.current_question_idx}`;
+                    if (pos !== lastPollPosition) {
+                        lastPollPosition = pos;
+                        if (data.current_player) {
+                            handleQuestionUpdate({
+                                current_player: data.current_player,
+                                current_question: data.current_question_text,
+                                current_question_idx: data.current_question_idx,
+                                current_player_idx: data.current_player_idx,
+                                answer_time: data.answer_time_seconds,
+                                status: data.status,
+                            });
+                        }
+                    }
+                }
+            } catch (e) {
+                // Silent fail — will retry on next poll
             }
         }
 
