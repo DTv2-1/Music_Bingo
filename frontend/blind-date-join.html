@@ -359,9 +359,17 @@
         const urlParts = window.location.pathname.split('/');
         SESSION_CODE = urlParts[urlParts.length - 1] || new URLSearchParams(window.location.search).get('session');
 
-        // Check if player already registered (localStorage)
-        const savedToken = localStorage.getItem(`blinddate_${SESSION_CODE}_token`);
+        // Check if token passed via URL (e.g., host opened this link)
+        const urlToken = new URLSearchParams(window.location.search).get('token');
+
+        // Check if player already registered (localStorage or URL token)
+        const savedToken = urlToken || localStorage.getItem(`blinddate_${SESSION_CODE}_token`);
         const savedNickname = localStorage.getItem(`blinddate_${SESSION_CODE}_nickname`);
+
+        // If token came from URL, save it to localStorage for SSE and other calls
+        if (urlToken) {
+            localStorage.setItem(`blinddate_${SESSION_CODE}_token`, urlToken);
+        }
 
         // ================================================================
         // INIT
@@ -377,6 +385,22 @@
             if (savedToken) {
                 PLAYER_TOKEN = savedToken;
                 PLAYER_NICKNAME = savedNickname || '';
+
+                // If nickname is unknown (e.g., opened from host link), fetch from API
+                if (!PLAYER_NICKNAME) {
+                    try {
+                        const pRes = await fetch(`${API}/api/blind-date/${SESSION_CODE}/player-data?token=${PLAYER_TOKEN}`);
+                        if (pRes.ok) {
+                            const pData = await pRes.json();
+                            PLAYER_NICKNAME = pData.nickname || '';
+                            PLAYER_ID = pData.player_id || null;
+                            localStorage.setItem(`blinddate_${SESSION_CODE}_nickname`, PLAYER_NICKNAME);
+                        }
+                    } catch (e) {
+                        console.warn('Could not fetch player data:', e);
+                    }
+                }
+
                 showWaiting();
                 connectSSE();
             }

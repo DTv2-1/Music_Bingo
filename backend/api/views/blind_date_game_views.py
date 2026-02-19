@@ -124,6 +124,7 @@ def host_data(request, session_id):
             'description': p.description,
             'round_completed': p.round_completed,
             'queue_order': p.queue_order,
+            'session_token': str(p.session_token),
         } for p in players],
     })
 

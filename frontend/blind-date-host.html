@@ -500,12 +500,14 @@
                 const li = document.createElement('li');
                 li.className = (data.status === 'in_progress' && i === data.current_player_idx) ? 'active' : '';
                 if (p.round_completed) li.classList.add('done');
+                const playerUrl = `${window.location.origin}/blind-date/join/${SESSION_CODE}?token=${p.session_token}`;
                 li.innerHTML = `
                     <div class="avatar">${p.nickname.charAt(0).toUpperCase()}</div>
-                    <div>
+                    <div style="flex:1;">
                         <strong>${p.nickname}</strong>
                         <div style="font-size:0.8em;opacity:0.7;">${p.round_completed ? '✓ Done' : ''}</div>
                     </div>
+                    <a href="${playerUrl}" target="_blank" style="font-size:0.75em; background:rgba(255,255,255,0.2); padding:3px 10px; border-radius:8px; color:white; text-decoration:none; white-space:nowrap;" title="Open this player's session">Open ↗</a>
                 `;
                 list.appendChild(li);
             });
