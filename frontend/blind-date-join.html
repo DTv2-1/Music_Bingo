@@ -386,19 +386,18 @@
                 PLAYER_TOKEN = savedToken;
                 PLAYER_NICKNAME = savedNickname || '';
 
-                // If nickname is unknown (e.g., opened from host link), fetch from API
-                if (!PLAYER_NICKNAME) {
-                    try {
-                        const pRes = await fetch(`${API}/api/blind-date/${SESSION_CODE}/player-data?token=${PLAYER_TOKEN}`);
-                        if (pRes.ok) {
-                            const pData = await pRes.json();
-                            PLAYER_NICKNAME = pData.nickname || '';
-                            PLAYER_ID = pData.player_id || null;
-                            localStorage.setItem(`blinddate_${SESSION_CODE}_nickname`, PLAYER_NICKNAME);
-                        }
-                    } catch (e) {
-                        console.warn('Could not fetch player data:', e);
+                // Always fetch player data to ensure PLAYER_ID is set
+                try {
+                    const pRes = await fetch(`${API}/api/blind-date/${SESSION_CODE}/player-data?token=${PLAYER_TOKEN}`);
+                    if (pRes.ok) {
+                        const pData = await pRes.json();
+                        PLAYER_NICKNAME = pData.nickname || PLAYER_NICKNAME;
+                        PLAYER_ID = pData.player_id || null;
+                        localStorage.setItem(`blinddate_${SESSION_CODE}_nickname`, PLAYER_NICKNAME);
+                        console.log(`[BlindDate] Player identified: ${PLAYER_NICKNAME} (ID: ${PLAYER_ID})`);
                     }
+                } catch (e) {
+                    console.warn('Could not fetch player data:', e);
                 }
 
                 showWaiting();
@@ -510,9 +509,22 @@
                     document.getElementById('playerCountBadge').textContent = `${data.player_count} players`;
                 }
 
-                // Status change
-                if (data.status !== lastPollStatus) {
+                // Game completed
+                if (data.status === 'completed' && lastPollStatus !== 'completed') {
                     lastPollStatus = data.status;
+                    showGameOver();
+                    stopPolling();
+                    return;
+                }
+
+                // Status or position changed → update game view
+                const pos = `${data.current_player_idx}.${data.current_question_idx}`;
+                const statusChanged = data.status !== lastPollStatus;
+                const posChanged = pos !== lastPollPosition;
+
+                if (statusChanged || posChanged) {
+                    lastPollStatus = data.status;
+                    lastPollPosition = pos;
 
                     if (data.status === 'in_progress' && data.current_player) {
                         handleQuestionUpdate({
@@ -524,28 +536,6 @@
                             status: data.status,
                         });
                     }
-                    if (data.status === 'completed') {
-                        showGameOver();
-                        stopPolling();
-                    }
-                }
-
-                // Question/player position change (in-progress)
-                if (data.status === 'in_progress') {
-                    const pos = `${data.current_player_idx}.${data.current_question_idx}`;
-                    if (pos !== lastPollPosition) {
-                        lastPollPosition = pos;
-                        if (data.current_player) {
-                            handleQuestionUpdate({
-                                current_player: data.current_player,
-                                current_question: data.current_question_text,
-                                current_question_idx: data.current_question_idx,
-                                current_player_idx: data.current_player_idx,
-                                answer_time: data.answer_time_seconds,
-                                status: data.status,
-                            });
-                        }
-                    }
                 }
             } catch (e) {
                 // Silent fail — will retry on next poll
@@ -556,7 +546,11 @@
             if (!data.current_player) return;
 
             currentQuestionPlayerId = data.current_player.id;
-            const isMyTurn = (data.current_player.nickname.toLowerCase() === PLAYER_NICKNAME.toLowerCase());
+            // Use PLAYER_ID for reliable match (nickname comparison can fail with case/encoding)
+            const isMyTurn = PLAYER_ID ? (data.current_player.id === PLAYER_ID) 
+                           : (data.current_player.nickname.toLowerCase() === PLAYER_NICKNAME.toLowerCase());
+
+            console.log(`[BlindDate] Question update: spotlight=${data.current_player.nickname}(${data.current_player.id}), me=${PLAYER_NICKNAME}(${PLAYER_ID}), isMyTurn=${isMyTurn}`);
 
             if (isMyTurn) {
                 // It's my turn — others are answering MY questions
