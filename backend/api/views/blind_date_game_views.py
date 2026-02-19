@@ -96,13 +96,16 @@ def host_data(request, session_id):
         if session.current_question_idx < len(qs):
             current_question_text = qs[session.current_question_idx]
 
-    # Count answers for current question
+    # Count answers for current question + who answered
     answers_count = 0
+    answerer_nicknames = []
     if current_player:
-        answers_count = BlindDateAnswer.objects.filter(
+        answers_qs = BlindDateAnswer.objects.filter(
             question_player_id=current_player['id'],
             question_index=session.current_question_idx,
-        ).count()
+        ).select_related('answerer')
+        answers_count = answers_qs.count()
+        answerer_nicknames = [a.answerer.nickname for a in answers_qs]
 
     return Response({
         'session_code': session.session_code,
@@ -118,6 +121,7 @@ def host_data(request, session_id):
         'current_player': current_player,
         'current_question_text': current_question_text,
         'answers_received': answers_count,
+        'answerer_nicknames': answerer_nicknames,
         'players': [{
             'id': p.id,
             'nickname': p.nickname,

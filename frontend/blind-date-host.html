@@ -337,6 +337,7 @@
             <!-- ANSWER COUNT -->
             <div class="panel answer-counter hidden" id="answerCounter">
                 Answers received: <span class="big" id="answerCount">0</span>
+                <div id="answererNames" style="margin-top:10px; font-size:0.85em; opacity:0.85;"></div>
             </div>
 
             <!-- TOP ANSWERS (after evaluation) -->
@@ -500,6 +501,15 @@
                 if (answers !== lastAnswerCount) {
                     document.getElementById('answerCount').textContent = answers;
                     lastAnswerCount = answers;
+                }
+
+                // Show who has answered
+                const names = data.answerer_nicknames || [];
+                const namesEl = document.getElementById('answererNames');
+                if (namesEl) {
+                    namesEl.innerHTML = names.length
+                        ? names.map(n => `<span style="display:inline-block;background:rgba(255,255,255,0.15);padding:3px 10px;border-radius:100px;margin:3px 4px;">✅ ${n}</span>`).join('')
+                        : '';
                 }
 
                 // Update full dashboard
