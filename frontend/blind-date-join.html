@@ -388,7 +388,7 @@
 
                 // Always fetch player data to ensure PLAYER_ID is set
                 try {
-                    const pRes = await fetch(`${API}/api/blind-date/${SESSION_CODE}/player-data?token=${PLAYER_TOKEN}`);
+                    const pRes = await fetch(`${API}/api/blind-date/${SESSION_CODE}/player?token=${PLAYER_TOKEN}`);
                     if (pRes.ok) {
                         const pData = await pRes.json();
                         PLAYER_NICKNAME = pData.nickname || PLAYER_NICKNAME;
